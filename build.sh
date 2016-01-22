@@ -1,0 +1,1 @@
+node Kha/make -t html5 && cd build && haxe project-html5.hxml && cd ..
