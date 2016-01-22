@@ -1,4 +1,4 @@
-var project = new Project('KhaTile');
+var project = new Project('khatile');
 
 project.addSources('src');
 project.addShaders('src/Shaders/**');

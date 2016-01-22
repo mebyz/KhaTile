@@ -19,12 +19,18 @@ import kha.graphics4.VertexData;
 import kha.graphics4.VertexShader;
 import kha.graphics4.VertexStructure;
 import kha.math.Matrix4;
+import kha.graphics4.ConstantLocation;
+import kha.math.FastMatrix4;
+import kha.math.FastVector3;
 
 class PlaneInstance {
 
 	var vertexBuffer:VertexBuffer;
 	var indexBuffer:IndexBuffer;
 	var pipeline:PipelineState;
+
+	var mvp:FastMatrix4;
+	var mvpID:ConstantLocation;
 
 	public function new() {
 
@@ -58,12 +64,29 @@ class PlaneInstance {
 		pipeline.inputLayout = [structure];
 		pipeline.fragmentShader = Shaders.simple_frag;
 		pipeline.vertexShader = Shaders.simple_vert;
+		pipeline.depthWrite = true;
+        pipeline.depthMode = CompareMode.Less;
 		pipeline.compile();
 
+		mvpID = pipeline.getConstantLocation("MVP");
+
+		var projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100.0);
+		
+		var view = FastMatrix4.lookAt(new FastVector3(4, 3, 3), // Camera at (4, 3, 3)
+								  new FastVector3(0, 0, 0), //  look at origin
+								  new FastVector3(0, 1, 0) // Head is up, set (0, -1, 0) to look upside down
+		);
+
+		var model = FastMatrix4.identity();
+		mvp = FastMatrix4.identity();
+		mvp = mvp.multmat(projection);
+		mvp = mvp.multmat(view);
+		mvp = mvp.multmat(model);
+
 		vertexBuffer = new VertexBuffer(
-			Std.int(v.length / 3), // Vertex count - 3 floats per vertex
-			structure, // Vertex structure
-			Usage.StaticUsage // Vertex data will stay the same
+			Std.int(v.length / 3), // 3 floats per vertex
+			structure, 
+			Usage.StaticUsage 
 		);
 		
 		var vbData = vertexBuffer.lock();
@@ -73,8 +96,8 @@ class PlaneInstance {
 		vertexBuffer.unlock();
 
 		indexBuffer = new IndexBuffer(
-			ind.length, // 3 indices for our triangle
-			Usage.StaticUsage // Index data will stay the same
+			ind.length, 
+			Usage.StaticUsage 
 		);
 		
 		var iData = indexBuffer.lock();
@@ -91,6 +114,7 @@ class PlaneInstance {
 		g.setPipeline(pipeline);
 		g.setVertexBuffer(vertexBuffer);
 		g.setIndexBuffer(indexBuffer);
+		g.setMatrix(mvpID, mvp);
 		g.drawIndexedVertices();
 		g.end();
     }
