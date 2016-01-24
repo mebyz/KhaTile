@@ -37,6 +37,7 @@ class PlaneInstance {
 	public function new() {
 
 		var pr = new Primitive('plane', { size : 20 });
+		var pr = new Primitive('cube', { x : 1,y : 1,z : 1 });
 
 		st = pr.getVertexStructure();
 		idb = pr.getIndexBuffer();
