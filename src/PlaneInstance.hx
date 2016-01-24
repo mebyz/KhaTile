@@ -22,11 +22,13 @@ import kha.math.Matrix4;
 import kha.graphics4.ConstantLocation;
 import kha.math.FastMatrix4;
 import kha.math.FastVector3;
+import primitive.Primitive;
 
 class PlaneInstance {
 
-	var vertexBuffer:VertexBuffer;
-	var indexBuffer:IndexBuffer;
+	var st:VertexStructure;
+	var vtb:VertexBuffer;
+	var idb:IndexBuffer;
 	var pipeline:PipelineState;
 
 	var mvp:FastMatrix4;
@@ -34,34 +36,15 @@ class PlaneInstance {
 
 	public function new() {
 
-		var v:Array<Float> = new Array();
-		var ind:Array<Int> = new Array();
+		var pr = new Primitive('plane', { size : 20 });
 
-		for (i in 0...10) {
-
-			for (j in 0...10) {
-
-				v.push(-0.1*i);v.push(-0.1*j);v.push(0.0);
-				v.push(0.1*i);v.push(-0.1*j);v.push(0.0);
-				v.push(-0.1*i);v.push(0.1*j);v.push(0.0);
-				v.push(0.1*i);v.push(0.1*j);v.push(0.0);
-
-				ind.push((i*10+j)*4);
-				ind.push((i*10+j)*4+1);
-				ind.push((i*10+j)*4+2);
-
-				ind.push((i*10+j)*4+1);
-				ind.push((i*10+j)*4+2);
-				ind.push((i*10+j)*4+3);
-
-			}
-		}
-
-		var structure = new VertexStructure();
-        structure.add("pos", VertexData.Float3);
+		st = pr.getVertexStructure();
+		idb = pr.getIndexBuffer();
+		vtb = pr.getVertexBuffer();
         
+
         pipeline = new PipelineState();
-		pipeline.inputLayout = [structure];
+		pipeline.inputLayout = [st];
 		pipeline.fragmentShader = Shaders.simple_frag;
 		pipeline.vertexShader = Shaders.simple_vert;
 		pipeline.depthWrite = true;
@@ -83,28 +66,6 @@ class PlaneInstance {
 		mvp = mvp.multmat(view);
 		mvp = mvp.multmat(model);
 
-		vertexBuffer = new VertexBuffer(
-			Std.int(v.length / 3), // 3 floats per vertex
-			structure, 
-			Usage.StaticUsage 
-		);
-		
-		var vbData = vertexBuffer.lock();
-		for (i in 0...vbData.length) {
-			vbData.set(i, v[i]);
-		}
-		vertexBuffer.unlock();
-
-		indexBuffer = new IndexBuffer(
-			ind.length, 
-			Usage.StaticUsage 
-		);
-		
-		var iData = indexBuffer.lock();
-		for (i in 0...iData.length) {
-			iData[i] = ind[i];
-		}
-		indexBuffer.unlock();
     }
 
 	public function render(frame:Framebuffer) {
@@ -112,8 +73,8 @@ class PlaneInstance {
 	    g.begin();
 		g.clear(Color.Black);
 		g.setPipeline(pipeline);
-		g.setVertexBuffer(vertexBuffer);
-		g.setIndexBuffer(indexBuffer);
+		g.setVertexBuffer(vtb);
+		g.setIndexBuffer(idb);
 		g.setMatrix(mvpID, mvp);
 		g.drawIndexedVertices();
 		g.end();

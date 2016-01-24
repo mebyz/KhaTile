@@ -6,6 +6,8 @@
 
 git clone https://github.com/KTXSoftware/Kha.git
 
+mkdir Libraries && git clone https://github.com/mebyz/primitive.git Libraries/primitive
+
 cd Kha
 
 git submodule update --init --recursive
