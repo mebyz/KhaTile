@@ -23,6 +23,7 @@ import kha.graphics4.ConstantLocation;
 import kha.math.FastMatrix4;
 import kha.math.FastVector3;
 import primitive.Primitive;
+import noisetile.NoiseTile;
 
 class PlaneInstance {
 
@@ -36,8 +37,9 @@ class PlaneInstance {
 
 	public function new() {
 
-		var pr = new Primitive('plane', { size : 20 });
-		var pr = new Primitive('cube', { x : 1,y : 1,z : 1 });
+		var nt : Dynamic= new NoiseTile(10,10,16);
+		var pr = new Primitive('heightmap', { size : 16, heightmap : nt.t.tiles[0] });
+//		var pr = new Primitive('cube', { x : 1,y : 1,z : 1 });
 
 		st = pr.getVertexStructure();
 		idb = pr.getIndexBuffer();
