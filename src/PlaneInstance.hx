@@ -27,38 +27,24 @@ import noisetile.NoiseTile;
 
 class PlaneInstance {
 
-	var st:VertexStructure;
-	var vtb:VertexBuffer;
-	var idb:IndexBuffer;
-	var pipeline:PipelineState;
-
+	var planes : Array<PlaneModel>;
 	var mvp:FastMatrix4;
-	var mvpID:ConstantLocation;
 
 	public function new() {
 
+		var gridSize = 10;
+
 		var nt : Dynamic= new NoiseTile(10,10,16);
-		var pr = new Primitive('heightmap', { w:16, h:16, x:16, y:16, heights:nt.t.tiles[0]});
-//		var pr = new Primitive('cube', { x : 1,y : 1,z : 1 });
 
-		st = pr.getVertexStructure();
-		idb = pr.getIndexBuffer();
-		vtb = pr.getVertexBuffer();
-        
+		planes = new Array();
 
-        pipeline = new PipelineState();
-		pipeline.inputLayout = [st];
-		pipeline.fragmentShader = Shaders.simple_frag;
-		pipeline.vertexShader = Shaders.simple_vert;
-		pipeline.depthWrite = true;
-        pipeline.depthMode = CompareMode.Less;
-		pipeline.compile();
+		for (j in 0...gridSize)
+			for (i in 0...gridSize)
+				planes.push(new PlaneModel(nt.t.tiles[i+j*gridSize],i,j));
 
-		mvpID = pipeline.getConstantLocation("MVP");
-
-		var projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100.0);
+		var projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 1000.0);
 		
-		var view = FastMatrix4.lookAt(new FastVector3(14, 13, 13), // Camera at (4, 3, 3)
+		var view = FastMatrix4.lookAt(new FastVector3(100, 150, 100), // Camera at (4, 3, 3)
 								  new FastVector3(0, 0, 0), //  look at origin
 								  new FastVector3(0, 1, 0) // Head is up, set (0, -1, 0) to look upside down
 		);
@@ -75,11 +61,55 @@ class PlaneInstance {
 		var g = frame.g4;
 	    g.begin();
 		g.clear(Color.Black);
+		/////
+		/////
+		for (plane in planes)
+			plane.drawPlane(frame,mvp);
+		/////
+		/////
+		g.end();
+    }
+}
+
+class PlaneModel {
+
+	public var st:VertexStructure;
+	public var vtb:VertexBuffer;
+	public var idb:IndexBuffer;
+	public var pipeline:PipelineState;
+	public var mvpID:ConstantLocation;
+	public var shaders : Dynamic;
+	public var shader1 : Dynamic;
+	public var shader2 : Dynamic;
+
+	public function new(heightmap :Array<Int>,idx,idy) {
+
+		var shader1 = {f:Shaders.simple_frag,v:Shaders.simple_vert};
+		var shader2 = {f:Shaders.green_frag,v:Shaders.green_vert};
+		var shaders = [shader1,shader2];
+
+		var pr = new Primitive('heightmap', { w:16, h:16, x:16, y:16, heights:heightmap,idx:idx,idy:idy});
+		st  = pr.getVertexStructure();
+		idb = pr.getIndexBuffer();
+		vtb = pr.getVertexBuffer();
+
+        pipeline = new PipelineState();
+		pipeline.inputLayout = [st];
+
+		pipeline.fragmentShader = shaders[(idx+idy*10+idy*3)%2].f;
+		pipeline.vertexShader = shaders[(idx+idy*10+idy*3)%2].v;
+		pipeline.depthWrite = true;
+        pipeline.depthMode = CompareMode.Less;
+		pipeline.compile();
+
+		mvpID = pipeline.getConstantLocation("MVP");
+	}
+	public function drawPlane(frame:Framebuffer, mvp:FastMatrix4) {	
+		var g = frame.g4;
 		g.setPipeline(pipeline);
 		g.setVertexBuffer(vtb);
 		g.setIndexBuffer(idb);
 		g.setMatrix(mvpID, mvp);
 		g.drawIndexedVertices();
-		g.end();
-    }
+	}
 }
