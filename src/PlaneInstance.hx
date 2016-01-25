@@ -38,7 +38,7 @@ class PlaneInstance {
 	public function new() {
 
 		var nt : Dynamic= new NoiseTile(10,10,16);
-		var pr = new Primitive('heightmap', { size : 16, heightmap : nt.t.tiles[0] });
+		var pr = new Primitive('heightmap', { w:16, h:16, x:16, y:16, heights:nt.t.tiles[0]});
 //		var pr = new Primitive('cube', { x : 1,y : 1,z : 1 });
 
 		st = pr.getVertexStructure();
@@ -58,7 +58,7 @@ class PlaneInstance {
 
 		var projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100.0);
 		
-		var view = FastMatrix4.lookAt(new FastVector3(4, 3, 3), // Camera at (4, 3, 3)
+		var view = FastMatrix4.lookAt(new FastVector3(14, 13, 13), // Camera at (4, 3, 3)
 								  new FastVector3(0, 0, 0), //  look at origin
 								  new FastVector3(0, 1, 0) // Head is up, set (0, -1, 0) to look upside down
 		);
