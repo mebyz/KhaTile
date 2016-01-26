@@ -32,18 +32,20 @@ class PlaneInstance {
 	public function new() {
 
 		var gridSize = 10;
+		var tilePx =16;
+		var tileSize =32;
 
-		var nt : Dynamic= new NoiseTile(10,10,16);
+		var nt : Dynamic= new NoiseTile(gridSize,gridSize,tilePx);
 
 		planes = new Array();
 
 		for (j in 0...gridSize)
 			for (i in 0...gridSize)
-				planes.push(new PlaneModel(nt.t.tiles[i+j*gridSize],i,j));
+				planes.push(new PlaneModel(nt.t.tiles[i+j*gridSize],i,j,{ w:tileSize, h:tileSize, x:tilePx, y:tilePx }));
 
 		var projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 1000.0);
 		
-		var view = FastMatrix4.lookAt(new FastVector3(100, 150, 100), // Camera at (4, 3, 3)
+		var view = FastMatrix4.lookAt(new FastVector3(300, 300, 300), // Camera at (4, 3, 3)
 								  new FastVector3(0, 0, 0), //  look at origin
 								  new FastVector3(0, 1, 0) // Head is up, set (0, -1, 0) to look upside down
 		);
