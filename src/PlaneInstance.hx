@@ -12,18 +12,17 @@ import kha.Assets;
 import kha.graphics4.CompareMode;
 import kha.graphics4.FragmentShader;
 import kha.graphics4.IndexBuffer;
-import kha.graphics4.PipelineState;
 import kha.graphics4.Usage;
 import kha.graphics4.VertexBuffer;
 import kha.graphics4.VertexData;
 import kha.graphics4.VertexShader;
 import kha.graphics4.VertexStructure;
 import kha.math.Matrix4;
-import kha.graphics4.ConstantLocation;
 import kha.math.FastMatrix4;
 import kha.math.FastVector3;
 import primitive.Primitive;
 import noisetile.NoiseTile;
+import primitive.PlaneModel;
 
 class PlaneInstance {
 
@@ -69,47 +68,4 @@ class PlaneInstance {
 		/////
 		g.end();
     }
-}
-
-class PlaneModel {
-
-	public var st:VertexStructure;
-	public var vtb:VertexBuffer;
-	public var idb:IndexBuffer;
-	public var pipeline:PipelineState;
-	public var mvpID:ConstantLocation;
-	public var shaders : Dynamic;
-	public var shader1 : Dynamic;
-	public var shader2 : Dynamic;
-
-	public function new(heightmap :Array<Int>,idx,idy) {
-
-		var shader1 = {f:Shaders.simple_frag,v:Shaders.simple_vert};
-		var shader2 = {f:Shaders.green_frag,v:Shaders.green_vert};
-		var shaders = [shader1,shader2];
-
-		var pr = new Primitive('heightmap', { w:16, h:16, x:16, y:16, heights:heightmap,idx:idx,idy:idy});
-		st  = pr.getVertexStructure();
-		idb = pr.getIndexBuffer();
-		vtb = pr.getVertexBuffer();
-
-        pipeline = new PipelineState();
-		pipeline.inputLayout = [st];
-
-		pipeline.fragmentShader = shaders[(idx+idy*10+idy*3)%2].f;
-		pipeline.vertexShader = shaders[(idx+idy*10+idy*3)%2].v;
-		pipeline.depthWrite = true;
-        pipeline.depthMode = CompareMode.Less;
-		pipeline.compile();
-
-		mvpID = pipeline.getConstantLocation("MVP");
-	}
-	public function drawPlane(frame:Framebuffer, mvp:FastMatrix4) {	
-		var g = frame.g4;
-		g.setPipeline(pipeline);
-		g.setVertexBuffer(vtb);
-		g.setIndexBuffer(idb);
-		g.setMatrix(mvpID, mvp);
-		g.drawIndexedVertices();
-	}
 }

@@ -1,14 +1,19 @@
+
 #ifdef GL_ES
 precision mediump float;
 #endif
 
 // Interpolated values from the vertex shaders
-varying vec3 fragmentColor;
+varying vec2 vUV;
+varying float vHeight;
+
+// Values that stay constant for the whole mesh.
+uniform sampler2D stone;
+uniform sampler2D grass;
 
 void kore() {
-	// Output color = color specified in the vertex shader,
-	// interpolated between all 3 surrounding vertices
-	//gl_FragColor = vec4(fragmentColor, 1.0);
 
-	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+  // Output color = color of the texture at the specified UV
+  gl_FragColor = texture2D(grass, vUV)*vHeight/100.0+texture2D(stone, vUV)*(1.0-vHeight/50.0);
 }
+    
