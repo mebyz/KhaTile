@@ -48,12 +48,12 @@ class PlaneInstance {
 				planes.push(new TerrainModel(nt.t.tiles[i+j*gridSize],i,j,{ w:tileSize, h:tileSize, x:tilePx, y:tilePx }));
 
 		//water
-		planes2.push(new PlaneModel(0,0,{ w:100000, h:100000, x:10, y:10 }));
+		planes2.push(new PlaneModel(0,0,{ w:10000, h:10000, x:10, y:10 }));
 
 
 		var projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 10000.0);
 		
-		var view = FastMatrix4.lookAt(new FastVector3(500, 500, 500), // Camera at (4, 3, 3)
+		var view = FastMatrix4.lookAt(new FastVector3(700, 300, 700), // Camera at (4, 3, 3)
 								  new FastVector3(0, 0, 0), //  look at origin
 								  new FastVector3(0, 1, 0) // Head is up, set (0, -1, 0) to look upside down
 		);
