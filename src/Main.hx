@@ -16,6 +16,7 @@ class Main {
 
 	static function init() {
 		var game = new PlaneInstance();
-		System.notifyOnRender(game.render);
+		System.notifyOnRender(game.render);		
+		Scheduler.addTimeTask(game.update, 0, 1 / 60);
 	}
 }
