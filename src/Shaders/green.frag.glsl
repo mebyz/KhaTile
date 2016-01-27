@@ -10,5 +10,5 @@ void kore() {
 	// interpolated between all 3 surrounding vertices
 	//gl_FragColor = vec4(fragmentColor, 1.0);
 
-	gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+	gl_FragColor = vec4(0.0, 0.5, 0.5, 1.0);
 }
