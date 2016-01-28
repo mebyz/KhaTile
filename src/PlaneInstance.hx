@@ -46,11 +46,11 @@ var moveForward = false;
 	var mouseDeltaX = 0.0;
 	var mouseDeltaY = 0.0;
 
-	var speed = 30.0; // 3 units / second
+	var speed = 2000.0; // 3 units / second
 	var mouseSpeed = 0.005;
 
     var lastTime = 0.0;
-    var position:FastVector3 = new FastVector3(0, 0, 5); // Initial position: on +Z
+    var position:FastVector3 = new FastVector3(0, 100, 5); // Initial position: on +Z
 	var horizontalAngle = 3.14; // Initial horizontal angle: toward -Z
 	var verticalAngle = 0.0; // Initial vertical angle: none
 
@@ -59,7 +59,7 @@ var moveForward = false;
 
 		var gridSize = 20;
 		var tilePx =16;
-		var tileSize =32;
+		var tileSize =500;
 
 		var nt : Dynamic= new NoiseTile(gridSize,gridSize,tilePx);
 
@@ -71,10 +71,10 @@ var moveForward = false;
 				planes.push(new TerrainModel(nt.t.tiles[i+j*gridSize],i,j,{ w:tileSize, h:tileSize, x:tilePx, y:tilePx }));
 
 		//water
-		planes2.push(new PlaneModel(0,0,{ w:10000, h:10000, x:10, y:10 }));
+		planes2.push(new PlaneModel(0,0,{ w:50000, h:50000, x:100, y:100 }));
 
 
-		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 10000.0);
+		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
 		
 		view = FastMatrix4.lookAt(new FastVector3(700, 300, 700), // Camera at (4, 3, 3)
 								  new FastVector3(0, 0, 0), //  look at origin

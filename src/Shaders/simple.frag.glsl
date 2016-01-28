@@ -11,13 +11,16 @@ varying float vHeight;
 uniform sampler2D sand;
 uniform sampler2D stone;
 uniform sampler2D grass;
+uniform sampler2D snow;
 
 void kore() {
 
   // Output color = color of the texture at the specified UV
-  vec4 sd = (smoothstep(-100.0, 0.0, vHeight) - smoothstep(15.0, 25.0, vHeight)) * texture2D( sand, vUV );
-  vec4 s = (smoothstep(0.18, 32.0, vHeight) - smoothstep(30.0, 40.0, vHeight)) * texture2D( stone, vUV );
-  vec4 g = (smoothstep(25.0, 50.0, vHeight) - smoothstep(95.0, 99.0, vHeight)) * texture2D( grass, vUV );
-  gl_FragColor = g+s+sd;
+  vec4 sd = (smoothstep(-400.0, -300.0, vHeight) - smoothstep(-250.0, -20.0, vHeight)) * texture2D( sand, vUV );
+  vec4 s = (smoothstep(-230.0, 0.0, vHeight) - smoothstep(-100.0, 100.0, vHeight)) * texture2D( grass, vUV );
+  vec4 g = (smoothstep(-100.0, 100.0, vHeight) - smoothstep(200.0, 250.0, vHeight)) * texture2D( stone, vUV );
+
+  vec4 sn = (smoothstep(200.0, 250.0, vHeight) - smoothstep(800.0, 1000.0, vHeight)) * texture2D( snow, vUV );
+  gl_FragColor = g+s+sd+sn;
 }
     
