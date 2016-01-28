@@ -2,7 +2,8 @@
 Kha Perlin Tiled Terrain Generator -
 emmanuel.botros@gmail.com)
 
-screenshot (to date - 25/01/2015) : https://drive.google.com/file/d/0B14Zp0L5mt8-bXA5aUtmdUlkY00/view)
+
+![](http://s16.postimg.org/xx79qlspx/khatile.png)
 
 #BUILD
 
