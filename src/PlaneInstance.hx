@@ -59,16 +59,18 @@ class PlaneInstance {
 	var verticalAngle = 0.0; // Initial vertical angle: none
 	var instancesCollection : Instances;
 
-   
+   	var lastPosition : FastVector3;
+
+	var gridSize = 10;
+	var tilePx =15;
+	var tileSize =500;
+
 	public function new() {
 		Assets.loadEverything(loadingFinished);
 	}
 	public function loadingFinished() {
 			
 		
-		var gridSize = 10;
-		var tilePx =16;
-		var tileSize =500;
 
 		var nt : Dynamic= new NoiseTile(gridSize,gridSize,tilePx);
 
@@ -109,8 +111,22 @@ class PlaneInstance {
 
 
     public function update() {
+    	if (position != lastPosition) {
+			var h = NoiseTile.getHeight(Std.int(position.z/tileSize*tilePx),Std.int(position.x/tileSize*tilePx));
+			
+			//if (h < -200) 
+			//	h=-200;
+			h+=200;
+			if (h<-300) h= -300;	
+			position.y=h;
+			trace(position);
+
+		}
+		lastPosition = position;
+		
+
     	if (instancesCollection != null)
-    	instancesCollection.updateAll();
+	    	instancesCollection.updateAll();
     	// Compute time difference between current and last frame
 		var deltaTime = Scheduler.time() - lastTime;
 		lastTime = Scheduler.time();
@@ -159,6 +175,8 @@ class PlaneInstance {
 		// Look vector
 		var look = position.add(direction);
 		
+
+
 		// Camera matrix
 		view = FastMatrix4.lookAt(position, // Camera is here
 							  look, // and looks here : at the same position, plus "direction"
@@ -177,6 +195,7 @@ class PlaneInstance {
 
 		mouseDeltaX = 0;
 		mouseDeltaY = 0;
+
     }
 
     function onMouseDown(button:Int, x:Int, y:Int) {
@@ -210,6 +229,8 @@ class PlaneInstance {
     }
 
 	public function render(frame:Framebuffer) {
+
+
 		var g = frame.g4;
 	    g.begin();
 		g.clear(Color.Black);
