@@ -15,6 +15,8 @@ git clone https://github.com/mebyz/primitive.git Libraries/primitive
 
 git clone https://github.com/mebyz/noisetile.git Libraries/noisetile
 
+git clone https://github.com/mebyz/noisetile.git Libraries/instances
+
 cd Kha
 
 git submodule update --init --recursive
@@ -40,3 +42,4 @@ mebyz/primitive
 
 mebyz/noisetile
 
+mebyz/instances
