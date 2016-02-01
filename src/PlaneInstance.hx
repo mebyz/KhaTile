@@ -28,14 +28,10 @@ import noisetile.NoiseTile;
 import primitive.PlaneModel;
 import primitive.TerrainModel;
 
-class PlaneInstance {
-	//
-	var vertexBuffer:VertexBuffer;
-	var indexBuffer:IndexBuffer;
-	var pipeline:PipelineState;
-	var mvpID:ConstantLocation;
-	//
+import instances.Instances;
 
+class PlaneInstance {
+	
 	var planes : Array<TerrainModel>;
 	var planes2 : Array<PlaneModel>;
 	var mvp:FastMatrix4;
@@ -44,7 +40,7 @@ class PlaneInstance {
 	var view:FastMatrix4;
 	var projection:FastMatrix4;
 
-var moveForward = false;
+	var moveForward = false;
     var moveBackward = false;
     var strafeLeft = false;
     var strafeRight = false;
@@ -61,11 +57,15 @@ var moveForward = false;
     var position:FastVector3 = new FastVector3(0, 100, 5); // Initial position: on +Z
 	var horizontalAngle = 3.14; // Initial horizontal angle: toward -Z
 	var verticalAngle = 0.0; // Initial vertical angle: none
+	var instancesCollection : Instances;
 
+   
 	public function new() {
 		Assets.loadEverything(loadingFinished);
 	}
 	public function loadingFinished() {
+			
+		
 		var gridSize = 10;
 		var tilePx =16;
 		var tileSize =500;
@@ -83,80 +83,20 @@ var moveForward = false;
 		planes2.push(new PlaneModel(0,0,{ w:50000, h:50000, x:100, y:100 }));
 
 
-		//
-
-		var structure = new VertexStructure();
-        structure.add("pos", VertexData.Float3);
-        structure.add("uv", VertexData.Float2);
-        structure.add("nor", VertexData.Float3);
-        // Save length - we store position, uv and normal data
-        var structureLength = 8;
-
-        // Compile pipeline state
-		// Shaders are located in 'Sources/Shaders' directory
-        // and Kha includes them automatically
-		pipeline = new PipelineState();
-		pipeline.inputLayout = [structure];
-		pipeline.vertexShader = Shaders.red_vert;
-		pipeline.fragmentShader = Shaders.red_frag;
-		// Set depth mode
-        pipeline.depthWrite = true;
-        pipeline.depthMode = CompareMode.Less;
-        // Set culling
-        pipeline.cullMode = CullMode.CounterClockwise;
-		pipeline.compile();
-
-		// Get a handle for our "MVP" uniform
-		mvpID = pipeline.getConstantLocation("MVP");
-	
-		var obj = new ObjLoader(Assets.blobs.grass_obj.toString());
-
-		var data = obj.data;
-		var indices = obj.indices;
-
-		// Create vertex buffer
-		vertexBuffer = new VertexBuffer(
-			Std.int(data.length / structureLength), // Vertex count
-			structure, // Vertex structure
-			Usage.StaticUsage // Vertex data will stay the same
-		);
-
-		// Copy data to vertex buffer
-		var vbData = vertexBuffer.lock();
-		for (i in 0...vbData.length) {
-			vbData.set(i, data[i]);
-		}
-		vertexBuffer.unlock();
-
-		// Create index buffer
-		indexBuffer = new IndexBuffer(
-			indices.length, // Number of indices for our cube
-			Usage.StaticUsage // Index data will stay the same
-		);
-		
-		// Copy indices to index buffer
-		var iData = indexBuffer.lock();
-		for (i in 0...iData.length) {
-			iData[i] = indices[i];
-		}
-		indexBuffer.unlock();
-
-		//
-
-
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
 		
 		view = FastMatrix4.lookAt(new FastVector3(7, 0, 7), // Camera at (4, 3, 3)
 								  new FastVector3(0, 0, 0), //  look at origin
 								  new FastVector3(0, 1, 0) // Head is up, set (0, -1, 0) to look upside down
 		);
-
+		
 		model = FastMatrix4.identity();
 		mvp = FastMatrix4.identity();
 		mvp = mvp.multmat(projection);
 		mvp = mvp.multmat(view);
 		mvp = mvp.multmat(model);
 
+		instancesCollection = new Instances('grass',10,10,model,view,projection,mvp);
 		
 		// Add mouse and keyboard listeners
 		kha.input.Mouse.get().notify(onMouseDown, onMouseUp, onMouseMove, null);
@@ -169,6 +109,8 @@ var moveForward = false;
 
 
     public function update() {
+    	if (instancesCollection != null)
+    	instancesCollection.updateAll();
     	// Compute time difference between current and last frame
 		var deltaTime = Scheduler.time() - lastTime;
 		lastTime = Scheduler.time();
@@ -271,29 +213,19 @@ var moveForward = false;
 		var g = frame.g4;
 	    g.begin();
 		g.clear(Color.Black);
-		/////
-		/////
+
 		if (planes!=null)
 			for (plane in planes)
 				plane.drawPlane(frame,mvp);
+
 		if (planes2!=null)
 			for (plane in planes2)
 				plane.drawPlane(frame,mvp);
-		/////
 
-		if (vertexBuffer !=null && indexBuffer !=null && pipeline !=null && mvpID !=null &&mvp !=null){
-
-		g.setVertexBuffer(vertexBuffer);
-		g.setIndexBuffer(indexBuffer);
-		// Bind state we want to draw with
-		g.setPipeline(pipeline);
-		// Set our transformation to the currently bound shader, in the "MVP" uniform
-		g.setMatrix(mvpID, mvp);
-		// Draw!
-		g.drawIndexedVertices();
+		if (instancesCollection != null) {
+			instancesCollection.render(frame,model,view,projection);
 		}
 
-		/////
 		g.end();
     }
 }
