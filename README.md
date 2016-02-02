@@ -23,11 +23,11 @@ git submodule update --init --recursive
 
 cd ..
 
-./build.sh
+node Kha/make -t html5
 
 #RUN
 
-python -m SimpleHTTPServer 9000
+node Kha/make --server
 
 #USE
 
