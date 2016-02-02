@@ -15,7 +15,7 @@ git clone https://github.com/mebyz/primitive.git Libraries/primitive
 
 git clone https://github.com/mebyz/noisetile.git Libraries/noisetile
 
-git clone https://github.com/mebyz/noisetile.git Libraries/instances
+git clone https://github.com/mebyz/instances.git Libraries/instances
 
 cd Kha
 
