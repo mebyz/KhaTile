@@ -61,9 +61,9 @@ class PlaneInstance {
 
    	var lastPosition : FastVector3;
 
-	var gridSize = 10;
+	var gridSize = 20;
 	var tilePx =15;
-	var tileSize =500;
+	var tileSize =50;
 
 	public function new() {
 		Assets.loadEverything(loadingFinished);
@@ -79,10 +79,10 @@ class PlaneInstance {
 
 		for (j in 0...gridSize)
 			for (i in 0...gridSize)
-				planes.push(new TerrainModel(nt.t.tiles[i+j*gridSize],i,j,{ w:tileSize, h:tileSize, x:tilePx, y:tilePx }));
+				planes.push(new TerrainModel(nt.t.tiles[i+j*gridSize],i*10-100,j*10-100,{ w:tileSize, h:tileSize, x:tilePx, y:tilePx }));
 
 		//water
-		planes2.push(new PlaneModel(0,0,{ w:50000, h:50000, x:100, y:100 }));
+		planes2.push(new PlaneModel(0,0,{ w:50000, h:50000, x:10, y:10 }));
 
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
@@ -116,8 +116,10 @@ class PlaneInstance {
 			
 			//if (h < -200) 
 			//	h=-200;
-			h+=200;
-			if (h<-300) h= -300;	
+			h=500;
+			
+			//DISABLING stick to ground for now
+			//if (h<-300) h= -300;	
 			position.y=h;
 			trace(position);
 

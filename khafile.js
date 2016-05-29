@@ -1,10 +1,13 @@
-var project = new Project('khatile');
+var project = new Project('Empty');
 
-project.addSources('src');
-project.addShaders('src/Shaders/**');
+project.addSources('Sources');
+project.addLibrary('primitive');
+project.addLibrary('noisetile');
+project.addShaders('Sources/Shaders/**');
 project.addAssets('Assets/**');
 project.addLibrary('primitive');
 project.addLibrary('noisetile');
 project.addLibrary('instances');
 project.addAssets('Libraries/instances/Sources/Assets/**');
+
 return project;

@@ -11,10 +11,11 @@ class Main {
     canvas.height = js.Browser.window.innerHeight;      
     #end
 
-		System.init("PlaneInstance", 1024, 728, init);
+	 	
+		System.init({title:"PlaneInstance", width:1024, height:728}, init);
 	}
-
-	static function init() {
+	
+	public static function init() {
 		var game = new PlaneInstance();
 		System.notifyOnRender(game.render);		
 		Scheduler.addTimeTask(game.update, 0, 1 / 60);
