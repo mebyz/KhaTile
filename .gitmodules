@@ -1,6 +1,6 @@
 [submodule "Kha"]
 	path = Kha
-	url = ../Kha
+	url = github.com:KTXSoftware/Kha
 	branch = master
 [submodule "Libraries/primitive"]
 	path = Libraries/primitive
