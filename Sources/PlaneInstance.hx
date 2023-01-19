@@ -54,6 +54,8 @@ class PlaneInstance {
 	}
 	public function loadingFinished() {
 			
+		
+
 		var nt : Dynamic= new NoiseTile(gridSize,gridSize,tilePx);
 
 		planes = new Array();
@@ -80,7 +82,7 @@ class PlaneInstance {
 		mvp = mvp.multmat(view);
 		mvp = mvp.multmat(model);
 
-		instancesCollection = new Instances('grass',10,10,model,view,projection,mvp);
+		//instancesCollection = new Instances('grass',2,2,model,view,projection,mvp);
 		
 		// Add mouse and keyboard listeners
 		kha.input.Mouse.get().notify(onMouseDown, onMouseUp, onMouseMove, null);
