@@ -45,17 +45,15 @@ class PlaneInstance {
 
    	var lastPosition : FastVector3;
 
-	var gridSize = 10;
-	var tilePx =50;
-	var tileSize =10;
+	var gridSize = 20;
+	var tilePx =15;
+	var tileSize =50;
 
 	public function new() {
 		Assets.loadEverything(loadingFinished);
 	}
 	public function loadingFinished() {
 			
-		
-
 		var nt : Dynamic= new NoiseTile(gridSize,gridSize,tilePx);
 
 		planes = new Array();
@@ -66,7 +64,7 @@ class PlaneInstance {
 				planes.push(new TerrainModel(nt.t.tiles[i+j*gridSize],i*10-100,j*10-100,{ w:tileSize, h:tileSize, x:tilePx, y:tilePx }));
 
 		//water
-		planes2.push(new PlaneModel(0,0,{ w:500, h:500, x:10, y:10 }));
+		planes2.push(new PlaneModel(0,0,{ w:50000, h:50000, x:10, y:10 }));
 
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
@@ -82,7 +80,7 @@ class PlaneInstance {
 		mvp = mvp.multmat(view);
 		mvp = mvp.multmat(model);
 
-		//instancesCollection = new Instances('grass',2,2,model,view,projection,mvp);
+		instancesCollection = new Instances('grass',10,10,model,view,projection,mvp);
 		
 		// Add mouse and keyboard listeners
 		kha.input.Mouse.get().notify(onMouseDown, onMouseUp, onMouseMove, null);
