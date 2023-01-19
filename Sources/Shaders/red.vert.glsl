@@ -1,11 +1,11 @@
-#version 330
+#version 420
 #ifdef GL_ES
 precision highp float;
 #endif
 
 // Input vertex data, different for all executions of this shader
-attribute vec3 pos;
-attribute vec3 col;
+in vec3 pos;
+in vec3 col;
 
 // Output data - will be interpolated for each fragment.
 //out vec3 fragmentColor;

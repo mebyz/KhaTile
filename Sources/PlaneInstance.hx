@@ -44,8 +44,8 @@ class PlaneInstance {
 	var lastPosition:FastVector3;
 
 	var gridSize = 30;
-	var tilePx = 15;
-	var tileSize = 200;
+	var tilePx :Int = 10;
+	var tileSize :Int = 300;
 
 	public function new() {
 		Assets.loadEverything(loadingFinished);
@@ -67,7 +67,7 @@ class PlaneInstance {
 				}));
 
 		// water
-		// planes2.push(new PlaneModel(0,0,{ w:500, h:500, x:10, y:10 }));
+		 planes2.push(new PlaneModel(0,0,{ w:50000, h:50000, x:10, y:10 }));
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
 
@@ -222,10 +222,10 @@ class PlaneInstance {
 			for (plane in planes)
 				plane.drawPlane(frame, mvp);
 
-		/*if (planes2!=null)
+		if (planes2!=null)
 				for (plane in planes2)
 					plane.drawPlane(frame,mvp);
-
+		/*
 			if (instancesCollection != null) {
 				instancesCollection.render(frame,model,view,projection);
 		}*/

@@ -1,4 +1,4 @@
-#version 330
+#version 420
 precision highp float;
 
 // Input vertex data, different for all executions of this shader
