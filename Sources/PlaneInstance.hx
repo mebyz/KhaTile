@@ -5,7 +5,6 @@ import kha.Framebuffer;
 import kha.Color;
 import kha.Assets;
 import kha.Scheduler;
-//import kha.Key;
 import kha.math.FastMatrix4;
 import kha.math.FastVector3;
 import noisetile.NoiseTile;
@@ -45,17 +44,15 @@ class PlaneInstance {
 
    	var lastPosition : FastVector3;
 
-	var gridSize = 20;
+	var gridSize = 30;
 	var tilePx =15;
-	var tileSize =50;
+	var tileSize =200;
 
 	public function new() {
 		Assets.loadEverything(loadingFinished);
 	}
 	public function loadingFinished() {
 			
-		
-
 		var nt : Dynamic= new NoiseTile(gridSize,gridSize,tilePx);
 
 		planes = new Array();
@@ -63,10 +60,10 @@ class PlaneInstance {
 
 		for (j in 0...gridSize)
 			for (i in 0...gridSize)
-				planes.push(new TerrainModel(nt.t.tiles[i+j*gridSize],i*10-100,j*10-100,{ w:tileSize, h:tileSize, x:tilePx, y:tilePx }));
+				planes.push(new TerrainModel(nt.t.tiles[i+j*gridSize],i,j,{ w:tileSize, h:tileSize, x:tilePx, y:tilePx }));
 
 		//water
-		planes2.push(new PlaneModel(0,0,{ w:50000, h:50000, x:10, y:10 }));
+		//planes2.push(new PlaneModel(0,0,{ w:500, h:500, x:10, y:10 }));
 
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
@@ -96,11 +93,11 @@ class PlaneInstance {
 
     public function update() {
     	if (position != lastPosition) {
-			var h = NoiseTile.getHeight(Std.int(position.z/tileSize*tilePx),Std.int(position.x/tileSize*tilePx));
+			var h = 500;// NoiseTile.getHeight(Std.int(position.z/tileSize*tilePx),Std.int(position.x/tileSize*tilePx));
 			
 			//if (h < -200) 
 			//	h=-200;
-			h=500;
+			//h=500;
 			
 			//DISABLING stick to ground for now
 			//if (h<-300) h= -300;	
@@ -111,17 +108,17 @@ class PlaneInstance {
 		lastPosition = position;
 		
 
-    	if (instancesCollection != null)
-	    	instancesCollection.updateAll();
+    	/*if (instancesCollection != null)
+	    	instancesCollection.updateAll();*/
     	// Compute time difference between current and last frame
 		var deltaTime = Scheduler.time() - lastTime;
 		lastTime = Scheduler.time();
 
 		// Compute new orientation
-		if (isMouseDown) {
+		//if (isMouseDown) {
 			horizontalAngle += mouseSpeed * mouseDeltaX * -1;
 			verticalAngle += mouseSpeed * mouseDeltaY * -1;
-		}
+		//}
 
 		// Direction : Spherical coordinates to Cartesian coordinates conversion
 		var direction = new FastVector3(
@@ -201,21 +198,21 @@ class PlaneInstance {
     }
 
 	// Create callback functions for when keys are pressed
-    var onKeyDown : kha.input.KeyCode -> Void = function(key:kha.input.KeyCode){
+	public function onKeyDown(key: kha.input.KeyCode):Void {
 		trace(key + " down");
 
-/*        if (key == KeyCode.Up) this.moveForward = true;
+        if (key == KeyCode.Up) this.moveForward = true;
         else if (key == KeyCode.Down) moveBackward = true;
         else if (key == KeyCode.Left) strafeLeft = true;
-        else if (key == KeyCode.Right) strafeRight = true;*/
+        else if (key == KeyCode.Right) strafeRight = true;
 	  }
-	  var onKeyUp : kha.input.KeyCode -> Void = function(key:kha.input.KeyCode){
+	  public function onKeyUp(key: kha.input.KeyCode):Void {
 		trace(key + " up");
 
-/*		if (key == KeyCode.Up) moveForward = false;
+		if (key == KeyCode.Up) moveForward = false;
         else if (key == KeyCode.Down) moveBackward = false;
         else if (key == KeyCode.Left) strafeLeft = false;
-        else if (key == KeyCode.Right) strafeRight = false;*/
+        else if (key == KeyCode.Right) strafeRight = false;
 	  }
 
 	public function render(frames:Array<Framebuffer>) {
@@ -231,13 +228,13 @@ class PlaneInstance {
 				plane.drawPlane(frame,mvp);
 			
 
-		if (planes2!=null)
+		/*if (planes2!=null)
 			for (plane in planes2)
 				plane.drawPlane(frame,mvp);
 
 		if (instancesCollection != null) {
 			instancesCollection.render(frame,model,view,projection);
-		}
+		}*/
 
 		g.end();
     }
