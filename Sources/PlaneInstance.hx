@@ -45,8 +45,8 @@ class PlaneInstance {
 
    	var lastPosition : FastVector3;
 
-	var gridSize = 3;
-	var tilePx =5;
+	var gridSize = 10;
+	var tilePx =50;
 	var tileSize =10;
 
 	public function new() {
