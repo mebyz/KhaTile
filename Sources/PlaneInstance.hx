@@ -1,29 +1,13 @@
 package;
 
+import kha.input.KeyCode;
 import kha.Framebuffer;
 import kha.Color;
-import kha.graphics4.CullMode;
-import kha.math.Random;
-import kha.math.Vector3;
-import kha.math.Vector4;
-import kha.Shaders;
 import kha.Assets;
 import kha.Scheduler;
-import kha.Key;
-import kha.graphics4.PipelineState;
-import kha.graphics4.ConstantLocation;
-import kha.graphics4.CompareMode;
-import kha.graphics4.FragmentShader;
-import kha.graphics4.IndexBuffer;
-import kha.graphics4.Usage;
-import kha.graphics4.VertexBuffer;
-import kha.graphics4.VertexData;
-import kha.graphics4.VertexShader;
-import kha.graphics4.VertexStructure;
-import kha.math.Matrix4;
+//import kha.Key;
 import kha.math.FastMatrix4;
 import kha.math.FastVector3;
-import primitive.Primitive;
 import noisetile.NoiseTile;
 import primitive.PlaneModel;
 import primitive.TerrainModel;
@@ -40,10 +24,10 @@ class PlaneInstance {
 	var view:FastMatrix4;
 	var projection:FastMatrix4;
 
-	var moveForward = false;
-    var moveBackward = false;
-    var strafeLeft = false;
-    var strafeRight = false;
+	public var moveForward = false;
+    public var moveBackward = false;
+    public var strafeLeft = false;
+    public var strafeRight = false;
 	var isMouseDown = false;
 	var mouseX = 0.0;
 	var mouseY = 0.0;
@@ -61,9 +45,9 @@ class PlaneInstance {
 
    	var lastPosition : FastVector3;
 
-	var gridSize = 20;
-	var tilePx =15;
-	var tileSize =50;
+	var gridSize = 3;
+	var tilePx =5;
+	var tileSize =10;
 
 	public function new() {
 		Assets.loadEverything(loadingFinished);
@@ -82,7 +66,7 @@ class PlaneInstance {
 				planes.push(new TerrainModel(nt.t.tiles[i+j*gridSize],i*10-100,j*10-100,{ w:tileSize, h:tileSize, x:tilePx, y:tilePx }));
 
 		//water
-		planes2.push(new PlaneModel(0,0,{ w:50000, h:50000, x:10, y:10 }));
+		planes2.push(new PlaneModel(0,0,{ w:500, h:500, x:10, y:10 }));
 
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
@@ -98,7 +82,7 @@ class PlaneInstance {
 		mvp = mvp.multmat(view);
 		mvp = mvp.multmat(model);
 
-		instancesCollection = new Instances('grass',10,10,model,view,projection,mvp);
+		//instancesCollection = new Instances('grass',2,2,model,view,projection,mvp);
 		
 		// Add mouse and keyboard listeners
 		kha.input.Mouse.get().notify(onMouseDown, onMouseUp, onMouseMove, null);
@@ -121,7 +105,7 @@ class PlaneInstance {
 			//DISABLING stick to ground for now
 			//if (h<-300) h= -300;	
 			position.y=h;
-			trace(position);
+			//trace(position);
 
 		}
 		lastPosition = position;
@@ -216,23 +200,28 @@ class PlaneInstance {
     	mouseY = y;
     }
 
-    function onKeyDown(key:Key, char:String) {
-        if (key == Key.UP) moveForward = true;
-        else if (key == Key.DOWN) moveBackward = true;
-        else if (key == Key.LEFT) strafeLeft = true;
-        else if (key == Key.RIGHT) strafeRight = true;
-    }
+	// Create callback functions for when keys are pressed
+    var onKeyDown : kha.input.KeyCode -> Void = function(key:kha.input.KeyCode){
+		trace(key + " down");
 
-    function onKeyUp(key:Key, char:String) {
-        if (key == Key.UP) moveForward = false;
-        else if (key == Key.DOWN) moveBackward = false;
-        else if (key == Key.LEFT) strafeLeft = false;
-        else if (key == Key.RIGHT) strafeRight = false;
-    }
+/*        if (key == KeyCode.Up) this.moveForward = true;
+        else if (key == KeyCode.Down) moveBackward = true;
+        else if (key == KeyCode.Left) strafeLeft = true;
+        else if (key == KeyCode.Right) strafeRight = true;*/
+	  }
+	  var onKeyUp : kha.input.KeyCode -> Void = function(key:kha.input.KeyCode){
+		trace(key + " up");
 
-	public function render(frame:Framebuffer) {
+/*		if (key == KeyCode.Up) moveForward = false;
+        else if (key == KeyCode.Down) moveBackward = false;
+        else if (key == KeyCode.Left) strafeLeft = false;
+        else if (key == KeyCode.Right) strafeRight = false;*/
+	  }
+
+	public function render(frames:Array<Framebuffer>) {
 
 
+		var frame = frames[0];
 		var g = frame.g4;
 	    g.begin();
 		g.clear(Color.Black);
@@ -240,6 +229,7 @@ class PlaneInstance {
 		if (planes!=null)
 			for (plane in planes)
 				plane.drawPlane(frame,mvp);
+			
 
 		if (planes2!=null)
 			for (plane in planes2)

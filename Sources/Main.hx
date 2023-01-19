@@ -12,12 +12,14 @@ class Main {
     #end
 
 	 	
-		System.init({title:"PlaneInstance", width:1024, height:728}, init);
+		System.start({title:"PlaneInstance", width:800, height:600},  function (_) {
+			
+			var game = new PlaneInstance();
+
+            Scheduler.addTimeTask(function () { game.update(); }, 0, 1 / 30);
+            System.notifyOnFrames(function (f) { game.render(f); });   
+
+    	});
 	}
 	
-	public static function init() {
-		var game = new PlaneInstance();
-		System.notifyOnRender(game.render);		
-		Scheduler.addTimeTask(game.update, 0, 1 / 60);
-	}
 }
