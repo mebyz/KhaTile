@@ -1,7 +1,6 @@
 #version 420
-#ifdef GL_ES
+
 precision highp float;
-#endif
 
 // Input vertex data, different for all executions of this shader
 in vec3 pos;

@@ -1,11 +1,9 @@
 #version 420
-#ifdef GL_ES
+
 precision highp float;
-#endif
 
 // Input vertex data, different for all executions of this shader
 in vec3 pos;
-in vec3 col;
 
 // Output data - will be interpolated for each fragment.
 //out vec3 fragmentColor;
@@ -19,7 +17,4 @@ void main() {
   gl_Position = MVP * vec4(pos, 1.0);
   vUV = uv;
 
-  // The color of each vertex will be interpolated
-  // to produce the color of each fragment
-  //fragmentColor = col;
 }

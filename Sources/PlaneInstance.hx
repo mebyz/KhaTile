@@ -43,9 +43,9 @@ class PlaneInstance {
 
 	var lastPosition:FastVector3;
 
-	var gridSize = 30;
-	var tilePx :Int = 10;
-	var tileSize :Int = 300;
+	var gridSize = 20;
+	var tilePx :Int = 20;
+	var tileSize :Int = 1000;
 
 	public function new() {
 		Assets.loadEverything(loadingFinished);
@@ -82,7 +82,7 @@ class PlaneInstance {
 		mvp = mvp.multmat(view);
 		mvp = mvp.multmat(model);
 
-		// instancesCollection = new Instances('grass',2,2,model,view,projection,mvp);
+		 instancesCollection = new Instances('grass',10,10,model,view,projection,mvp);
 
 		// Add mouse and keyboard listeners
 		kha.input.Mouse.get().notify(onMouseDown, onMouseUp, onMouseMove, null);
@@ -225,10 +225,10 @@ class PlaneInstance {
 		if (planes2!=null)
 				for (plane in planes2)
 					plane.drawPlane(frame,mvp);
-		/*
+		
 			if (instancesCollection != null) {
 				instancesCollection.render(frame,model,view,projection);
-		}*/
+		}
 
 		g.end();
 	}
