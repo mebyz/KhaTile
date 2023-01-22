@@ -21,7 +21,7 @@ const float pi = 3.14285714286;
 void main() {
     vec4 vertexCoord = a_position;
     float distance = length(vertexCoord);
-    vertexCoord.y += sin(3.0 * pi * distance * 0.3 + time) * 2.0;
+    vertexCoord.y += sin( pi * distance + time) * 10.0;
     v_textureCoordinates = uv;
     
     //used for lighting models
