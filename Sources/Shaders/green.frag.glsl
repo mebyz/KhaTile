@@ -1,10 +1,10 @@
-#version 420
+#version 320 es
 precision mediump float;
 
 // Interpolated values from the vertex shaders
 out vec4 color;
 
-uniform sampler2D texture;
+uniform sampler2D tex;
 in vec2 vUV;
  
 void main() {
@@ -12,5 +12,5 @@ void main() {
 	// interpolated between all 3 surrounding vertices
 	//gl_FragColor = vec4(fragmentColor, 1.0);
 
-	color = textureLod( texture, vUV, 0.2);
+	color = texture( tex, vUV, 0.2);
 }

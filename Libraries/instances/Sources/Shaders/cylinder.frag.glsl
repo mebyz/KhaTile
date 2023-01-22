@@ -1,4 +1,4 @@
-#version 420
+#version 320 es
 precision mediump float;
 
 //out vec3 fragmentColor;

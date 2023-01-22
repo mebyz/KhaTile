@@ -1,6 +1,5 @@
 {
     "configurations": [
-    
         {
             "name": "Kha: HTML5",
             "request": "launch",
