@@ -1,10 +1,7 @@
 package primitive;
 
 import haxe.Timer;
-import kha.SystemImpl;
-import js.html.webgl.UniformLocation;
 import kha.graphics4.IndexBuffer;
-import kha.graphics4.Usage;
 import kha.graphics4.VertexBuffer;
 import kha.graphics4.VertexStructure;
 import kha.graphics4.PipelineState;
@@ -23,7 +20,7 @@ class PlaneModel {
 	public var pipeline:PipelineState;
 	public var mvpID:ConstantLocation;
 	public var shader : Dynamic;
-	public var timeLocation:UniformLocation;
+	public var timeLocation:ConstantLocation;
 
 	public function new(idx,idy, params : Dynamic) {
 
@@ -44,7 +41,7 @@ class PlaneModel {
 		pipeline.compile();
 
 		mvpID = pipeline.getConstantLocation("MVP");
-		timeLocation = pipeline.getUniformLocation("time");
+		timeLocation = pipeline.getConstantLocation("time");
 	}
 	public function drawPlane(frame:Framebuffer, mvp:FastMatrix4) {	
 		if (mvp != null) {		
@@ -58,10 +55,7 @@ class PlaneModel {
 			g.setTexture(texture, image);
 			g.setMatrix(mvpID, mvp);
 			g.drawIndexedVertices();
-			update();
+			g.setFloat(timeLocation, Timer.stamp()/100);
 		}
-	}
-	public function update() {
-		SystemImpl.gl.uniform1f(timeLocation, Timer.stamp()/100);
 	}
 }
