@@ -55,7 +55,7 @@ class PlaneModel {
 			g.setTexture(texture, image);
 			g.setMatrix(mvpID, mvp);
 			g.drawIndexedVertices();
-			g.setFloat(timeLocation, Timer.stamp()/100);
+			g.setFloat(timeLocation, Timer.stamp()/200);
 		}
 	}
 }

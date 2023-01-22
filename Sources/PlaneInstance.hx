@@ -33,7 +33,7 @@ class PlaneInstance {
 	var mouseDeltaY = 0.0;
 
 	var speed = 2000.0; // 3 units / second
-	var mouseSpeed = 0.005;
+	var mouseSpeed = 0.01;
 
 	var lastTime = 0.0;
 	var position:FastVector3 = new FastVector3(0, 100, 5); // Initial position: on +Z
@@ -67,7 +67,7 @@ class PlaneInstance {
 				}));
 
 		// water
-		 planes2.push(new PlaneModel(0,0,{ w:50000, h:50000, x:10, y:10 }));
+		 planes2.push(new PlaneModel(0,0,{ w:40000, h:40000, x:100, y:100 }));
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
 
