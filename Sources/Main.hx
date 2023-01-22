@@ -5,7 +5,7 @@ import kha.System;
 
 class Main {
 	public static function main() {
-		System.start({title: "PlaneInstance", width: 800, height: 600}, function(_) {
+		System.start({title: "PlaneInstance", width: 1800, height: 1600}, function(_) {
 			var game = new PlaneInstance();
 
 			Scheduler.addTimeTask(function() {
