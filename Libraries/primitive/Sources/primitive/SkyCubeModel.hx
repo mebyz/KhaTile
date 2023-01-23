@@ -1,5 +1,7 @@
 package primitive;
 
+import kha.SystemImpl;
+import js.Syntax;
 import kha.graphics4.IndexBuffer;
 import kha.graphics4.VertexBuffer;
 import kha.graphics4.VertexStructure;
@@ -27,46 +29,15 @@ import kha.math.FastMatrix4;
 import kha.math.FastVector3;
 
 class SkyCubeModel {
+	
+	var vertexBuffer:VertexBuffer;
+	var indexBuffer:IndexBuffer;
+	var pipeline:PipelineState;
 
-	// An array of vertices to form a cube
-	static var vertices:Array<Float> = [
-	    -1.0,-1.0,-1.0,
-		-1.0,-1.0, 1.0,
-		-1.0, 1.0, 1.0,
-		 1.0, 1.0,-1.0,
-		-1.0,-1.0,-1.0,
-		-1.0, 1.0,-1.0,
-		 1.0,-1.0, 1.0,
-		-1.0,-1.0,-1.0,
-		 1.0,-1.0,-1.0,
-		 1.0, 1.0,-1.0,
-		 1.0,-1.0,-1.0,
-		-1.0,-1.0,-1.0,
-		-1.0,-1.0,-1.0,
-		-1.0, 1.0, 1.0,
-		-1.0, 1.0,-1.0,
-		 1.0,-1.0, 1.0,
-		-1.0,-1.0, 1.0,
-		-1.0,-1.0,-1.0,
-		-1.0, 1.0, 1.0,
-		-1.0,-1.0, 1.0,
-		 1.0,-1.0, 1.0,
-		 1.0, 1.0, 1.0,
-		 1.0,-1.0,-1.0,
-		 1.0, 1.0,-1.0,
-		 1.0,-1.0,-1.0,
-		 1.0, 1.0, 1.0,
-		 1.0,-1.0, 1.0,
-		 1.0, 1.0, 1.0,
-		 1.0, 1.0,-1.0,
-		-1.0, 1.0,-1.0,
-		 1.0, 1.0, 1.0,
-		-1.0, 1.0,-1.0,
-		-1.0, 1.0, 1.0,
-		 1.0, 1.0, 1.0,
-		-1.0, 1.0, 1.0,
-		 1.0,-1.0, 1.0
-	];
+	var mvp:FastMatrix4;
+	var mvpID:ConstantLocation;
+
+
 	// Array of colors for each cube vertex
 	static var colors:Array<Float> = [
 	    0.583,  0.771,  0.014,
@@ -107,28 +78,80 @@ class SkyCubeModel {
 		0.982,  0.099,  0.879
 	];
 
-	var vertexBuffer:VertexBuffer;
-	var indexBuffer:IndexBuffer;
-	var pipeline:PipelineState;
+	public function new(w:Int,h:Int,d:Int) {
+		
+		/*var canvas = js.Browser.document.createCanvasElement();
+		canvas.width = 400;
+		canvas.height = 400;
+		js.Browser.document.body.appendChild(canvas);
 
-	var mvp:FastMatrix4;
-	var mvpID:ConstantLocation;
-
-	public function new() {
-		// Define vertex structure
+		
+		var ctx = canvas.getContext2d();
+				var img = new js.html.Image();  
+				img.onload = function() {  
+					ctx.drawImage(img,0,0);
+					var i = ctx.getImageData(0,0,128,128);
+		*/// Define vertex structure
 		var structure = new VertexStructure();
         structure.add("pos", VertexData.Float3);
         structure.add("col", VertexData.Float3);
         // Save length - we store position and color data
         var structureLength = 6;
+		/**
+			
+	static inline var TEXTURE_CUBE_MAP : Int = 34067;
+	static inline var TEXTURE_BINDING_CUBE_MAP : Int = 34068;
+	static inline var TEXTURE_CUBE_MAP_POSITIVE_X : Int = 34069;
+	static inline var TEXTURE_CUBE_MAP_NEGATIVE_X : Int = 34070;
+	static inline var TEXTURE_CUBE_MAP_POSITIVE_Y : Int = 34071;
+	static inline var TEXTURE_CUBE_MAP_NEGATIVE_Y : Int = 34072;
+	static inline var TEXTURE_CUBE_MAP_POSITIVE_Z : Int = 34073;
+	static inline var TEXTURE_CUBE_MAP_NEGATIVE_Z : Int = 34074;
+		**/
+		var texture = kha.SystemImpl.gl.createTexture();
+		kha.SystemImpl.gl.bindTexture(34067, texture);
 
-        // Compile pipeline state
+		var image = Assets.images.sky;
+
+		var faceInfos = [
+			34069,
+34070,
+34071,
+34072,
+34073,
+34074
+		  ];
+		  for (i in 0...faceInfos.length) {
+			var target = faceInfos[i];
+		   
+			// Upload the canvas to the cubemap face.
+			var level = 0;
+			var internalFormat = 6408;
+			var width = 512;
+			var height = 512;
+			var format = 6408;
+			var type = 5121;
+		   
+			// setup each face so it's immediately renderable
+		   
+			SystemImpl.gl.bindTexture(34067, texture);
+			var pixels = Assets.images.get("sky").getPixels();
+			//SystemImpl.gl.texImage2D(target, level, internalFormat, width, height, 0, format, type, image.getPixels());
+			SystemImpl.gl.generateMipmap(34067);
+		  }
+		  SystemImpl.gl.generateMipmap(34067);
+		  SystemImpl.gl.texParameteri(34067, 10241, 9987);
+
+
+
+
+		// Compile pipeline state
 		// Shaders are located in 'Sources/Shaders' directory
         // and Kha includes them automatically
 		pipeline = new PipelineState();
 		pipeline.inputLayout = [structure];
-		pipeline.fragmentShader = Shaders.simple_frag;
-		pipeline.vertexShader = Shaders.simple_vert;
+		pipeline.fragmentShader = Shaders.sky_frag;
+		pipeline.vertexShader = Shaders.sky_vert;
 		// Set depth mode
         pipeline.depthWrite = true;
         pipeline.depthMode = CompareMode.Less;
@@ -156,7 +179,44 @@ class SkyCubeModel {
 		mvp = mvp.multmat(projection);
 		mvp = mvp.multmat(view);
 		mvp = mvp.multmat(model);
-
+		var vertices: Array<Float> = [
+			-w,-h,-d,
+			-w,-h, d,
+			-w, h, d,
+			 w, h,-d,
+			-w,-h,-d,
+			-w, h,-d,
+			 w,-h, d,
+			-w,-h,-d,
+			 w,-h,-d,
+			 w, h,-d,
+			 w,-h,-d,
+			-w,-h,-d,
+			-w,-h,-d,
+			-w, h, d,
+			-w, h,-d,
+			 w,-h, d,
+			-w,-h, d,
+			-w,-h,-d,
+			-w, h, d,
+			-w,-h, d,
+			 w,-h, d,
+			 w, h, d,
+			 w,-h,-d,
+			 w, h,-d,
+			 w,-h,-d,
+			 w, h, d,
+			 w,-h, d,
+			 w, h, d,
+			 w, h,-d,
+			-w, h,-d,
+			 w, h, d,
+			-w, h,-d,
+			-w, h, d,
+			 w, h, d,
+			-w, h, d,
+			 w,-h, d
+		];
 		// Create vertex buffer
 		vertexBuffer = new VertexBuffer(
 			Std.int(vertices.length / 3), // Vertex count - 3 floats per vertex
@@ -194,13 +254,17 @@ class SkyCubeModel {
 			iData[i] = indices[i];
 		}
 		indexBuffer.unlock();
+		
+		//	};  
+		//	img.src = "water.jpg";
     }
 
 	public function render(frames:Array<Framebuffer>, mvp: FastMatrix4) {
 		var frame = frames[0];
 		// A graphics object which lets us perform 3D operations
 		var g = frame.g4;
-
+			if (g!=null && vertexBuffer != null) {
+				
 		// Begin rendering
         g.begin();
 
@@ -222,5 +286,6 @@ class SkyCubeModel {
 
 		// End rendering
 		g.end();
+	}
     }
 }
