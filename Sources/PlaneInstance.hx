@@ -46,9 +46,9 @@ class PlaneInstance {
 
 	var lastPosition:FastVector3;
 
-	var gridSize = 10;
-	var tilePx :Int = 15;
-	var tileSize :Int = 500;
+	var gridSize = 2;
+	var tilePx :Int = 200;
+	var tileSize :Int = 5000;
 
 	public function new() {
 		Assets.loadEverything(loadingFinished);
@@ -60,7 +60,7 @@ class PlaneInstance {
 		planes = new Array();
 		planes2 = new Array();
 
-		/*for (j in 0...gridSize)
+		for (j in 0...gridSize)
 			for (i in 0...gridSize)
 				planes.push(new TerrainModel(nt.t.tiles[i + j * gridSize], i, j, {
 					w: tileSize,
@@ -68,7 +68,7 @@ class PlaneInstance {
 					x: tilePx,
 					y: tilePx
 				}));
-*/
+
 		// water & sky
 		 planes2.push(new PlaneModel(0,0,{ w:40000, h:40000, x:100, y:100 }));
 		 sky = new SkyCubeModel(50000,50000,50000);
