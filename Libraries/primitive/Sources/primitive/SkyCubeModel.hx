@@ -47,9 +47,9 @@ class SkyCubeModel {
 		g.setIndexBuffer(idb);
 
 		// Get a handle for texture sample
-		var sand = pipeline.getTextureUnit("sky");
-		var image = Assets.images.sand;
-		g.setTexture(sand, image);
+		var skyTexture = pipeline.getTextureUnit("sky");
+		var image = Assets.images.sky;
+		g.setTexture(skyTexture, image);
 		
 		g.setMatrix(mvpID, mvp);
 		g.drawIndexedVertices();
