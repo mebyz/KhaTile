@@ -80,7 +80,7 @@ class SkyCubeModel {
 
 	public function new(w:Int,h:Int,d:Int) {
 		
-		/*var canvas = js.Browser.document.createCanvasElement();
+		var canvas = js.Browser.document.createCanvasElement();
 		canvas.width = 400;
 		canvas.height = 400;
 		js.Browser.document.body.appendChild(canvas);
@@ -90,8 +90,8 @@ class SkyCubeModel {
 				var img = new js.html.Image();  
 				img.onload = function() {  
 					ctx.drawImage(img,0,0);
-					var i = ctx.getImageData(0,0,128,128);
-		*/// Define vertex structure
+					var imgData = ctx.getImageData(0,0,128,128);
+		// Define vertex structure
 		var structure = new VertexStructure();
         structure.add("pos", VertexData.Float3);
         structure.add("col", VertexData.Float3);
@@ -127,16 +127,13 @@ class SkyCubeModel {
 			// Upload the canvas to the cubemap face.
 			var level = 0;
 			var internalFormat = 6408;
-			var width = 512;
-			var height = 512;
 			var format = 6408;
 			var type = 5121;
 		   
 			// setup each face so it's immediately renderable
 		   
 			SystemImpl.gl.bindTexture(34067, texture);
-			var pixels = Assets.images.get("sky").getPixels();
-			//SystemImpl.gl.texImage2D(target, level, internalFormat, width, height, 0, format, type, image.getPixels());
+			SystemImpl.gl.texImage2D(target, level, internalFormat, format, type, imgData);
 			SystemImpl.gl.generateMipmap(34067);
 		  }
 		  SystemImpl.gl.generateMipmap(34067);
@@ -255,8 +252,8 @@ class SkyCubeModel {
 		}
 		indexBuffer.unlock();
 		
-		//	};  
-		//	img.src = "water.jpg";
+			};  
+			img.src = "water.jpg";
     }
 
 	public function render(frames:Array<Framebuffer>, mvp: FastMatrix4) {

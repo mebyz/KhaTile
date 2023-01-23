@@ -1,11 +1,15 @@
-#version 320 es
-precision mediump float; 
- 
-layout(location = 0) out vec4 outColor;  // you can pick any name
+#version 330
+precision highp float;
 
-// Interpolated values from the vertex shaders
-in vec2 vUV;
- 
+// Passed in from the vertex shader.
+in vec3 v_normal;
+
+// The texture.
+uniform samplerCube u_texture;
+
+// we need to declare an output for the fragment shader
+out vec4 outColor;
+
 void main() {
-  outColor = vec4(1.0,1.0,1.0,1.0);
+   outColor = texture(u_texture, normalize(v_normal));
 }
