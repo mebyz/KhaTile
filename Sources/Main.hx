@@ -7,7 +7,7 @@ import kha.System;
 class Main {
 
 	public static function main() {
-		System.start({title: "PlaneInstance", width: 1000, height: 1000}, function(_) {
+		System.start({title: "PlaneInstance", width: 18000, height: 16000}, function(_) {
 
 				var game = new PlaneInstance();
 

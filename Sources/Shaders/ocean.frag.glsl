@@ -299,7 +299,7 @@ void main() {
 
 
 //////
-
+/*
     vec2 gTexCoord = gl_FragCoord.xy * gTexSizeInv;
 
 
@@ -346,7 +346,8 @@ void main() {
         vec4(finalColor, 1.0),
         0.5)
         ;
-
+*/
+outColor = vec4(finalColor, 1.0);
 /////
 
 

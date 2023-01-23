@@ -46,9 +46,9 @@ class PlaneInstance {
 
 	var lastPosition:FastVector3;
 
-	var gridSize = 20;
-	var tilePx :Int = 20;
-	var tileSize :Int = 1000;
+	var gridSize = 10;
+	var tilePx :Int = 15;
+	var tileSize :Int = 500;
 
 	public function new() {
 		Assets.loadEverything(loadingFinished);
@@ -68,10 +68,10 @@ class PlaneInstance {
 					x: tilePx,
 					y: tilePx
 				}));
-
+*/
 		// water & sky
-		 planes2.push(new PlaneModel(0,0,{ w:40000, h:40000, x:100, y:100 }));*/
-		 sky = new SkyCubeModel(200,200,200);
+		 planes2.push(new PlaneModel(0,0,{ w:40000, h:40000, x:100, y:100 }));
+		 sky = new SkyCubeModel(50000,50000,50000);
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
 
@@ -86,7 +86,7 @@ class PlaneInstance {
 		mvp = mvp.multmat(view);
 		mvp = mvp.multmat(model);
 
-		 instancesCollection = new Instances('grass',10,10,model,view,projection,mvp);
+		//instancesCollection = new Instances('grass',10,10,model,view,projection,mvp);
 
 		// Add mouse and keyboard listeners
 		kha.input.Mouse.get().notify(onMouseDown, onMouseUp, onMouseMove, null);
@@ -220,7 +220,7 @@ class PlaneInstance {
 		var frame = frames[0];
 		var g = frame.g4;
 		g.begin();
-		g.clear(Color.Black);
+		//g.clear(Color.Black);
 
 		if (planes != null)
 			for (plane in planes)
