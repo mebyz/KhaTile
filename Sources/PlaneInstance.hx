@@ -71,7 +71,7 @@ class PlaneInstance {
 
 		// water & sky
 		 planes2.push(new PlaneModel(0,0,{ w:40000, h:40000, x:100, y:100 }));
-		 sky = new SkyCubeModel();//100,100,100,{});
+		 sky = new SkyCubeModel(200,200,200);
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
 
