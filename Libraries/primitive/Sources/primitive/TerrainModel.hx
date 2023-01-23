@@ -13,6 +13,11 @@ import kha.Assets;
 
 class TerrainModel {
 
+	static inline var REPEAT : Int = 10497;
+	static inline var TEXTURE_WRAP_S : Int = 10242;
+	static inline var TEXTURE_WRAP_T : Int = 10243;
+	static inline var TEXTURE_2D : Int = 3553;
+
 	public var st:VertexStructure;
 	public var vtb:VertexBuffer;
 	public var idb:IndexBuffer;
@@ -45,6 +50,7 @@ class TerrainModel {
 		g.setPipeline(pipeline);
 		g.setVertexBuffer(vtb);
 		g.setIndexBuffer(idb);
+		
 		// Get a handle for texture sample
 		var sand = pipeline.getTextureUnit("sand");
 		var image = Assets.images.sand;
@@ -59,6 +65,11 @@ class TerrainModel {
 		var image4 = Assets.images.snow;
 		g.setTexture(snow, image4);
 		g.setMatrix(mvpID, mvp);
+		
+		
+		kha.SystemImpl.gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_S, REPEAT);
+		kha.SystemImpl.gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_T, REPEAT);
+		
 		g.drawIndexedVertices();
 	}
 }
