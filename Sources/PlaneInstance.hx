@@ -1,5 +1,7 @@
 package;
 
+import primitive.Primitive;
+import primitive.SkyCubeModel;
 import kha.input.KeyCode;
 import kha.Framebuffer;
 import kha.Color;
@@ -15,6 +17,7 @@ import instances.Instances;
 class PlaneInstance {
 	var planes:Array<TerrainModel>;
 	var planes2:Array<PlaneModel>;
+	var sky: SkyCubeModel;
 	var mvp:FastMatrix4;
 
 	var model:FastMatrix4;
@@ -66,8 +69,9 @@ class PlaneInstance {
 					y: tilePx
 				}));
 
-		// water
+		// water & sky
 		 planes2.push(new PlaneModel(0,0,{ w:40000, h:40000, x:100, y:100 }));
+		 sky = new SkyCubeModel(100,100,100,{});
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
 
@@ -225,6 +229,9 @@ class PlaneInstance {
 		if (planes2!=null)
 				for (plane in planes2)
 					plane.drawPlane(frame,mvp);
+
+		if (sky != null)
+			sky.draw(frame, mvp);
 		
 			if (instancesCollection != null) {
 				instancesCollection.render(frame,model,view,projection);

@@ -11,7 +11,7 @@ import kha.graphics4.CompareMode;
 import kha.Shaders;
 import kha.Assets;
 
-class TerrainModel {
+class SkyCubeModel {
 
 	public var st:VertexStructure;
 	public var vtb:VertexBuffer;
@@ -20,11 +20,11 @@ class TerrainModel {
 	public var mvpID:ConstantLocation;
 	public var shader : Dynamic;
 
-	public function new(heightmap :Array<Int>,idx,idy, params : Dynamic) {
+	public function new(x: Int, y: Int, z: Int, params : Dynamic) {
 
-		var shader = {f:Shaders.simple_frag,v:Shaders.simple_vert};
+		var shader = {f:Shaders.sky_frag,v:Shaders.sky_vert};
 
-		var pr = new Primitive('heightmap', {w:params.w,h: params.h,x: params.x,y: params.y,heights:heightmap,idx:idx,idy:idy});
+		var pr = new Primitive('cube', {x:x,y:y,z:z});
 		st  = pr.getVertexStructure();
 		idb = pr.getIndexBuffer();
 		vtb = pr.getVertexBuffer();
@@ -40,24 +40,17 @@ class TerrainModel {
 
 		mvpID = pipeline.getConstantLocation("MVP");
 	}
-	public function drawPlane(frame:Framebuffer, mvp:FastMatrix4) {	
+	public function draw(frame:Framebuffer, mvp:FastMatrix4) {	
 		var g = frame.g4;
 		g.setPipeline(pipeline);
 		g.setVertexBuffer(vtb);
 		g.setIndexBuffer(idb);
+
 		// Get a handle for texture sample
-		var sand = pipeline.getTextureUnit("sand");
+		var sand = pipeline.getTextureUnit("sky");
 		var image = Assets.images.sand;
 		g.setTexture(sand, image);
-		var stone = pipeline.getTextureUnit("stone");
-		var image2 = Assets.images.stone;
-		g.setTexture(stone, image2);
-		var grass = pipeline.getTextureUnit("grass");
-		var image3 = Assets.images.grass;
-		g.setTexture(grass, image3);
-		var snow = pipeline.getTextureUnit("snow");
-		var image4 = Assets.images.snow;
-		g.setTexture(snow, image4);
+		
 		g.setMatrix(mvpID, mvp);
 		g.drawIndexedVertices();
 	}

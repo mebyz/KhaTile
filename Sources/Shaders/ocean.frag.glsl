@@ -20,12 +20,105 @@ in vec4 viewSpace;
 
 const vec3 fogColor = vec3(0.5, 0.5,0.5);
 const float FogDensity = 0.0001;
-
+/*
+uniform sampler2D positionTexture;
 uniform sampler2D normalTexture;
 uniform sampler2D maskTexture;
 
 
   uniform mat4 lensProjection;
+*/
+
+uniform sampler2D gColor;
+uniform sampler2D gPosition;
+uniform sampler2D gNormal;
+uniform sampler2D gEffect;
+uniform vec2 gTexSizeInv;
+
+
+// Consts should help improve performance
+const float rayStep = 0.25;
+const float minRayStep = 0.1;
+const int maxSteps = 20;
+const float searchDist = 5.0;
+const float searchDistInv = 0.2;
+const int numBinarySearchSteps = 5;
+const float maxDDepth = 1.0;
+const float maxDDepthInv = 1.0;
+
+
+const float reflectionSpecularFalloffExponent = 3.0;
+
+
+uniform mat4 projection;
+
+vec3 BinarySearch(vec3 dir, inout vec3 hitCoord, out float dDepth)
+{
+    float depth;
+
+
+    for(int i = 0; i < numBinarySearchSteps; i++)
+    {
+        vec4 projectedCoord = projection * vec4(hitCoord, 1.0);
+        projectedCoord.xy /= projectedCoord.w;
+        projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
+
+
+        depth = texture(gPosition, projectedCoord.xy).z;
+
+
+        dDepth = hitCoord.z - depth;
+
+
+        if(dDepth > 0.0)
+            hitCoord += dir;
+
+
+        dir *= 0.5;
+        hitCoord -= dir;    
+    }
+
+
+    vec4 projectedCoord = projection * vec4(hitCoord, 1.0); 
+    projectedCoord.xy /= projectedCoord.w;
+    projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
+
+
+    return vec3(projectedCoord.xy, depth);
+}
+
+
+vec4 RayCast(vec3 dir, inout vec3 hitCoord, out float dDepth)
+{
+    dir *= rayStep;
+
+
+    float depth;
+
+
+    for(int i = 0; i < maxSteps; i++)
+    {
+        hitCoord += dir;
+
+
+        vec4 projectedCoord = projection * vec4(hitCoord, 1.0);
+        projectedCoord.xy /= projectedCoord.w;
+        projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
+
+
+        depth = texture(gPosition, projectedCoord.xy).z;
+
+
+        dDepth = hitCoord.z - depth;
+
+
+        if(dDepth < 0.0)
+            return vec4(BinarySearch(dir, hitCoord, dDepth), 1.0);
+    }
+
+
+    return vec4(0.0, 0.0, 0.0, 0.0);
+}
 
 
 void main() {
@@ -59,17 +152,22 @@ void main() {
 
    finalColor = mix(fogColor, lightColor, fogFactor);
 
+////////////////////////////////////////////////
 
+/*
   float maxDistance = 8000.0;
-  float resolution  = 0.3;
+  float resolution  = 0.5;
   int   steps       = 5;
   float thickness   = 0.5;
-  ivec2 texSize = textureSize(s_texture, 0);
-  vec2 texCoord = gl_FragCoord.xy / vec2(texSize.x,texSize.y);
+//  ivec2 texSize = textureSize(s_texture, 0);
+  //vec2 texCoord = v_textureCoordinates;//gl_FragCoord.xy / vec2(texSize.x,texSize.y);
 
-  vec4 uv = vec4(1.0);
+  vec2 texSize  = vec2(textureSize(positionTexture, 0).xy);
+  vec2 texCoord = gl_FragCoord.xy / texSize;
 
-  vec4 positionFrom = texture(s_texture, texCoord);
+  vec4 uv = vec4(0.0);
+
+  vec4 positionFrom = texture(positionTexture, texCoord);
   vec4 mask         = texture(maskTexture,     texCoord);
   vec3 unitPositionFrom = normalize(positionFrom.xyz);
   vec3 normal           = normalize(texture(normalTexture, texCoord).xyz);
@@ -115,7 +213,7 @@ void main() {
   for (i = 0; i < int(delta); ++i) {
     frag      += increment;
     uv.xy      = frag / vec2(texSize.x,texSize.y);
-    positionTo = texture(s_texture, uv.xy);
+    positionTo = texture(positionTexture, uv.xy);
 
     search1 =
       mix
@@ -144,7 +242,7 @@ void main() {
   for (i = 0; i < steps; ++i) {
     frag       = mix(startFrag.xy, endFrag.xy, search1);
     uv.xy      = frag / vec2(texSize.x,texSize.y);
-    positionTo = texture(s_texture, uv.xy);
+    positionTo = texture(positionTexture, uv.xy);
 
     viewDistance = (startView.y * endView.y) / mix(endView.y, startView.y, search1);
     depth        = viewDistance - positionTo.y;
@@ -194,9 +292,63 @@ void main() {
 
 
 
+*/
+
+//   outColor = mix(uv, vec4(finalColor, 1.0), 0.5);
 
 
 
-   outColor = mix(uv, vec4(finalColor, 1.0), 1.0);
+//////
+
+    vec2 gTexCoord = gl_FragCoord.xy * gTexSizeInv;
+
+
+    // Samples
+    float specular = texture(gColor, gTexCoord).a;
+
+
+    if(specular == 0.0)
+    {
+        outColor = vec4(0.0, 0.0, 0.0, 0.0);
+        return;
+    }
+
+
+    vec3 viewNormal = texture(gNormal, gTexCoord).xyz;
+    vec3 viewPos = texture(gPosition, gTexCoord).xyz;
+
+
+    // Reflection vector
+    vec3 reflected = normalize(reflect(normalize(viewPos), normalize(viewNormal)));
+
+
+    // Ray cast
+    vec3 hitPos = viewPos;
+    float dDepth;
+
+
+    vec4 coords = RayCast(reflected * max(minRayStep, -viewPos.z), hitPos, dDepth);
+
+
+    vec2 dCoords = abs(vec2(0.5, 0.5) - coords.xy);
+
+
+    float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
+
+
+    // Get color
+    outColor = mix(
+        vec4(texture(gEffect, coords.xy).rgb,
+        pow(specular, reflectionSpecularFalloffExponent) *
+        screenEdgefactor * clamp(-reflected.z, 0.0, 1.0) *
+        clamp((searchDist - length(viewPos - hitPos)) * searchDistInv, 0.0, 1.0) * coords.w)
+        ,
+        vec4(finalColor, 1.0),
+        0.5)
+        ;
+
+/////
+
+
 
 }
