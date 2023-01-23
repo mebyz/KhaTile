@@ -71,7 +71,7 @@ class PlaneInstance {
 
 		// water & sky
 		 planes2.push(new PlaneModel(0,0,{ w:40000, h:40000, x:100, y:100 }));
-		 sky = new SkyCubeModel(100,100,100,{});
+		 sky = new SkyCubeModel();//100,100,100,{});
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
 
@@ -98,7 +98,7 @@ class PlaneInstance {
 
 	public function update() {
 		if (position != lastPosition) {
-			var h = 500; // NoiseTile.getHeight(Std.int(position.z/tileSize*tilePx),Std.int(position.x/tileSize*tilePx));
+			var h = 10; // NoiseTile.getHeight(Std.int(position.z/tileSize*tilePx),Std.int(position.x/tileSize*tilePx));
 
 			// if (h < -200)
 			//	h=-200;
@@ -231,7 +231,7 @@ class PlaneInstance {
 					plane.drawPlane(frame,mvp);
 
 		if (sky != null)
-			sky.draw(frame, mvp);
+			sky.render(frames, mvp);
 		
 			if (instancesCollection != null) {
 				instancesCollection.render(frame,model,view,projection);

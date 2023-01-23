@@ -9,12 +9,11 @@ out vec2 vUV;
 out float vHeight;
 
 // Values that stay constant for the whole mesh
-uniform mat4 MVP;
+uniform mat4 MVP, modelMatrix, projectionMatrix;
 
 void main() {
   // Output position of the vertex, in clip space: MVP * position
   gl_Position = MVP * vec4(pos, 1.0);
   vHeight = pos.y;
-  // UV of the vertex. No special space for this one.
   vUV = uv;
 }

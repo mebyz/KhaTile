@@ -10,5 +10,5 @@ in vec2 vUV;
 uniform sampler2D sky;
  
 void main() {
-  outColor = texture( sky, vUV, 0.2);
+  outColor = vec4(1.0,1.0,1.0,1.0);
 }
