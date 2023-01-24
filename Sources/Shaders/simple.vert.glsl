@@ -18,7 +18,7 @@ uniform mat4 MVP;
 void main() {
   // Output position of the vertex, in clip space: MVP * position
   gl_Position = MVP * vec4(pos, 1.0);
-  vHeight = pos.y * 3.0;
+  vHeight = pos.y;
   // UV of the vertex. No special space for this one.
   vUV = uv;
   //Normal = aNormal;
