@@ -1,4 +1,6 @@
 package;
+import koui.Koui;
+import koui.elements.*;
 
 import primitive.Primitive;
 import primitive.SkyCubeModel;
@@ -238,5 +240,6 @@ class PlaneInstance {
 		}
 
 		g.end();
+		Koui.render(frame.g2);
 	}
 }

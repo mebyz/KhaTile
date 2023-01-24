@@ -7,5 +7,5 @@ project.addLibrary('instances');
 project.addShaders('Sources/Shaders/**');
 project.addAssets('Assets/**');
 project.addAssets('Libraries/instances/Sources/Assets/**');
-
+await project.addProject("Subprojects/Koui");
 resolve(project);

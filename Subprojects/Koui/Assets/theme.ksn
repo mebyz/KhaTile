@@ -1,0 +1,468 @@
+// -----------------------------------------------------------------------------
+// RULES. Do not edit this section unless you know what to do!
+// -----------------------------------------------------------------------------
+@rules:
+	opacity: Float
+	cornerRadius: Int
+	orientation: String
+	textureBg: Asset
+	color:
+		text: Color
+		bg: Color
+		useGradient: Bool
+		?gradient:
+			direction: Bool
+			colorTopLeft: Color
+			colorBottomRight: Color
+	font:
+		size: Int
+		family: Asset
+		underlineThickness: Int
+	atlas:
+		x: Int
+		y: Int
+		w: Int
+		h: Int
+	border:
+		style: String
+		size: Int
+		color: Color
+		nineSlice: Bool
+	// Outer spacing
+	margin:
+		left: Int
+		right: Int
+		top: Int
+		bottom: Int
+	// Inner spacing
+	padding:
+		left: Int
+		right: Int
+		top: Int
+		bottom: Int
+	size:
+		height: Int
+		width: Int
+		minHeight: Int
+		maxHeight: Int
+		minWidth: Int
+		maxWidth: Int
+	dropShadow:
+		color: Color
+		falloff: Float
+		radius: Int
+	cursors:
+		// default is a reserved keyword
+		defaultCursor: String
+		notallowed: String
+
+	// ---------------------
+	// OPTIONAL GROUPS
+	// Those groups are used by certain elements or effects only
+	// ---------------------
+	?scrollbar:
+		width: Int
+		color:
+			bg: Color
+			front: Color
+			frontHover: Color
+			frontClick: Color
+			corner: Color
+	?dropdown:
+		arrowSize: Int
+		arrowRight: Bool
+		arrowColor: Color
+		separatorSize: Int
+		separatorColor: Color
+	?textShadow:
+		color: Color
+		offsetX: Int
+		offsetY: Int
+	?slider:
+		buttonWidth: Int
+		textOffsetX: Int
+		textOffsetY: Int
+		showValue: Bool
+		showRange: Bool
+		?buttonTexture:
+			image: String
+			atlasX: Int
+			atlasY: Int
+			atlasW: Int
+			atlasH: Int
+	?textinput:
+		colorCursor: Color
+		colorSelection: Color
+		colorLabel: Color
+		blinkInterval: Int
+	?checkbox:
+		useAutoPadding: Bool
+
+// -----------------------------------------------------------------------------
+// GLOBAL VARIABLES. Property groups are not allowed here!
+// -----------------------------------------------------------------------------
+@globals:
+	COLOR_TEXT: #dddddd
+
+	COLOR_BG_DARKER: #191a21
+	COLOR_BG_LIGHTER: #262833
+	COLOR_BG_ACTIVE: #343746
+
+	COLOR_PRIMARY_DARKER: #ef6413
+	COLOR_PRIMARY_LIGHTER: #f9792f
+
+	COLOR_SECONDARY: #ffffff
+
+	COLOR_INVALID_DARKER: #771c1c
+	COLOR_INVALID_LIGHTER: #823b3b
+
+// -----------------------------------------------------------------------------
+// BASE
+// -----------------------------------------------------------------------------
+_root:
+	orientation: "left"
+	cornerRadius: 5
+	opacity: 1
+	textureBg: ""
+	font:
+		size: 16
+		family: "Montserrat_Regular"
+		underlineThickness: 0
+	atlas:
+		x: 0
+		y: 0
+		w: 10
+		h: 10
+	color:
+		text: $@globals.COLOR_TEXT
+		bg: #191a21
+		useGradient: true
+		gradient:
+			direction: true
+			colorTopLeft: #262833
+			colorBottomRight: #191a21
+	border:
+		size: 2
+		color: #1f2028
+		style: "middle"
+		nineSlice: false
+	dropShadow:
+		radius: 5
+		color: #00000077
+		falloff: 3.5
+	cursors:
+		defaultCursor: "default"
+		notallowed: "notallowed"
+	margin:
+		left: 0
+		right: 0
+		top: 0
+		bottom: 0
+	padding:
+		left: 0
+		right: 0
+		top: 0
+		bottom: 0
+	size:
+		height: 40
+		width: 200
+		minHeight: 0
+		maxHeight: 0
+		minWidth: 0
+		maxWidth: 0
+
+_root!hover:
+	border:
+		color: $@globals.COLOR_PRIMARY_DARKER
+	color:
+		gradient:
+			direction: true
+			colorTopLeft: #2b2b33
+			colorBottomRight: #262833
+
+_root!click:
+	border:
+		color: $@globals.COLOR_SECONDARY
+	color:
+		gradient:
+			direction: true
+			colorTopLeft: $@globals.COLOR_BG_ACTIVE
+			colorBottomRight: #262833
+
+_root!disabled:
+	opacity: 0.6
+
+// -----------------------------------------------------------------------------
+// LAYOUTS
+// -----------------------------------------------------------------------------
+_layout > _root:
+	size:
+		minWidth: 20
+		minHeight: 20
+
+// Empty definitions
+_anchorpane > _layout:
+_collayout > _gridlayout:
+_gridlayout > _layout:
+_rowlayout > _layout:
+
+_expander > _layout:
+	size:
+		minWidth: 0
+		maxWidth: 0
+		minHeight: 0
+		maxHeight: 0
+
+_scrollpane > _layout:
+	color:
+		bg: #00000000
+	scrollbar:
+		width: 20
+		color:
+			bg: #090a11ff
+			front: #2b2b33
+			frontHover: $@globals.COLOR_BG_ACTIVE
+			frontClick: $@globals.COLOR_PRIMARY_DARKER
+			corner: #181818ff
+
+// Scrollbar foreground
+_scrollpane_bar_thumb > _slider_inner:
+_scrollpane_bar_thumb!hover:
+_scrollpane_bar_thumb!click:
+// Scrollbar background
+_scrollpane_bar_track > _slider:
+	cornerRadius: 0
+	dropShadow:
+		radius: 0
+	border:
+		size: 0
+	color:
+		useGradient: false
+		bg: $_root.color.gradient.colorBottomRight
+
+_scrollpane_corner > _root:
+	cornerRadius: 0
+	dropShadow:
+		radius: 0
+	border:
+		size: 0
+	color:
+		useGradient: false
+		bg: $_root.color.gradient.colorTopLeft
+
+// -----------------------------------------------------------------------------
+// ELEMENTS
+// -----------------------------------------------------------------------------
+_button > _root:
+
+_checkbox > _root:
+	border:
+		color: #4a4a4a99
+	color:
+		useGradient: false
+		bg: #00000000
+	checkbox:
+		useAutoPadding: true
+
+_checkbox!hover:
+	color:
+		useGradient: false
+		bg: #00000000
+
+_checkbox!click:
+	color:
+		useGradient: false
+		bg: #00000000
+
+_checkbox_inner > _button:
+	size:
+		height: 18
+
+_checkbox_inner!hover:
+_checkbox_inner!click:
+
+_checkbox_inner_checked > _slider_inner:
+	color:
+		gradient:
+			direction: true
+			colorTopLeft: #f48e53
+			colorBottomRight: #ef6413ff
+_checkbox_inner_checked!hover:
+_checkbox_inner_checked!click:
+
+_dropdown > _root:
+	dropdown:
+		arrowSize: 6
+		arrowRight: true
+		arrowColor: $_root.color.text
+		separatorSize: 0
+		separatorColor: #000000
+	padding:
+		left: 8
+		right: 8
+
+_dropdown_overlay_bg > _root:
+	border:
+		size: 0
+	color:
+		useGradient: false
+		bg: $_root.color.gradient.colorTopLeft
+
+_dropdown_option > _root:
+	padding:
+		left: 8
+	border:
+		size: 0
+	color:
+		useGradient: false
+		bg: #00000000
+	dropShadow:
+		radius: 0
+
+_dropdown_option!hover:
+	border:
+		size: $_root.border.size
+
+_dropdown_option!click:
+	border:
+		size: $_root.border.size
+
+_dropdown_option_selected > _dropdown_option:
+	color:
+		text: $@globals.COLOR_PRIMARY_DARKER
+
+_label > _root:
+	margin:
+		left: 0
+		right: 0
+	textShadow:
+		color: #000000
+		offsetX: 2
+		offsetY: 2
+
+_numberinput > _textinput:
+_numberinput_invalid > _textinput_invalid:
+
+_imagepanel > _root:
+	border:
+		size: 0
+
+_panel > _root:
+	cornerRadius: 10
+	color:
+		gradient:
+			colorBottomRight: #333438
+			colorTopLeft: $_panel.color.gradient.colorBottomRight
+	border:
+		size: 2
+		style: "inset"
+		color: #000000bb
+	dropShadow:
+		color: #00000077
+		falloff: 3
+		radius: 30
+	size:
+		minHeight: 20
+		minWidth: 20
+
+_progressbar > _root:
+	color:
+		gradient:
+			direction: true
+			// Invert direction
+			colorTopLeft: $_root.color.gradient.colorBottomRight
+			colorBottomRight: $_root.color.gradient.colorTopLeft
+	margin:
+		left: 0
+		right: 0
+		top: 0
+		bottom: 0
+	orientation: "right"
+
+_progressbar_inner > _progressbar:
+	border:
+		size: 0
+	color:
+		gradient:
+			direction: true
+			colorTopLeft: #f48e53
+			colorBottomRight: #ef6413ff
+
+_radiobutton > _checkbox:
+_radiobutton_inner > _checkbox_inner:
+	cornerRadius: 9
+_radiobutton_inner_checked >_checkbox_inner_checked:
+	cornerRadius: $_radiobutton_inner.cornerRadius
+
+_slider > _root:
+	slider:
+		buttonWidth: 20
+		textOffsetX: 0
+		textOffsetY: 0
+		showValue: true
+		showRange: false
+	color:
+		gradient:
+			direction: true
+			// Invert direction
+			colorTopLeft: $_root.color.gradient.colorBottomRight
+			colorBottomRight: $_root.color.gradient.colorTopLeft
+
+_slider!hover:
+_slider!click:
+
+_slider_inner > _button:
+	border:
+		color: $_root!hover.border.color
+	color:
+		gradient:
+			direction: true
+			colorTopLeft: $@globals.COLOR_PRIMARY_LIGHTER
+			colorBottomRight: $@globals.COLOR_PRIMARY_DARKER
+
+_slider_inner!hover:
+	border:
+		color: $_root!click.border.color
+
+_slider_inner!click:
+	border:
+		color: $_root!hover.border.color
+
+_textinput > _root:
+	color:
+		gradient:
+			direction: true
+			// Invert direction
+			colorTopLeft: $_root.color.gradient.colorBottomRight
+			colorBottomRight: $_root.color.gradient.colorTopLeft
+	textinput:
+		colorCursor: #ffffff
+		colorSelection: #21a9f277
+		colorLabel: #aaaaaa
+		blinkInterval: 30
+	cursors:
+		defaultCursor: "text"
+	padding:
+		left: 8
+		right: 8
+
+_textinput!hover:
+	color:
+		gradient:
+			direction: true
+			colorTopLeft: $_root!hover.color.gradient.colorBottomRight
+			colorBottomRight: $_root!hover.color.gradient.colorTopLeft
+
+_textinput!click:
+	color:
+		gradient:
+			direction: true
+			colorTopLeft: $_root!click.color.gradient.colorBottomRight
+			colorBottomRight: $_root!click.color.gradient.colorTopLeft
+
+_textinput_invalid > _textinput:
+	color:
+		gradient:
+			direction: true
+			colorTopLeft: $@globals.COLOR_INVALID_DARKER
+			colorBottomRight: $@globals.COLOR_INVALID_LIGHTER
