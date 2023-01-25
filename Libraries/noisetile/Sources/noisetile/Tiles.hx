@@ -33,7 +33,33 @@ class Tiles {
 		return heightMap;
 	}
 
-	public static function getHeight(x : Int,z : Int){
+	public function allocateNMap(width, depth){
+		var normalMap : Array<Array<Array<Vec3>>>	= new Array();
+		for(x in 0...width){
+			normalMap[x] = new Array();
+			for(z in 0...depth){
+				normalMap[x][z] = new Array();
+			}
+		}
+		return normalMap;
+	}
+
+	public static function getNormal(x : Int,z : Int)  {
+  
+		var u:Float = getHeight(x,z-1);				
+		var r:Float = getHeight(x+1,z);		
+		var l:Float = getHeight(x-1,z);		
+		var d:Float = getHeight(x,z+1);		
+		
+		var n: Vec3 = new Vec3(0,0,0);
+		n.z = u - d;
+		n.x = l - r;
+		n.y = 2.0;
+		return VectorMath.normalize(n);
+
+	  }
+
+	public static function getHeight(x : Int,z : Int) : Float{
 		
 		var simplex	= new SimplexNoise();
 		var height:Float	= 0;
@@ -51,7 +77,7 @@ class Tiles {
 		return height*200+50;
 	}
 
-	public  function SHMap(heightMap:Dynamic,xx,zz){
+	public  function SHMap(heightMap: Dynamic, xx:Int, zz:Int){
 		var width	= heightMap.length;
 		var depth	= heightMap[0].length;
 
@@ -59,17 +85,36 @@ class Tiles {
 			for(z in zz...(depth+zz)){
 
 				var height : Float	= getHeight(x, z);
-				
+
 				heightMap[x-xx][z-zz] = height;
 			}
 		}
 		return heightMap;
 	}
 
+	public  function SNMap( normalMap: Dynamic, xx:Int, zz:Int){
+		var width	= normalMap.length;
+		var depth	= normalMap[0].length;
+
+		for(x  in xx...(width+xx)){
+			for(z in zz...(depth+zz)){
+
+				var normal: Vec3 = getNormal(x,z);
+
+				normalMap[x-xx][z-zz] = normal;
+			}
+		}
+		return normalMap;
+	}
+
     public function addTile(x, y,hw) {
 
 		var heightMap = allocateHMap(hw, hw);
+		var normalMap = allocateNMap(hw, hw);
+		
         heightMap = SHMap(heightMap, (hw - 1) * x, (hw - 1) * y);
+		normalMap = SNMap(normalMap, (hw - 1) * x, (hw - 1) * y);
+
 
         tiles.push(heightMap);
      }
