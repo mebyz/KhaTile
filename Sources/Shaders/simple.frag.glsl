@@ -6,7 +6,7 @@ layout(location = 0) out vec4 outColor;  // you can pick any name
 // Interpolated values from the vertex shaders
 in vec2 vUV;
 in float vHeight;
-//in vec3 Normal;
+in vec3 vNorm;
 //in vec3 FragPos;
 
 // Values that stay constant for the whole mesh.
@@ -28,5 +28,5 @@ void main() {
   vec4 s = (smoothstep(-230.0, 0.0, vHeight) - smoothstep(-100.0, 100.0, vHeight)) * texture( grass, vUV, 0.2 );
   vec4 g = (smoothstep(-100.0, 100.0, vHeight) - smoothstep(400.0, 550.0, vHeight)) * texture( stone, vUV, 0.2 );
   vec4 sn = (smoothstep(400.0, 550.0, vHeight) - smoothstep(800.0, 2000.0, vHeight)) * texture( snow, vUV, 0.2 );
-  outColor = (g+s+sd+sn);// texture( sand, vUV, 1.0);// (vec4(ambient,1.0)+ vec4(diffuse, 1.0)) *(g+s+sd+sn);
+  outColor = vec4(vNorm, 1.0) * (g+s+sd+sn);// texture( sand, vUV, 1.0);// (vec4(ambient,1.0)+ vec4(diffuse, 1.0)) *(g+s+sd+sn);
 }

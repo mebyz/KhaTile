@@ -64,13 +64,13 @@ class PlaneInstance {
 
 		for (j in 0...gridSize)
 			for (i in 0...gridSize){
-				planes.push(new TerrainModel(nt.t.tiles[i + j * gridSize], i, j, {
+				planes.push(new TerrainModel(nt.t.tiles[i + j * gridSize],nt.t.normals[i + j * gridSize], i, j, {
 					w: tileSize,
 					h: tileSize,
 					x: tilePx,
 					y: tilePx
 				}));
-				trace(nt.t.normals[i + j * gridSize]);
+				//trace(nt.t.normals[i + j * gridSize]);
 			}
 
 		// water & sky
