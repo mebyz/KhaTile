@@ -17,6 +17,13 @@ class NoiseTile {
 		
 	}
 
+	
+	public function getNormalsTiles() {
+			
+		return t.getNormalsTiles();
+		
+	}
+
 	public static function getHeight(x,y) {
 			
 		return Tiles.getHeight(x,y);

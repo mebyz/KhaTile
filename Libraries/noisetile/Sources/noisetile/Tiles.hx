@@ -6,6 +6,7 @@ import noisetile.SimplexNoise;
 class Tiles {
 
 	public var tiles : Array<Dynamic> = new Array();
+	public var normals : Array<Dynamic> = new Array();
 	//public static var TILES :Int = 80;
     //public static var HEIGHTMAPSIZE 	: Int = 16;  
 
@@ -19,6 +20,10 @@ class Tiles {
 
     public function getNoiseTiles() {
     	return tiles;
+    }
+    
+	public function getNormalsTiles() {
+    	return normals;
     }
 
 
@@ -107,7 +112,7 @@ class Tiles {
 		return normalMap;
 	}
 
-    public function addTile(x, y,hw) {
+    public function addTile(x, y, hw) {
 
 		var heightMap = allocateHMap(hw, hw);
 		var normalMap = allocateNMap(hw, hw);
@@ -117,6 +122,7 @@ class Tiles {
 
 
         tiles.push(heightMap);
+		normals.push(normalMap);
      }
 }
 
