@@ -53,9 +53,13 @@ class PlaneModel {
 			var texture = pipeline.getTextureUnit("s_texture");
 			var image = Assets.images.water;
 			g.setTexture(texture, image);
+			
+			var texture = pipeline.getTextureUnit("s_normals");
+			var image = Assets.images.waternormals;
+			g.setTexture(texture, image);
 			g.setMatrix(mvpID, mvp);
 			g.drawIndexedVertices();
-			g.setFloat(timeLocation, Timer.stamp()/100);
+			g.setFloat(timeLocation, Timer.stamp());
 		}
 	}
 }

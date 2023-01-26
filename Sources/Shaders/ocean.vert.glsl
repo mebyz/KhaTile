@@ -15,10 +15,12 @@ out vec2 v_textureCoordinates;
 out vec3 world_pos;
 out vec3 world_normal;
 out vec4 viewSpace;
+out float v_time;
 
 const float pi = 3.14285714286;
 
 void main() {
+    v_time = time;
     vec4 vertexCoord = a_position;
     float distance = length(vertexCoord);
     vertexCoord.y += sin( pi * distance + time) * 10.0;

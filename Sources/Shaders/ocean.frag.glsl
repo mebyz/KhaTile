@@ -4,8 +4,9 @@ precision highp float;
 in vec2 v_textureCoordinates;
 out vec4 outColor;
 uniform sampler2D s_texture;
+uniform sampler2D s_normals;
 
-uniform float time;
+in float v_time;
 
 uniform vec3 light_position;
 uniform vec3 eye_position;
@@ -123,8 +124,14 @@ vec4 RayCast(vec3 dir, inout vec3 hitCoord, out float dDepth)
 
 void main() {
     
+    const float pi = 3.14285714286;
     vec3 tex1 = texture(s_texture, v_textureCoordinates).rgb;
+    // obtain normal from normal map in range [0,1]
+    
 
+    vec3 normal = texture(s_normals, v_textureCoordinates).rgb * sin( pi * v_time);
+    // transform normal vector to range [-1,1]
+    normal = normalize(normal * 2.0 - 1.0)/10.0;   
     //get light an view directions
     vec3 L = normalize( light_position - world_pos);
     vec3 V = normalize( eye_position - world_pos);
@@ -150,7 +157,7 @@ void main() {
    fogFactor = 1.0 /exp( (dist * FogDensity)* (dist * FogDensity));
    fogFactor = clamp( fogFactor, 0.0, 1.0 );
 
-   finalColor = mix(fogColor, lightColor, fogFactor);
+   finalColor = mix(fogColor, lightColor, fogFactor);// + normal;
 
 ////////////////////////////////////////////////
 

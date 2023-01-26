@@ -102,10 +102,10 @@ class PlaneInstance {
 
 	public function update() {
 		if (position != lastPosition) {
-			var h = 10; // NoiseTile.getHeight(Std.int(position.z/tileSize*tilePx),Std.int(position.x/tileSize*tilePx));
+			var h = NoiseTile.getHeight(Std.int(position.x/tileSize*tilePx),Std.int(position.z/tileSize*tilePx));
 
-			// if (h < -200)
-			//	h=-200;
+			if (h < 0)
+				h=0;
 			// h=500;
 
 			// DISABLING stick to ground for now
