@@ -83,7 +83,7 @@ class Tiles {
 		height	+= (simplex.noise((x)/level, (z)/level)/2 + 0.5) * 1.8;
 		height	/= 1+0.5+0.25+0.125;
 		height *=3.6;
-		return height*200+50;
+		return height*200+500;
 	}
 
 	public  function SHMap(heightMap: Dynamic, xx:Int, zz:Int){
