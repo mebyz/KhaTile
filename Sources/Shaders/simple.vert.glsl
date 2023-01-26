@@ -12,7 +12,7 @@ layout(location = 2) in vec3 vertexNormal;
 out vec2 vUV;
 out float vHeight;
 out vec3 vNorm;
-//out vec3 FragPos;
+out vec3 FragPos;
 
 // Values that stay constant for the whole mesh
 uniform mat4 MVP;
@@ -26,5 +26,5 @@ void main() {
   // UV of the vertex. No special space for this one.
   vUV = uv;
   //Normal = aNormal;
-  //FragPos = pos;
+  FragPos = pos;
 }
