@@ -9,7 +9,7 @@ import koui.elements.*;
 class Main {
 
 	public static function main() {
-		System.start({title: "PlaneInstance", width: 18000, height: 16000}, function(_) {
+		System.start({title: "PlaneInstance", width: 800, height: 600}, function(_) {
 
 			Koui.init(() -> {
                 var button = new Button("Click me!");

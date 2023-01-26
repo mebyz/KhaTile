@@ -16,6 +16,7 @@ uniform sampler2D grass;
 uniform sampler2D snow;
  
 void main() {
+  vec3 testColor = vec3(0.5,0.5,0.5);
   /*vec3 lightColor = vec3(0.5,0.5,0.5);
   float ambientStrength = 0.9;
   vec3 ambient = ambientStrength * lightColor;
@@ -24,9 +25,9 @@ void main() {
   vec3 lightDir = normalize(lightPos - FragPos); 
   float diff = max(dot(norm, lightDir),0.01);
   vec3 diffuse = diff * lightColor; */
-  vec4 sd = (smoothstep(-1800.0, -300.0, vHeight) - smoothstep(-250.0, -20.0, vHeight)) * texture( sand, vUV, 0.2);
+  vec4 sd =  (smoothstep(-1800.0, -300.0, vHeight) - smoothstep(-250.0, -20.0, vHeight)) * texture( sand, vUV, 0.2);
   vec4 s = (smoothstep(-230.0, 0.0, vHeight) - smoothstep(-100.0, 100.0, vHeight)) * texture( grass, vUV, 0.2 );
   vec4 g = (smoothstep(-100.0, 100.0, vHeight) - smoothstep(400.0, 550.0, vHeight)) * texture( stone, vUV, 0.2 );
   vec4 sn = (smoothstep(400.0, 550.0, vHeight) - smoothstep(800.0, 2000.0, vHeight)) * texture( snow, vUV, 0.2 );
-  outColor = vec4(vNorm, 1.0) * (g+s+sd+sn);// texture( sand, vUV, 1.0);// (vec4(ambient,1.0)+ vec4(diffuse, 1.0)) *(g+s+sd+sn);
+  outColor = vec4((vNorm.x+0.1)/5.0,(vNorm.y+0.1)/5.0,(vNorm.z+0.1)/5.0, 0.5) + (g+s+sd+sn);// texture( sand, vUV, 1.0);// (vec4(ambient,1.0)+ vec4(diffuse, 1.0)) *(g+s+sd+sn);
 }

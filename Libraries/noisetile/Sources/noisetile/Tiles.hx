@@ -1,5 +1,7 @@
 package noisetile;
 
+import VectorMath.length;
+import js.lib.Float32Array;
 import noisetile.SimplexNoise;
 
 @:expose
@@ -39,14 +41,16 @@ class Tiles {
 	}
 
 	public function allocateNMap(width, depth){
-		var normalMap : Array<Array<Array<Vec3>>>	= new Array();
+
+		var nm : Array<Array<Float32Array>>	= new Array();
 		for(x in 0...width){
-			normalMap[x] = new Array();
+			nm[x] = new Array();
 			for(z in 0...depth){
-				normalMap[x][z] = new Array();
+				nm[x][z] = new Float32Array(width* depth *3);
 			}
 		}
-		return normalMap;
+		return nm;
+		
 	}
 
 	public static function getNormal(x : Int,z : Int)  {
@@ -97,18 +101,35 @@ class Tiles {
 		return heightMap;
 	}
 
-	public  function SNMap( normalMap: Dynamic, xx:Int, zz:Int){
+	public  function SNMap(normalMap: Dynamic, xx:Int, zz:Int){
 		var width	= normalMap.length;
 		var depth	= normalMap[0].length;
-
+var f = new Array<Float>();
 		for(x  in xx...(width+xx)){
 			for(z in zz...(depth+zz)){
 
 				var normal: Vec3 = getNormal(x,z);
 
-				normalMap[x-xx][z-zz] = normal;
+				//trace(i);
+				//trace(normal);
+				//trace(normal.x);
+
+				f.push(normal.x);
+				f.push(normal.y);
+				f.push(normal.z);
+				/*
+				normalMap[x-xx][z-zz][i]=0.5+normal.x;
+				normalMap[x-xx][z-zz][i+1]=0.5+normal.y;
+				normalMap[x-xx][z-zz][i+2]=0.5+normal.z;
+				*/
+				//trace(normalMap[x-xx][z-zz][i]);
+				//trace("===");
+				
+				//i = i+1;
 			}
 		}
+		normalMap = Float32Array.from(f);
+		//trace(normalMap);
 		return normalMap;
 	}
 
