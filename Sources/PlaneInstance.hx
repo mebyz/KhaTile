@@ -49,8 +49,8 @@ class PlaneInstance {
 	var lastPosition:FastVector3;
 
 	var gridSize = 4;
-	var tilePx :Int = 100;
-	var tileSize :Int = 5000;
+	var tilePx :Int = 70;
+	var tileSize :Int = 7000;
 
 	public function new() {
 		Assets.loadEverything(loadingFinished);
@@ -74,8 +74,8 @@ class PlaneInstance {
 			}
 
 		// water & sky
-		 planes2.push(new PlaneModel(0,0,{ w:40000, h:40000, x:50, y:50 }));
-		 sky = new SkyCubeModel(50000,50000,50000);
+		 planes2.push(new PlaneModel(0,0,{ w:80000, h:80000, x:20, y:20 }));
+		 sky = new SkyCubeModel(40000,40000,40000);
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
 
