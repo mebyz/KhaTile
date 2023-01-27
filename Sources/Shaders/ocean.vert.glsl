@@ -26,11 +26,9 @@ void main() {
     vertexCoord.y += sin( pi * distance + time) * 10.0;
     v_textureCoordinates = uv;
     
-    //used for lighting models
     world_pos = (model_matrix * vertexCoord).xyz;
     world_normal = normalize(mat3(model_matrix) * in_normal);
 
-    //send it to fragment shader
     viewSpace = view_matrix * model_matrix * vertexCoord;
 
     gl_Position = MVP * vertexCoord;
