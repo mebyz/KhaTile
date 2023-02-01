@@ -1,0 +1,3 @@
+# @install: lix --silent download "https://gitlab.com/api/v4/projects/koui%2FKoui/repository/archive.zip?sha=73e44aae9751eab9be3d7cb11cbdff71b888703a&" into Koui/0.0.0/gitlab/73e44aae9751eab9be3d7cb11cbdff71b888703a
+-cp ${HAXE_LIBCACHE}/Koui/0.0.0/gitlab/73e44aae9751eab9be3d7cb11cbdff71b888703a/Sources
+-D Koui=0.0.0

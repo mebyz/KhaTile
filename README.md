@@ -7,7 +7,7 @@ emmanuel.botros@gmail.com)
 
 #BUILD & RUN
 
-git clone https://github.com/mebyz/Khatile.git
+git clone https://github.com/mebyz/Khatile.git --recurse-submodules [--branch branchname]
 
 cd Khatile
 
@@ -28,3 +28,7 @@ mebyz/primitive
 mebyz/noisetile
 
 mebyz/instances
+
+gitlab.com/koui/koui
+
+aura

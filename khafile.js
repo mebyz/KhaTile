@@ -3,11 +3,10 @@ var project = new Project('Empty');
 project.addSources('Sources');
 project.addLibrary('primitive');
 project.addLibrary('noisetile');
+project.addLibrary('instances');
 project.addShaders('Sources/Shaders/**');
 project.addAssets('Assets/**');
-project.addLibrary('primitive');
-project.addLibrary('noisetile');
-project.addLibrary('instances');
 project.addAssets('Libraries/instances/Sources/Assets/**');
-
-return project;
+await project.addProject("Subprojects/Koui");
+await project.addProject("Subprojects/aura");
+resolve(project);
