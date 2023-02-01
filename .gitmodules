@@ -1,21 +1,6 @@
 [submodule "Kha"]
 	path = Kha
 	url = https://github.com/Kode/Kha
-[submodule "primitive"]
-	path = Libraries/primitive
-	url = git@github.com:mebyz/primitive
-[submodule "noisetile"]
-	path = Libraries/noisetile
-	url = git@github.com:mebyz/noisetile
-[submodule "instances"]
-	path = Libraries/instances
-	url = git@github.com:mebyz/instances
-[submodule "aura"]
-	path = Subprojects/aura
-	url = git@github.com:MoritzBrueckner/aura
-[submodule "koui"]
-	path = Subprojects/koui
-	url = git@gitlab.com:koui/koui
 [submodule "Libraries/primitive"]
 	path = Libraries/primitive
 	url = https://github.com/mebyz/primitive
