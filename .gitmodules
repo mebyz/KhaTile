@@ -1,6 +1,6 @@
 [submodule "Kha"]
 	path = Kha
-	url = https://github.com/Kode/Kha
+	url = https://github.com/mebyz/Kha
 [submodule "Libraries/primitive"]
 	path = Libraries/primitive
 	url = https://github.com/mebyz/primitive
