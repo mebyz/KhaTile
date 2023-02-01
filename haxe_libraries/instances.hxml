@@ -1,0 +1,3 @@
+# @install: lix --silent download "gh://github.com/mebyz/instances#e61ac4d06a39907a88204ad41d16173899910049" into instances/0.0.0/github/e61ac4d06a39907a88204ad41d16173899910049
+-cp ${HAXE_LIBCACHE}/instances/0.0.0/github/e61ac4d06a39907a88204ad41d16173899910049/Sources
+-D instances=0.0.0

@@ -1,0 +1,3 @@
+# @install: lix --silent download "gh://github.com/MoritzBrueckner/aura#f3ce2a79645b76cff885b30526e5d6ff984d3874" into aura/0.0.0/github/f3ce2a79645b76cff885b30526e5d6ff984d3874
+-cp ${HAXE_LIBCACHE}/aura/0.0.0/github/f3ce2a79645b76cff885b30526e5d6ff984d3874/Sources
+-D aura=0.0.0

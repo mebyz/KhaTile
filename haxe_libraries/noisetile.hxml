@@ -1,0 +1,3 @@
+# @install: lix --silent download "gh://github.com/mebyz/noisetile#3265fa28aee71b7cb631c4d3c1508a587edd0785" into noisetile/0.0.0/github/3265fa28aee71b7cb631c4d3c1508a587edd0785
+-cp ${HAXE_LIBCACHE}/noisetile/0.0.0/github/3265fa28aee71b7cb631c4d3c1508a587edd0785/Sources
+-D noisetile=0.0.0
