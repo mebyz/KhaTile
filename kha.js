@@ -104,7 +104,10 @@ var Main = function() { };
 $hxClasses["Main"] = Main;
 Main.__name__ = true;
 Main.main = function() {
-	kha_System.start(new kha_SystemOptions("PlaneInstance",1800,1600,null,null),function(_) {
+	var canvas = js_Boot.__cast(window.document.getElementById("khanvas") , HTMLCanvasElement);
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+	kha_System.start(new kha_SystemOptions("PlaneInstance",1800,1600,new kha_WindowOptions("",0,0,1800,1600),null),function(_) {
 		var game = new PlaneInstance();
 		kha_Scheduler.addTimeTask(function() {
 			game.update();
@@ -2443,7 +2446,6 @@ PlaneInstance.prototype = {
 		var frame = frames[0];
 		var g = frame.get_g4();
 		g.begin();
-		g.clear(-16777216);
 		if(this.planes != null) {
 			var _g = 0;
 			var _g1 = this.planes;
