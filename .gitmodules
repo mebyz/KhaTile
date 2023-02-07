@@ -16,3 +16,6 @@
 [submodule "Subprojects/koui"]
 	path = Subprojects/koui
 	url = https://gitlab.com/koui/koui
+[submodule "Libraries/colyseus"]
+	path = Libraries/colyseus
+	url = https://github.com/mebyz/colyseus-haxe
