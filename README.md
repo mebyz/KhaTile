@@ -1,7 +1,8 @@
 #KhaTile : 
-Kha Perlin Tiled Terrain Generator -
-emmanuel.botros@gmail.com)
+Kha Tiled Terrain Experiment 
+emmanuel.botros@gmail.com
 
+[![Build](https://github.com/mebyz/KhaTile/actions/workflows/main.yml/badge.svg)](https://github.com/mebyz/KhaTile/actions/workflows/main.yml)
 
 ![](http://s16.postimg.org/xx79qlspx/khatile.png)
 
@@ -19,7 +20,7 @@ cd Khatile
 open http://localhost:9000/ in your browser
 
 
-#info
+#INFOS
 
 uses:
 
@@ -29,6 +30,4 @@ mebyz/noisetile
 
 mebyz/instances
 
-gitlab.com/koui/koui
-
-aura
+aura audio library
