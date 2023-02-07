@@ -1,19 +1,30 @@
 package;
 
+import kha.WindowOptions;
 import kha.Image;
 import kha.Scheduler;
 import kha.System;
 import koui.Koui;
 import koui.elements.*;
+import io.colyseus.Client;
+import io.colyseus.Room;
 
 class Main {
 
 	public static function main() {
-		System.start({title: "PlaneInstance", width: 1800, height: 1600}, function(_) {
+
+		
+		var client = new Client('ws://localhost:2567');
+		#if js
+		var canvas = cast(js.Browser.document.getElementById('khanvas'), js.html.CanvasElement);
+		canvas.width = js.Browser.window.innerWidth;
+		canvas.height = js.Browser.window.innerHeight;      
+		#end
+		System.start({title: "PlaneInstance"}, function(_) {
 
 			Koui.init(() -> {
                 var button = new Button("Click me!");
-                button.setPosition(400, 180);
+                button.setPosition(10, 10);
             
                
 

@@ -4,6 +4,7 @@ project.addSources('Sources');
 project.addLibrary('primitive');
 project.addLibrary('noisetile');
 project.addLibrary('instances');
+project.addLibrary('colyseus');
 project.addShaders('Sources/Shaders/**');
 project.addAssets('Assets/**');
 project.addAssets('Libraries/instances/Sources/Assets/**');
