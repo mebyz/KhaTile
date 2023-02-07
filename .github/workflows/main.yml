@@ -13,6 +13,8 @@ jobs:
         target: [html5]
 
     steps:
+    - name: Clone private repo
+      run: git clone "https://gitlab.com/koui/koui.git" master Subprojects/koui
     - uses: actions/checkout@v1
       with:
         submodules: recursive
