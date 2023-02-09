@@ -1,4 +1,4 @@
-#version 320 es
+#version 450
 precision highp float;
 
 layout(location = 0) in vec3 pos;
