@@ -22,9 +22,9 @@ void main() {
   vec3 lightDir = normalize(lightPos - FragPos); 
   float diff = max(dot(norm, lightDir),0.01);
   vec3 diffuse = diff * lightColor; 
-  vec4 sd =  (smoothstep(-1200.0, 100.0, vHeight) - smoothstep(100.0*norm.x, 250.0, vHeight)) * texture( sand, vUV, 1.2 ) * (norm.x/2.0+0.5);
-  vec4 s =(smoothstep(-1200.0, 100.0*norm.x, vHeight) - smoothstep(100.0*norm.x, 250.0, vHeight)) * texture( grass, vUV, 2.0 ) * (1.0-norm.x-0.2) / 2.0;
+  vec4 sd =  (smoothstep(-800.0, 100.0, vHeight) - smoothstep(100.0*norm.x, 850.0, vHeight)) * texture( sand, vUV, 1.2 ) * (norm.x/3.0);
+  vec4 s =(smoothstep(-800.0, 100.0*norm.x, vHeight) - smoothstep(100.0*norm.x, 350.0, vHeight)) * texture( grass, vUV, 2.0 ) * (1.0-norm.x-0.2) / 2.0;
   vec4 g = (smoothstep(200.0*norm.x, 450.0, vHeight) - smoothstep(450.0*norm.x, 3000.0, vHeight)) * texture( stone, vUV, 1.2 ) * (1.0-norm.z-0.5);
   vec4 sn = (smoothstep(200.0*norm.x, 450.0, vHeight) - smoothstep(450.0*norm.x, 3000.0, vHeight)) * texture( snow, vUV, 1.2 ) * (norm.z+0.5);
-  outColor = (vec4(ambient, 1.0)+vec4(diffuse, 1.0)+vec4(vNorm, 1.0) )/10.0 + (g+s+sd+sn);
+  outColor = (g+s+sd+sn)/1.2; //(vec4(ambient, 1.0)+vec4(diffuse, 1.0)+vec4(vNorm, 1.0) )/10.0+
 }
