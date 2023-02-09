@@ -47627,6 +47627,9 @@ primitive_PlaneModel.prototype = {
 	,drawPlane: function(frame,mvp) {
 		if(mvp != null) {
 			var g = frame.get_g4();
+			this.pipeline.blendSource = 3;
+			this.pipeline.blendDestination = 4;
+			this.pipeline.blendOperation = 1;
 			g.setPipeline(this.pipeline);
 			g.setVertexBuffer(this.vtb);
 			g.setIndexBuffer(this.idb);
