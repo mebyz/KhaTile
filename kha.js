@@ -150,10 +150,8 @@ var Main = function() { };
 $hxClasses["Main"] = Main;
 Main.__name__ = "Main";
 Main.main = function() {
+	Main.setFullWindowCanvas();
 	var client = new io_colyseus_Client("ws://localhost:2567");
-	var canvas = js_Boot.__cast(window.document.getElementById("khanvas") , HTMLCanvasElement);
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
 	kha_System.start(new kha_SystemOptions("PlaneInstance",-1,-1,null,null),function(_) {
 		koui_Koui.init(function() {
 			var button = new koui_elements_Button("Click me!");
@@ -169,6 +167,35 @@ Main.main = function() {
 			});
 		});
 	});
+};
+Main.setFullWindowCanvas = function() {
+	var script = window.document.createElement("script");
+	script.innerHTML = "(function(){var script=document.createElement(\"script\");(function(l,h){function e(a,d){if(null==d)return null;null==d.__id__&&(d.__id__=k++);var c;null==a.hx__closures__?a.hx__closures__={}:c=a.hx__closures__[d.__id__];null==c&&(c=function(){return c.method.apply(c.scope,arguments)},c.scope=a,c.method=d,a.hx__closures__[d.__id__]=c);return c}var a=h.Perf=function(g,d){null==d&&(d=0);null==g&&(g=\"TR\");this._perfObj=window.performance;null!=f.field(this._perfObj,\"memory\")&&(this._memoryObj=f.field(this._perfObj,\"memory\"));this._memCheck=null!=this._perfObj&&\n\t\t\tnull!=this._memoryObj&&0<this._memoryObj.totalJSHeapSize;this._pos=g;this._offset=d;this.currentFps=60;this.currentMs=0;this.currentMem=\"0\";this.avgFps=this.lowFps=60;this._ticks=this._time=this._totalFps=this._measureCount=0;this._fpsMax=this._fpsMin=60;null!=this._perfObj&&null!=(b=this._perfObj,e(b,b.now))?this._startTime=this._perfObj.now():this._startTime=(new Date).getTime();this._prevTime=-a.MEASUREMENT_INTERVAL;this._createFpsDom();this._createMsDom();this._memCheck&&this._createMemoryDom();\n\t\t\tnull!=(b=window,e(b,b.requestAnimationFrame))?this.RAF=(b=window,e(b,b.requestAnimationFrame)):null!=window.mozRequestAnimationFrame?this.RAF=window.mozRequestAnimationFrame:null!=window.webkitRequestAnimationFrame?this.RAF=window.webkitRequestAnimationFrame:null!=window.msRequestAnimationFrame&&(this.RAF=window.msRequestAnimationFrame);null!=(b=window,e(b,b.cancelAnimationFrame))?this.CAF=(b=window,e(b,b.cancelAnimationFrame)):null!=window.mozCancelAnimationFrame?this.CAF=window.mozCancelAnimationFrame:\n\t\t\t\tnull!=window.webkitCancelAnimationFrame?this.CAF=window.webkitCancelAnimationFrame:null!=window.msCancelAnimationFrame&&(this.CAF=window.msCancelAnimationFrame);null!=this.RAF&&(this._raf=f.callMethod(window,this.RAF,[e(this,this._tick)]))};a.prototype={_init:function(){this.currentFps=60;this.currentMs=0;this.currentMem=\"0\";this.avgFps=this.lowFps=60;this._ticks=this._time=this._totalFps=this._measureCount=0;this._fpsMax=this._fpsMin=60;null!=this._perfObj&&null!=(b=this._perfObj,e(b,b.now))?this._startTime=\n\t\t\tthis._perfObj.now():this._startTime=(new Date).getTime();this._prevTime=-a.MEASUREMENT_INTERVAL},_now:function(){return null!=this._perfObj&&null!=(b=this._perfObj,e(b,b.now))?this._perfObj.now():(new Date).getTime()},_tick:function(g){var d;d=null!=this._perfObj&&null!=(b=this._perfObj,e(b,b.now))?this._perfObj.now():(new Date).getTime();this._ticks++;null!=this._raf&&d>this._prevTime+a.MEASUREMENT_INTERVAL&&(this.currentMs=Math.round(d-this._startTime),this.ms.innerHTML=\"MS: \"+this.currentMs,this.currentFps=\n\t\t\tMath.round(1E3*this._ticks/(d-this._prevTime)),0<this.currentFps&&g>a.DELAY_TIME&&(this._measureCount++,this._totalFps+=this.currentFps,this.lowFps=this._fpsMin=Math.min(this._fpsMin,this.currentFps),this._fpsMax=Math.max(this._fpsMax,this.currentFps),this.avgFps=Math.round(this._totalFps/this._measureCount)),this.fps.innerHTML=\"FPS: \"+this.currentFps+\" (\"+this._fpsMin+\"-\"+this._fpsMax+\")\",this.fps.style.backgroundColor=30<=this.currentFps?a.FPS_BG_CLR:15<=this.currentFps?a.FPS_WARN_BG_CLR:a.FPS_PROB_BG_CLR,\n\t\t\tthis._prevTime=d,this._ticks=0,this._memCheck&&(this.currentMem=this._getFormattedSize(this._memoryObj.usedJSHeapSize,2),this.memory.innerHTML=\"MEM: \"+this.currentMem));this._startTime=d;null!=this._raf&&(this._raf=f.callMethod(window,this.RAF,[e(this,this._tick)]))},_createDiv:function(b,d){null==d&&(d=0);var c;c=window.document.createElement(\"div\");c.id=b;c.className=b;c.style.position=\"absolute\";switch(this._pos){case \"TL\":c.style.left=this._offset+\"px\";c.style.top=d+\"px\";break;case \"TR\":c.style.right=\n\t\t\tthis._offset+\"px\";c.style.top=d+\"px\";break;case \"BL\":c.style.left=this._offset+\"px\";c.style.bottom=(this._memCheck?48:32)-d+\"px\";break;case \"BR\":c.style.right=this._offset+\"px\",c.style.bottom=(this._memCheck?48:32)-d+\"px\"}c.style.width=\"80px\";c.style.height=\"12px\";c.style.lineHeight=\"12px\";c.style.padding=\"2px\";c.style.fontFamily=a.FONT_FAMILY;c.style.fontSize=\"9px\";c.style.fontWeight=\"bold\";c.style.textAlign=\"center\";window.document.body.appendChild(c);return c},_createFpsDom:function(){this.fps=\n\t\t\tthis._createDiv(\"fps\");this.fps.style.backgroundColor=a.FPS_BG_CLR;this.fps.style.zIndex=\"995\";this.fps.style.color=a.FPS_TXT_CLR;this.fps.innerHTML=\"FPS: 0\"},_createMsDom:function(){this.ms=this._createDiv(\"ms\",16);this.ms.style.backgroundColor=a.MS_BG_CLR;this.ms.style.zIndex=\"996\";this.ms.style.color=a.MS_TXT_CLR;this.ms.innerHTML=\"MS: 0\"},_createMemoryDom:function(){this.memory=this._createDiv(\"memory\",32);this.memory.style.backgroundColor=a.MEM_BG_CLR;this.memory.style.color=a.MEM_TXT_CLR;this.memory.style.zIndex=\n\t\t\t\"997\";this.memory.innerHTML=\"MEM: 0\"},_getFormattedSize:function(a,d){null==d&&(d=0);if(0==a)return\"0\";var c=Math.pow(10,d),b=Math.floor(Math.log(a)/Math.log(1024));return Math.round(a*c/Math.pow(1024,b))/c+\" \"+[\"Bytes\",\"KB\",\"MB\",\"GB\",\"TB\"][b]},addInfo:function(b){this.info=this._createDiv(\"info\",this._memCheck?48:32);this.info.style.backgroundColor=a.INFO_BG_CLR;this.info.style.color=a.INFO_TXT_CLR;this.info.style.zIndex=\"998\";this.info.innerHTML=b},clearInfo:function(){null!=this.info&&(window.document.body.removeChild(this.info),\n\t\t\tthis.info=null)},destroy:function(){f.callMethod(window,this.CAF,[this._raf]);this._memoryObj=this._perfObj=this._raf=null;null!=this.fps&&(window.document.body.removeChild(this.fps),this.fps=null);null!=this.ms&&(window.document.body.removeChild(this.ms),this.ms=null);null!=this.memory&&(window.document.body.removeChild(this.memory),this.memory=null);this.clearInfo();this.currentFps=60;this.currentMs=0;this.currentMem=\"0\";this.avgFps=this.lowFps=60;this._ticks=this._time=this._totalFps=this._measureCount=\n\t\t\t0;this._fpsMax=this._fpsMin=60;null!=this._perfObj&&null!=(b=this._perfObj,e(b,b.now))?this._startTime=this._perfObj.now():this._startTime=(new Date).getTime();this._prevTime=-a.MEASUREMENT_INTERVAL},_cancelRAF:function(){f.callMethod(window,this.CAF,[this._raf]);this._raf=null}};var f=function(){};f.field=function(a,b){try{return a[b]}catch(c){return null}};f.callMethod=function(a,b,c){return b.apply(a,c)};var b,k=0;a.MEASUREMENT_INTERVAL=1E3;a.FONT_FAMILY=\"Helvetica,Arial\";a.FPS_BG_CLR=\"#00FF00\";\n\t\t\ta.FPS_WARN_BG_CLR=\"#FF8000\";a.FPS_PROB_BG_CLR=\"#FF0000\";a.MS_BG_CLR=\"#FFFF00\";a.MEM_BG_CLR=\"#086A87\";a.INFO_BG_CLR=\"#00FFFF\";a.FPS_TXT_CLR=\"#000000\";a.MS_TXT_CLR=\"#000000\";a.MEM_TXT_CLR=\"#FFFFFF\";a.INFO_TXT_CLR=\"#000000\";a.TOP_LEFT=\"TL\";a.TOP_RIGHT=\"TR\";a.BOTTOM_LEFT=\"BL\";a.BOTTOM_RIGHT=\"BR\";a.DELAY_TIME=4E3})(\"undefined\"!=typeof console?console:{log:function(){}},\"undefined\"!=typeof window?window:exports);\n\t\t\tvar stats = new Perf(Perf.TOP_RIGHT, 0);document.head.appendChild(script);})();";
+	window.document.body.appendChild(script);
+	window.document.documentElement.style.padding = "0";
+	window.document.documentElement.style.margin = "0";
+	window.document.body.style.padding = "0";
+	window.document.body.style.margin = "0";
+	var canvas = js_Boot.__cast(window.document.getElementById("khanvas") , HTMLCanvasElement);
+	canvas.style.display = "block";
+	var resize = function() {
+		var w = window.document.documentElement.clientWidth;
+		var h = window.document.documentElement.clientHeight;
+		if(w == 0 || h == 0) {
+			w = window.innerWidth;
+			h = window.innerHeight;
+		}
+		var resize = w * window.devicePixelRatio | 0;
+		canvas.width = resize;
+		var resize = h * window.devicePixelRatio | 0;
+		canvas.height = resize;
+		if(canvas.style.width == "") {
+			canvas.style.width = "100%";
+			canvas.style.height = "100%";
+		}
+	};
+	window.onresize = resize;
+	resize();
 };
 var Mat2 = {};
 Mat2._new = function(a00,a01,a10,a11) {
@@ -12199,19 +12226,6 @@ kha_SystemImpl.initAnimate = function(callback) {
 		}
 		kha_Scheduler.executeFrame();
 		if(canvas.getContext != null) {
-			if(kha_SystemImpl.lastCanvasClientWidth != canvas.clientWidth || kha_SystemImpl.lastCanvasClientHeight != canvas.clientHeight) {
-				var scale = window.devicePixelRatio;
-				var clientWidth = canvas.clientWidth;
-				var clientHeight = canvas.clientHeight;
-				canvas.width = clientWidth;
-				canvas.height = clientHeight;
-				if(scale != 1) {
-					canvas.style.width = (clientWidth / scale | 0) + "px";
-					canvas.style.height = (clientHeight / scale | 0) + "px";
-				}
-				kha_SystemImpl.lastCanvasClientWidth = canvas.clientWidth;
-				kha_SystemImpl.lastCanvasClientHeight = canvas.clientHeight;
-			}
 			kha_System.render([kha_SystemImpl.frame]);
 			if(kha_SystemImpl.ie && kha_SystemImpl.gl != null) {
 				kha_SystemImpl.gl.clearColor(1,1,1,1);
@@ -48855,6 +48869,7 @@ primitive_SkyCubeModel.UNPACK_PREMULTIPLY_ALPHA_WEBGL = 37441;
 primitive_SkyCubeModel.CONTEXT_LOST_WEBGL = 37442;
 primitive_SkyCubeModel.UNPACK_COLORSPACE_CONVERSION_WEBGL = 37443;
 primitive_SkyCubeModel.BROWSER_DEFAULT_WEBGL = 37444;
+primitive_SkyCubeModel.C_SIZE = 2048;
 primitive_SkyCubeModel.colors = [0.583,0.771,0.014,0.609,0.115,0.436,0.327,0.483,0.844,0.822,0.569,0.201,0.435,0.602,0.223,0.310,0.747,0.185,0.597,0.770,0.761,0.559,0.436,0.730,0.359,0.583,0.152,0.483,0.596,0.789,0.559,0.861,0.639,0.195,0.548,0.859,0.014,0.184,0.576,0.771,0.328,0.970,0.406,0.615,0.116,0.676,0.977,0.133,0.971,0.572,0.833,0.140,0.616,0.489,0.997,0.513,0.064,0.945,0.719,0.592,0.543,0.021,0.978,0.279,0.317,0.505,0.167,0.620,0.077,0.347,0.857,0.137,0.055,0.953,0.042,0.714,0.505,0.345,0.783,0.290,0.734,0.722,0.645,0.174,0.302,0.455,0.848,0.225,0.587,0.040,0.517,0.713,0.338,0.053,0.959,0.120,0.393,0.621,0.362,0.673,0.211,0.457,0.820,0.883,0.371,0.982,0.099,0.879];
 primitive_TerrainModel.REPEAT = 10497;
 primitive_TerrainModel.TEXTURE_WRAP_S = 10242;
