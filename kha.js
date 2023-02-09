@@ -13,7 +13,7 @@ var EReg = function(r,opt) {
 	this.r = new RegExp(r,opt.split("u").join(""));
 };
 $hxClasses["EReg"] = EReg;
-EReg.__name__ = true;
+EReg.__name__ = "EReg";
 EReg.prototype = {
 	r: null
 	,match: function(s) {
@@ -31,11 +31,18 @@ EReg.prototype = {
 			throw haxe_Exception.thrown("EReg::matched");
 		}
 	}
+	,matchedRight: function() {
+		if(this.r.m == null) {
+			throw haxe_Exception.thrown("No string matched");
+		}
+		var sz = this.r.m.index + this.r.m[0].length;
+		return HxOverrides.substr(this.r.s,sz,this.r.s.length - sz);
+	}
 	,__class__: EReg
 };
 var HxOverrides = function() { };
 $hxClasses["HxOverrides"] = HxOverrides;
-HxOverrides.__name__ = true;
+HxOverrides.__name__ = "HxOverrides";
 HxOverrides.strDate = function(s) {
 	switch(s.length) {
 	case 8:
@@ -90,7 +97,7 @@ HxOverrides.now = function() {
 };
 var Lambda = function() { };
 $hxClasses["Lambda"] = Lambda;
-Lambda.__name__ = true;
+Lambda.__name__ = "Lambda";
 Lambda.array = function(it) {
 	var a = [];
 	var i = $getIterator(it);
@@ -100,20 +107,66 @@ Lambda.array = function(it) {
 	}
 	return a;
 };
+Lambda.has = function(it,elt) {
+	var x = $getIterator(it);
+	while(x.hasNext()) {
+		var x1 = x.next();
+		if(x1 == elt) {
+			return true;
+		}
+	}
+	return false;
+};
+Lambda.exists = function(it,f) {
+	var x = $getIterator(it);
+	while(x.hasNext()) {
+		var x1 = x.next();
+		if(f(x1)) {
+			return true;
+		}
+	}
+	return false;
+};
+Lambda.count = function(it,pred) {
+	var n = 0;
+	if(pred == null) {
+		var _ = $getIterator(it);
+		while(_.hasNext()) {
+			var _1 = _.next();
+			++n;
+		}
+	} else {
+		var x = $getIterator(it);
+		while(x.hasNext()) {
+			var x1 = x.next();
+			if(pred(x1)) {
+				++n;
+			}
+		}
+	}
+	return n;
+};
 var Main = function() { };
 $hxClasses["Main"] = Main;
-Main.__name__ = true;
+Main.__name__ = "Main";
 Main.main = function() {
+	var client = new io_colyseus_Client("ws://localhost:2567");
 	var canvas = js_Boot.__cast(window.document.getElementById("khanvas") , HTMLCanvasElement);
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
-	kha_System.start(new kha_SystemOptions("PlaneInstance",1800,1600,new kha_WindowOptions("",0,0,1800,1600),null),function(_) {
-		var game = new PlaneInstance();
-		kha_Scheduler.addTimeTask(function() {
-			game.update();
-		},0,0.02);
-		kha_System.notifyOnFrames(function(f) {
-			game.render(f);
+	kha_System.start(new kha_SystemOptions("PlaneInstance",-1,-1,null,null),function(_) {
+		koui_Koui.init(function() {
+			var button = new koui_elements_Button("Click me!");
+			button.set_posX(10);
+			button.set_posY(10);
+			koui_Koui.anchorPane.add(button,0);
+			var game = new PlaneInstance();
+			kha_Scheduler.addTimeTask(function() {
+				game.update();
+			},0,0.02);
+			kha_System.notifyOnFrames(function(f) {
+				game.render(f);
+			});
 		});
 	});
 };
@@ -472,7 +525,7 @@ var Mat2Data = function(a00,a01,a10,a11) {
 	this.c1 = this1;
 };
 $hxClasses["Mat2Data"] = Mat2Data;
-Mat2Data.__name__ = true;
+Mat2Data.__name__ = "Mat2Data";
 Mat2Data.prototype = {
 	c0: null
 	,c1: null
@@ -1045,7 +1098,7 @@ var Mat3Data = function(a00,a01,a02,a10,a11,a12,a20,a21,a22) {
 	this.c2 = this1;
 };
 $hxClasses["Mat3Data"] = Mat3Data;
-Mat3Data.__name__ = true;
+Mat3Data.__name__ = "Mat3Data";
 Mat3Data.prototype = {
 	c0: null
 	,c1: null
@@ -1897,7 +1950,7 @@ var Mat4Data = function(a00,a01,a02,a03,a10,a11,a12,a13,a20,a21,a22,a23,a30,a31,
 	this.c3 = this1;
 };
 $hxClasses["Mat4Data"] = Mat4Data;
-Mat4Data.__name__ = true;
+Mat4Data.__name__ = "Mat4Data";
 Mat4Data.prototype = {
 	c0: null
 	,c1: null
@@ -1905,7 +1958,7 @@ Mat4Data.prototype = {
 	,c3: null
 	,__class__: Mat4Data
 };
-Math.__name__ = true;
+Math.__name__ = "Math";
 var PlaneInstance = function() {
 	this.tileSize = 7000;
 	this.tilePx = 70;
@@ -1928,7 +1981,7 @@ var PlaneInstance = function() {
 	kha_Assets.loadEverything($bind(this,this.loadingFinished));
 };
 $hxClasses["PlaneInstance"] = PlaneInstance;
-PlaneInstance.__name__ = true;
+PlaneInstance.__name__ = "PlaneInstance";
 PlaneInstance.prototype = {
 	planes: null
 	,planes2: null
@@ -2471,18 +2524,65 @@ PlaneInstance.prototype = {
 			this.instancesCollection.render(frame,this.model,this.view,this.projection);
 		}
 		g.end();
+		koui_Koui.render(frame.get_g2());
 	}
 	,__class__: PlaneInstance
 };
 var Reflect = function() { };
 $hxClasses["Reflect"] = Reflect;
-Reflect.__name__ = true;
+Reflect.__name__ = "Reflect";
 Reflect.field = function(o,field) {
 	try {
 		return o[field];
 	} catch( _g ) {
 		return null;
 	}
+};
+Reflect.getProperty = function(o,field) {
+	var tmp;
+	if(o == null) {
+		return null;
+	} else {
+		var tmp1;
+		if(o.__properties__) {
+			tmp = o.__properties__["get_" + field];
+			tmp1 = tmp;
+		} else {
+			tmp1 = false;
+		}
+		if(tmp1) {
+			return o[tmp]();
+		} else {
+			return o[field];
+		}
+	}
+};
+Reflect.setProperty = function(o,field,value) {
+	var tmp;
+	var tmp1;
+	if(o.__properties__) {
+		tmp = o.__properties__["set_" + field];
+		tmp1 = tmp;
+	} else {
+		tmp1 = false;
+	}
+	if(tmp1) {
+		o[tmp](value);
+	} else {
+		o[field] = value;
+	}
+};
+Reflect.fields = function(o) {
+	var a = [];
+	if(o != null) {
+		var hasOwnProperty = Object.prototype.hasOwnProperty;
+		for( var f in o ) {
+		if(f != "__id__" && f != "hx__closures__" && hasOwnProperty.call(o,f)) {
+			a.push(f);
+		}
+		}
+	}
+	return a;
 };
 Reflect.isFunction = function(f) {
 	if(typeof(f) == "function") {
@@ -2491,9 +2591,60 @@ Reflect.isFunction = function(f) {
 		return false;
 	}
 };
+Reflect.compare = function(a,b) {
+	if(a == b) {
+		return 0;
+	} else if(a > b) {
+		return 1;
+	} else {
+		return -1;
+	}
+};
+Reflect.compareMethods = function(f1,f2) {
+	if(f1 == f2) {
+		return true;
+	}
+	if(!Reflect.isFunction(f1) || !Reflect.isFunction(f2)) {
+		return false;
+	}
+	if(f1.scope == f2.scope && f1.method == f2.method) {
+		return f1.method != null;
+	} else {
+		return false;
+	}
+};
+Reflect.isObject = function(v) {
+	if(v == null) {
+		return false;
+	}
+	var t = typeof(v);
+	if(!(t == "string" || t == "object" && v.__enum__ == null)) {
+		if(t == "function") {
+			return (v.__name__ || v.__ename__) != null;
+		} else {
+			return false;
+		}
+	} else {
+		return true;
+	}
+};
+Reflect.copy = function(o) {
+	if(o == null) {
+		return null;
+	}
+	var o2 = { };
+	var _g = 0;
+	var _g1 = Reflect.fields(o);
+	while(_g < _g1.length) {
+		var f = _g1[_g];
+		++_g;
+		o2[f] = Reflect.field(o,f);
+	}
+	return o2;
+};
 var Std = function() { };
 $hxClasses["Std"] = Std;
-Std.__name__ = true;
+Std.__name__ = "Std";
 Std.string = function(s) {
 	return js_Boot.__string_rec(s,"");
 };
@@ -2528,14 +2679,21 @@ var StringBuf = function() {
 	this.b = "";
 };
 $hxClasses["StringBuf"] = StringBuf;
-StringBuf.__name__ = true;
+StringBuf.__name__ = "StringBuf";
 StringBuf.prototype = {
 	b: null
 	,__class__: StringBuf
 };
 var StringTools = function() { };
 $hxClasses["StringTools"] = StringTools;
-StringTools.__name__ = true;
+StringTools.__name__ = "StringTools";
+StringTools.startsWith = function(s,start) {
+	if(s.length >= start.length) {
+		return s.lastIndexOf(start,0) == 0;
+	} else {
+		return false;
+	}
+};
 StringTools.endsWith = function(s,end) {
 	var elen = end.length;
 	var slen = s.length;
@@ -2579,9 +2737,25 @@ StringTools.trim = function(s) {
 StringTools.replace = function(s,sub,by) {
 	return s.split(sub).join(by);
 };
+var ValueType = $hxEnums["ValueType"] = { __ename__:true,__constructs__:null
+	,TNull: {_hx_name:"TNull",_hx_index:0,__enum__:"ValueType",toString:$estr}
+	,TInt: {_hx_name:"TInt",_hx_index:1,__enum__:"ValueType",toString:$estr}
+	,TFloat: {_hx_name:"TFloat",_hx_index:2,__enum__:"ValueType",toString:$estr}
+	,TBool: {_hx_name:"TBool",_hx_index:3,__enum__:"ValueType",toString:$estr}
+	,TObject: {_hx_name:"TObject",_hx_index:4,__enum__:"ValueType",toString:$estr}
+	,TFunction: {_hx_name:"TFunction",_hx_index:5,__enum__:"ValueType",toString:$estr}
+	,TClass: ($_=function(c) { return {_hx_index:6,c:c,__enum__:"ValueType",toString:$estr}; },$_._hx_name="TClass",$_.__params__ = ["c"],$_)
+	,TEnum: ($_=function(e) { return {_hx_index:7,e:e,__enum__:"ValueType",toString:$estr}; },$_._hx_name="TEnum",$_.__params__ = ["e"],$_)
+	,TUnknown: {_hx_name:"TUnknown",_hx_index:8,__enum__:"ValueType",toString:$estr}
+};
+ValueType.__constructs__ = [ValueType.TNull,ValueType.TInt,ValueType.TFloat,ValueType.TBool,ValueType.TObject,ValueType.TFunction,ValueType.TClass,ValueType.TEnum,ValueType.TUnknown];
 var Type = function() { };
 $hxClasses["Type"] = Type;
-Type.__name__ = true;
+Type.__name__ = "Type";
+Type.createInstance = function(cl,args) {
+	var ctor = Function.prototype.bind.apply(cl,[null].concat(args));
+	return new (ctor);
+};
 Type.createEnum = function(e,constr,params) {
 	var f = Reflect.field(e,constr);
 	if(f == null) {
@@ -2604,6 +2778,41 @@ Type.getInstanceFields = function(c) {
 	HxOverrides.remove(a,"__class__");
 	HxOverrides.remove(a,"__properties__");
 	return a;
+};
+Type.typeof = function(v) {
+	switch(typeof(v)) {
+	case "boolean":
+		return ValueType.TBool;
+	case "function":
+		if(v.__name__ || v.__ename__) {
+			return ValueType.TObject;
+		}
+		return ValueType.TFunction;
+	case "number":
+		if(Math.ceil(v) == v % 2147483648.0) {
+			return ValueType.TInt;
+		}
+		return ValueType.TFloat;
+	case "object":
+		if(v == null) {
+			return ValueType.TNull;
+		}
+		var e = v.__enum__;
+		if(e != null) {
+			return ValueType.TEnum($hxEnums[e]);
+		}
+		var c = js_Boot.getClass(v);
+		if(c != null) {
+			return ValueType.TClass(c);
+		}
+		return ValueType.TObject;
+	case "string":
+		return ValueType.TClass(String);
+	case "undefined":
+		return ValueType.TNull;
+	default:
+		return ValueType.TUnknown;
+	}
 };
 var UInt = {};
 UInt.gt = function(a,b) {
@@ -2633,6 +2842,7 @@ UInt.toFloat = function(this1) {
 	}
 };
 var Vec2 = {};
+Vec2.__properties__ = {set_y:"set_y",get_y:"get_y",set_x:"set_x",get_x:"get_x"};
 Vec2.get_x = function(this1) {
 	return this1.x;
 };
@@ -3007,13 +3217,14 @@ var Vec2Data = function(x,y) {
 	this.y = y;
 };
 $hxClasses["Vec2Data"] = Vec2Data;
-Vec2Data.__name__ = true;
+Vec2Data.__name__ = "Vec2Data";
 Vec2Data.prototype = {
 	x: null
 	,y: null
 	,__class__: Vec2Data
 };
 var Vec3 = {};
+Vec3.__properties__ = {set_z:"set_z",get_z:"get_z",set_y:"set_y",get_y:"get_y",set_x:"set_x",get_x:"get_x"};
 Vec3.get_x = function(this1) {
 	return this1.x;
 };
@@ -3446,7 +3657,7 @@ var Vec3Data = function(x,y,z) {
 	this.z = z;
 };
 $hxClasses["Vec3Data"] = Vec3Data;
-Vec3Data.__name__ = true;
+Vec3Data.__name__ = "Vec3Data";
 Vec3Data.prototype = {
 	x: null
 	,y: null
@@ -3454,6 +3665,7 @@ Vec3Data.prototype = {
 	,__class__: Vec3Data
 };
 var Vec4 = {};
+Vec4.__properties__ = {set_w:"set_w",get_w:"get_w",set_z:"set_z",get_z:"get_z",set_y:"set_y",get_y:"get_y",set_x:"set_x",get_x:"get_x"};
 Vec4.get_x = function(this1) {
 	return this1.x;
 };
@@ -3936,7 +4148,7 @@ var Vec4Data = function(x,y,z,w) {
 	this.w = w;
 };
 $hxClasses["Vec4Data"] = Vec4Data;
-Vec4Data.__name__ = true;
+Vec4Data.__name__ = "Vec4Data";
 Vec4Data.prototype = {
 	x: null
 	,y: null
@@ -4030,8 +4242,18 @@ haxe_CallStack.itemToString = function(b,s) {
 };
 var haxe_IMap = function() { };
 $hxClasses["haxe.IMap"] = haxe_IMap;
-haxe_IMap.__name__ = true;
+haxe_IMap.__name__ = "haxe.IMap";
 haxe_IMap.__isInterface__ = true;
+haxe_IMap.prototype = {
+	get: null
+	,set: null
+	,exists: null
+	,remove: null
+	,keys: null
+	,keyValueIterator: null
+	,clear: null
+	,__class__: haxe_IMap
+};
 var haxe_Exception = function(message,previous,native) {
 	Error.call(this,message);
 	this.message = message;
@@ -4059,7 +4281,7 @@ var haxe_Exception = function(message,previous,native) {
 	Error.prepareStackTrace = old;
 };
 $hxClasses["haxe.Exception"] = haxe_Exception;
-haxe_Exception.__name__ = true;
+haxe_Exception.__name__ = "haxe.Exception";
 haxe_Exception.caught = function(value) {
 	if(((value) instanceof haxe_Exception)) {
 		return value;
@@ -4119,10 +4341,22 @@ haxe_Exception.prototype = $extend(Error.prototype,{
 		}
 	}
 	,__class__: haxe_Exception
+	,__properties__: {get_native:"get_native",get_stack:"get_stack",get_message:"get_message"}
 });
+var haxe__$Int64__$_$_$Int64 = function(high,low) {
+	this.high = high;
+	this.low = low;
+};
+$hxClasses["haxe._Int64.___Int64"] = haxe__$Int64__$_$_$Int64;
+haxe__$Int64__$_$_$Int64.__name__ = "haxe._Int64.___Int64";
+haxe__$Int64__$_$_$Int64.prototype = {
+	high: null
+	,low: null
+	,__class__: haxe__$Int64__$_$_$Int64
+};
 var haxe_Log = function() { };
 $hxClasses["haxe.Log"] = haxe_Log;
-haxe_Log.__name__ = true;
+haxe_Log.__name__ = "haxe.Log";
 haxe_Log.formatOutput = function(v,infos) {
 	var str = Std.string(v);
 	if(infos == null) {
@@ -4148,7 +4382,7 @@ haxe_Log.trace = function(v,infos) {
 };
 var haxe_NativeStackTrace = function() { };
 $hxClasses["haxe.NativeStackTrace"] = haxe_NativeStackTrace;
-haxe_NativeStackTrace.__name__ = true;
+haxe_NativeStackTrace.__name__ = "haxe.NativeStackTrace";
 haxe_NativeStackTrace.toHaxe = function(s,skip) {
 	if(skip == null) {
 		skip = 0;
@@ -4231,7 +4465,7 @@ var haxe_Timer = function(time_ms) {
 	},time_ms / 1000,time_ms / 1000);
 };
 $hxClasses["haxe.Timer"] = haxe_Timer;
-haxe_Timer.__name__ = true;
+haxe_Timer.__name__ = "haxe.Timer";
 haxe_Timer.delay = function(f,time_ms) {
 	var t = new haxe_Timer(time_ms);
 	t.run = function() {
@@ -4265,7 +4499,7 @@ haxe_Timer.prototype = {
 var haxe__$Unserializer_DefaultResolver = function() {
 };
 $hxClasses["haxe._Unserializer.DefaultResolver"] = haxe__$Unserializer_DefaultResolver;
-haxe__$Unserializer_DefaultResolver.__name__ = true;
+haxe__$Unserializer_DefaultResolver.__name__ = "haxe._Unserializer.DefaultResolver";
 haxe__$Unserializer_DefaultResolver.prototype = {
 	resolveClass: function(name) {
 		return $hxClasses[name];
@@ -4289,7 +4523,7 @@ var haxe_Unserializer = function(buf) {
 	this.resolver = r;
 };
 $hxClasses["haxe.Unserializer"] = haxe_Unserializer;
-haxe_Unserializer.__name__ = true;
+haxe_Unserializer.__name__ = "haxe.Unserializer";
 haxe_Unserializer.initCodes = function() {
 	var codes = [];
 	var _g = 0;
@@ -4623,7 +4857,7 @@ var haxe_ValueException = function(value,previous,native) {
 	this.__skipStack++;
 };
 $hxClasses["haxe.ValueException"] = haxe_ValueException;
-haxe_ValueException.__name__ = true;
+haxe_ValueException.__name__ = "haxe.ValueException";
 haxe_ValueException.__super__ = haxe_Exception;
 haxe_ValueException.prototype = $extend(haxe_Exception.prototype,{
 	value: null
@@ -4640,7 +4874,7 @@ var haxe_io_Bytes = function(data) {
 	data.bytes = this.b;
 };
 $hxClasses["haxe.io.Bytes"] = haxe_io_Bytes;
-haxe_io_Bytes.__name__ = true;
+haxe_io_Bytes.__name__ = "haxe.io.Bytes";
 haxe_io_Bytes.ofString = function(s,encoding) {
 	if(encoding == haxe_io_Encoding.RawNative) {
 		var buf = new Uint8Array(s.length << 1);
@@ -4690,6 +4924,9 @@ haxe_io_Bytes.prototype = {
 	length: null
 	,b: null
 	,data: null
+	,get: function(pos) {
+		return this.b[pos];
+	}
 	,blit: function(pos,src,srcpos,len) {
 		if(pos < 0 || srcpos < 0 || len < 0 || pos + len > this.length || srcpos + len > src.length) {
 			throw haxe_Exception.thrown(haxe_io_Error.OutsideBounds);
@@ -4748,6 +4985,10 @@ haxe_io_Bytes.prototype = {
 		}
 		this.data.setInt32(pos,v,true);
 	}
+	,getInt64: function(pos) {
+		var this1 = new haxe__$Int64__$_$_$Int64(this.getInt32(pos + 4),this.getInt32(pos));
+		return this1;
+	}
 	,getString: function(pos,len,encoding) {
 		if(pos < 0 || len < 0 || pos + len > this.length) {
 			throw haxe_Exception.thrown(haxe_io_Error.OutsideBounds);
@@ -4805,7 +5046,7 @@ var haxe_io_Encoding = $hxEnums["haxe.io.Encoding"] = { __ename__:true,__constru
 haxe_io_Encoding.__constructs__ = [haxe_io_Encoding.UTF8,haxe_io_Encoding.RawNative];
 var haxe_crypto_Base64 = function() { };
 $hxClasses["haxe.crypto.Base64"] = haxe_crypto_Base64;
-haxe_crypto_Base64.__name__ = true;
+haxe_crypto_Base64.__name__ = "haxe.crypto.Base64";
 haxe_crypto_Base64.encode = function(bytes,complement) {
 	if(complement == null) {
 		complement = true;
@@ -4835,7 +5076,7 @@ var haxe_crypto_BaseCode = function(base) {
 	this.nbits = nbits;
 };
 $hxClasses["haxe.crypto.BaseCode"] = haxe_crypto_BaseCode;
-haxe_crypto_BaseCode.__name__ = true;
+haxe_crypto_BaseCode.__name__ = "haxe.crypto.BaseCode";
 haxe_crypto_BaseCode.prototype = {
 	base: null
 	,nbits: null
@@ -4865,14 +5106,59 @@ haxe_crypto_BaseCode.prototype = {
 	}
 	,__class__: haxe_crypto_BaseCode
 };
+var haxe_ds_GenericCell = function(elt,next) {
+	this.elt = elt;
+	this.next = next;
+};
+$hxClasses["haxe.ds.GenericCell"] = haxe_ds_GenericCell;
+haxe_ds_GenericCell.__name__ = "haxe.ds.GenericCell";
+haxe_ds_GenericCell.prototype = {
+	elt: null
+	,next: null
+	,__class__: haxe_ds_GenericCell
+};
+var haxe_ds_GenericStack = function() {
+};
+$hxClasses["haxe.ds.GenericStack"] = haxe_ds_GenericStack;
+haxe_ds_GenericStack.__name__ = "haxe.ds.GenericStack";
+haxe_ds_GenericStack.prototype = {
+	head: null
+	,iterator: function() {
+		var l = this.head;
+		return { hasNext : function() {
+			return l != null;
+		}, next : function() {
+			var k = l;
+			l = k.next;
+			return k.elt;
+		}};
+	}
+	,__class__: haxe_ds_GenericStack
+};
 var haxe_ds_IntMap = function() {
 	this.h = { };
 };
 $hxClasses["haxe.ds.IntMap"] = haxe_ds_IntMap;
-haxe_ds_IntMap.__name__ = true;
+haxe_ds_IntMap.__name__ = "haxe.ds.IntMap";
 haxe_ds_IntMap.__interfaces__ = [haxe_IMap];
 haxe_ds_IntMap.prototype = {
 	h: null
+	,set: function(key,value) {
+		this.h[key] = value;
+	}
+	,get: function(key) {
+		return this.h[key];
+	}
+	,exists: function(key) {
+		return this.h.hasOwnProperty(key);
+	}
+	,remove: function(key) {
+		if(!this.h.hasOwnProperty(key)) {
+			return false;
+		}
+		delete(this.h[key]);
+		return true;
+	}
 	,keys: function() {
 		var a = [];
 		for( var key in this.h ) if(this.h.hasOwnProperty(key)) a.push(+key);
@@ -4886,13 +5172,28 @@ haxe_ds_IntMap.prototype = {
 			return this.ref[i];
 		}};
 	}
+	,keyValueIterator: function() {
+		return new haxe_iterators_MapKeyValueIterator(this);
+	}
+	,copy: function() {
+		var copied = new haxe_ds_IntMap();
+		var key = this.keys();
+		while(key.hasNext()) {
+			var key1 = key.next();
+			copied.h[key1] = this.h[key1];
+		}
+		return copied;
+	}
+	,clear: function() {
+		this.h = { };
+	}
 	,__class__: haxe_ds_IntMap
 };
 var haxe_ds_List = function() {
 	this.length = 0;
 };
 $hxClasses["haxe.ds.List"] = haxe_ds_List;
-haxe_ds_List.__name__ = true;
+haxe_ds_List.__name__ = "haxe.ds.List";
 haxe_ds_List.prototype = {
 	h: null
 	,q: null
@@ -4914,7 +5215,7 @@ var haxe_ds__$List_ListNode = function(item,next) {
 	this.next = next;
 };
 $hxClasses["haxe.ds._List.ListNode"] = haxe_ds__$List_ListNode;
-haxe_ds__$List_ListNode.__name__ = true;
+haxe_ds__$List_ListNode.__name__ = "haxe.ds._List.ListNode";
 haxe_ds__$List_ListNode.prototype = {
 	item: null
 	,next: null
@@ -4924,7 +5225,7 @@ var haxe_ds_ObjectMap = function() {
 	this.h = { __keys__ : { }};
 };
 $hxClasses["haxe.ds.ObjectMap"] = haxe_ds_ObjectMap;
-haxe_ds_ObjectMap.__name__ = true;
+haxe_ds_ObjectMap.__name__ = "haxe.ds.ObjectMap";
 haxe_ds_ObjectMap.__interfaces__ = [haxe_IMap];
 haxe_ds_ObjectMap.prototype = {
 	h: null
@@ -4936,17 +5237,116 @@ haxe_ds_ObjectMap.prototype = {
 		this.h[id] = value;
 		this.h.__keys__[id] = key;
 	}
+	,get: function(key) {
+		return this.h[key.__id__];
+	}
+	,exists: function(key) {
+		return this.h.__keys__[key.__id__] != null;
+	}
+	,remove: function(key) {
+		var id = key.__id__;
+		if(this.h.__keys__[id] == null) {
+			return false;
+		}
+		delete(this.h[id]);
+		delete(this.h.__keys__[id]);
+		return true;
+	}
+	,keys: function() {
+		var a = [];
+		for( var key in this.h.__keys__ ) {
+		if(this.h.hasOwnProperty(key)) {
+			a.push(this.h.__keys__[key]);
+		}
+		}
+		return new haxe_iterators_ArrayIterator(a);
+	}
+	,keyValueIterator: function() {
+		return new haxe_iterators_MapKeyValueIterator(this);
+	}
+	,clear: function() {
+		this.h = { __keys__ : { }};
+	}
 	,__class__: haxe_ds_ObjectMap
 };
 var haxe_ds_StringMap = function() {
 	this.h = Object.create(null);
 };
 $hxClasses["haxe.ds.StringMap"] = haxe_ds_StringMap;
-haxe_ds_StringMap.__name__ = true;
+haxe_ds_StringMap.__name__ = "haxe.ds.StringMap";
 haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
 haxe_ds_StringMap.prototype = {
 	h: null
+	,exists: function(key) {
+		return Object.prototype.hasOwnProperty.call(this.h,key);
+	}
+	,get: function(key) {
+		return this.h[key];
+	}
+	,set: function(key,value) {
+		this.h[key] = value;
+	}
+	,remove: function(key) {
+		if(Object.prototype.hasOwnProperty.call(this.h,key)) {
+			delete(this.h[key]);
+			return true;
+		} else {
+			return false;
+		}
+	}
+	,keys: function() {
+		return new haxe_ds__$StringMap_StringMapKeyIterator(this.h);
+	}
+	,keyValueIterator: function() {
+		return new haxe_ds__$StringMap_StringMapKeyValueIterator(this.h);
+	}
+	,clear: function() {
+		this.h = Object.create(null);
+	}
 	,__class__: haxe_ds_StringMap
+};
+var haxe_ds__$StringMap_StringMapKeyIterator = function(h) {
+	this.h = h;
+	this.keys = Object.keys(h);
+	this.length = this.keys.length;
+	this.current = 0;
+};
+$hxClasses["haxe.ds._StringMap.StringMapKeyIterator"] = haxe_ds__$StringMap_StringMapKeyIterator;
+haxe_ds__$StringMap_StringMapKeyIterator.__name__ = "haxe.ds._StringMap.StringMapKeyIterator";
+haxe_ds__$StringMap_StringMapKeyIterator.prototype = {
+	h: null
+	,keys: null
+	,length: null
+	,current: null
+	,hasNext: function() {
+		return this.current < this.length;
+	}
+	,next: function() {
+		return this.keys[this.current++];
+	}
+	,__class__: haxe_ds__$StringMap_StringMapKeyIterator
+};
+var haxe_ds__$StringMap_StringMapKeyValueIterator = function(h) {
+	this.h = h;
+	this.keys = Object.keys(h);
+	this.length = this.keys.length;
+	this.current = 0;
+};
+$hxClasses["haxe.ds._StringMap.StringMapKeyValueIterator"] = haxe_ds__$StringMap_StringMapKeyValueIterator;
+haxe_ds__$StringMap_StringMapKeyValueIterator.__name__ = "haxe.ds._StringMap.StringMapKeyValueIterator";
+haxe_ds__$StringMap_StringMapKeyValueIterator.prototype = {
+	h: null
+	,keys: null
+	,length: null
+	,current: null
+	,hasNext: function() {
+		return this.current < this.length;
+	}
+	,next: function() {
+		var key = this.keys[this.current++];
+		return { key : key, value : this.h[key]};
+	}
+	,__class__: haxe_ds__$StringMap_StringMapKeyValueIterator
 };
 var haxe_exceptions_PosException = function(message,previous,pos) {
 	haxe_Exception.call(this,message,previous);
@@ -4958,7 +5358,7 @@ var haxe_exceptions_PosException = function(message,previous,pos) {
 	this.__skipStack++;
 };
 $hxClasses["haxe.exceptions.PosException"] = haxe_exceptions_PosException;
-haxe_exceptions_PosException.__name__ = true;
+haxe_exceptions_PosException.__name__ = "haxe.exceptions.PosException";
 haxe_exceptions_PosException.__super__ = haxe_Exception;
 haxe_exceptions_PosException.prototype = $extend(haxe_Exception.prototype,{
 	posInfos: null
@@ -4975,17 +5375,223 @@ var haxe_exceptions_NotImplementedException = function(message,previous,pos) {
 	this.__skipStack++;
 };
 $hxClasses["haxe.exceptions.NotImplementedException"] = haxe_exceptions_NotImplementedException;
-haxe_exceptions_NotImplementedException.__name__ = true;
+haxe_exceptions_NotImplementedException.__name__ = "haxe.exceptions.NotImplementedException";
 haxe_exceptions_NotImplementedException.__super__ = haxe_exceptions_PosException;
 haxe_exceptions_NotImplementedException.prototype = $extend(haxe_exceptions_PosException.prototype,{
 	__class__: haxe_exceptions_NotImplementedException
+});
+var haxe_http_HttpBase = function(url) {
+	this.url = url;
+	this.headers = [];
+	this.params = [];
+	this.emptyOnData = $bind(this,this.onData);
+};
+$hxClasses["haxe.http.HttpBase"] = haxe_http_HttpBase;
+haxe_http_HttpBase.__name__ = "haxe.http.HttpBase";
+haxe_http_HttpBase.prototype = {
+	url: null
+	,responseBytes: null
+	,responseAsString: null
+	,postData: null
+	,postBytes: null
+	,headers: null
+	,params: null
+	,emptyOnData: null
+	,setHeader: function(name,value) {
+		var _g = 0;
+		var _g1 = this.headers.length;
+		while(_g < _g1) {
+			var i = _g++;
+			if(this.headers[i].name == name) {
+				this.headers[i] = { name : name, value : value};
+				return;
+			}
+		}
+		this.headers.push({ name : name, value : value});
+	}
+	,setPostData: function(data) {
+		this.postData = data;
+		this.postBytes = null;
+	}
+	,onData: function(data) {
+	}
+	,onBytes: function(data) {
+	}
+	,onError: function(msg) {
+	}
+	,onStatus: function(status) {
+	}
+	,hasOnData: function() {
+		return !Reflect.compareMethods($bind(this,this.onData),this.emptyOnData);
+	}
+	,success: function(data) {
+		this.responseBytes = data;
+		this.responseAsString = null;
+		if(this.hasOnData()) {
+			this.onData(this.get_responseData());
+		}
+		this.onBytes(this.responseBytes);
+	}
+	,get_responseData: function() {
+		if(this.responseAsString == null && this.responseBytes != null) {
+			this.responseAsString = this.responseBytes.getString(0,this.responseBytes.length,haxe_io_Encoding.UTF8);
+		}
+		return this.responseAsString;
+	}
+	,__class__: haxe_http_HttpBase
+	,__properties__: {get_responseData:"get_responseData"}
+};
+var haxe_http_HttpJs = function(url) {
+	this.async = true;
+	this.withCredentials = false;
+	haxe_http_HttpBase.call(this,url);
+};
+$hxClasses["haxe.http.HttpJs"] = haxe_http_HttpJs;
+haxe_http_HttpJs.__name__ = "haxe.http.HttpJs";
+haxe_http_HttpJs.__super__ = haxe_http_HttpBase;
+haxe_http_HttpJs.prototype = $extend(haxe_http_HttpBase.prototype,{
+	async: null
+	,withCredentials: null
+	,req: null
+	,request: function(post) {
+		var _gthis = this;
+		this.responseAsString = null;
+		this.responseBytes = null;
+		var r = this.req = js_Browser.createXMLHttpRequest();
+		var onreadystatechange = function(_) {
+			if(r.readyState != 4) {
+				return;
+			}
+			var s;
+			try {
+				s = r.status;
+			} catch( _g ) {
+				s = null;
+			}
+			if(s == 0 && js_Browser.get_supported() && $global.location != null) {
+				var protocol = $global.location.protocol.toLowerCase();
+				var rlocalProtocol = new EReg("^(?:about|app|app-storage|.+-extension|file|res|widget):$","");
+				var isLocal = rlocalProtocol.match(protocol);
+				if(isLocal) {
+					s = r.response != null ? 200 : 404;
+				}
+			}
+			if(s == undefined) {
+				s = null;
+			}
+			if(s != null) {
+				_gthis.onStatus(s);
+			}
+			if(s != null && s >= 200 && s < 400) {
+				_gthis.req = null;
+				_gthis.success(haxe_io_Bytes.ofData(r.response));
+			} else if(s == null || s == 0 && r.response == null) {
+				_gthis.req = null;
+				_gthis.onError("Failed to connect or resolve host");
+			} else if(s == null) {
+				_gthis.req = null;
+				var onreadystatechange = r.response != null ? haxe_io_Bytes.ofData(r.response) : null;
+				_gthis.responseBytes = onreadystatechange;
+				_gthis.onError("Http Error #" + r.status);
+			} else {
+				switch(s) {
+				case 12007:
+					_gthis.req = null;
+					_gthis.onError("Unknown host");
+					break;
+				case 12029:
+					_gthis.req = null;
+					_gthis.onError("Failed to connect to host");
+					break;
+				default:
+					_gthis.req = null;
+					var onreadystatechange = r.response != null ? haxe_io_Bytes.ofData(r.response) : null;
+					_gthis.responseBytes = onreadystatechange;
+					_gthis.onError("Http Error #" + r.status);
+				}
+			}
+		};
+		if(this.async) {
+			r.onreadystatechange = onreadystatechange;
+		}
+		var uri;
+		var _g = this.postData;
+		var _g1 = this.postBytes;
+		if(_g == null) {
+			if(_g1 == null) {
+				uri = null;
+			} else {
+				var bytes = _g1;
+				uri = new Blob([bytes.b.bufferValue]);
+			}
+		} else if(_g1 == null) {
+			var str = _g;
+			uri = str;
+		} else {
+			uri = null;
+		}
+		if(uri != null) {
+			post = true;
+		} else {
+			var _g = 0;
+			var _g1 = this.params;
+			while(_g < _g1.length) {
+				var p = _g1[_g];
+				++_g;
+				if(uri == null) {
+					uri = "";
+				} else {
+					uri = (uri == null ? "null" : Std.string(uri)) + "&";
+				}
+				var s = p.name;
+				var value = (uri == null ? "null" : Std.string(uri)) + encodeURIComponent(s) + "=";
+				var s1 = p.value;
+				uri = value + encodeURIComponent(s1);
+			}
+		}
+		try {
+			if(post) {
+				r.open("POST",this.url,this.async);
+			} else if(uri != null) {
+				var question = this.url.split("?").length <= 1;
+				r.open("GET",this.url + (question ? "?" : "&") + (uri == null ? "null" : Std.string(uri)),this.async);
+				uri = null;
+			} else {
+				r.open("GET",this.url,this.async);
+			}
+			r.responseType = "arraybuffer";
+		} catch( _g ) {
+			var e = haxe_Exception.caught(_g).unwrap();
+			this.req = null;
+			this.onError(e.toString());
+			return;
+		}
+		r.withCredentials = this.withCredentials;
+		if(!Lambda.exists(this.headers,function(h) {
+			return h.name == "Content-Type";
+		}) && post && this.postData == null) {
+			r.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+		}
+		var _g = 0;
+		var _g1 = this.headers;
+		while(_g < _g1.length) {
+			var h = _g1[_g];
+			++_g;
+			r.setRequestHeader(h.name,h.value);
+		}
+		r.send(uri);
+		if(!this.async) {
+			onreadystatechange(null);
+		}
+	}
+	,__class__: haxe_http_HttpJs
 });
 var haxe_io_BytesBuffer = function() {
 	this.pos = 0;
 	this.size = 0;
 };
 $hxClasses["haxe.io.BytesBuffer"] = haxe_io_BytesBuffer;
-haxe_io_BytesBuffer.__name__ = true;
+haxe_io_BytesBuffer.__name__ = "haxe.io.BytesBuffer";
 haxe_io_BytesBuffer.prototype = {
 	buffer: null
 	,view: null
@@ -5038,7 +5644,7 @@ haxe_io_BytesBuffer.prototype = {
 };
 var haxe_io_Input = function() { };
 $hxClasses["haxe.io.Input"] = haxe_io_Input;
-haxe_io_Input.__name__ = true;
+haxe_io_Input.__name__ = "haxe.io.Input";
 haxe_io_Input.prototype = {
 	bigEndian: null
 	,readByte: function() {
@@ -5063,6 +5669,10 @@ haxe_io_Input.prototype = {
 		}
 		return len - k;
 	}
+	,set_bigEndian: function(b) {
+		this.bigEndian = b;
+		return b;
+	}
 	,readFullBytes: function(s,pos,len) {
 		while(len > 0) {
 			var k = this.readBytes(s,pos,len);
@@ -5086,6 +5696,43 @@ haxe_io_Input.prototype = {
 		}
 		return s;
 	}
+	,readFloat: function() {
+		return haxe_io_FPHelper.i32ToFloat(this.readInt32());
+	}
+	,readDouble: function() {
+		var i1 = this.readInt32();
+		var i2 = this.readInt32();
+		if(this.bigEndian) {
+			return haxe_io_FPHelper.i64ToDouble(i2,i1);
+		} else {
+			return haxe_io_FPHelper.i64ToDouble(i1,i2);
+		}
+	}
+	,readInt8: function() {
+		var n = this.readByte();
+		if(n >= 128) {
+			return n - 256;
+		}
+		return n;
+	}
+	,readInt16: function() {
+		var ch1 = this.readByte();
+		var ch2 = this.readByte();
+		var n = this.bigEndian ? ch2 | ch1 << 8 : ch1 | ch2 << 8;
+		if((n & 32768) != 0) {
+			return n - 65536;
+		}
+		return n;
+	}
+	,readUInt16: function() {
+		var ch1 = this.readByte();
+		var ch2 = this.readByte();
+		if(this.bigEndian) {
+			return ch2 | ch1 << 8;
+		} else {
+			return ch1 | ch2 << 8;
+		}
+	}
 	,readInt32: function() {
 		var ch1 = this.readByte();
 		var ch2 = this.readByte();
@@ -5103,6 +5750,7 @@ haxe_io_Input.prototype = {
 		return b.getString(0,len,encoding);
 	}
 	,__class__: haxe_io_Input
+	,__properties__: {set_bigEndian:"set_bigEndian"}
 };
 var haxe_io_BytesInput = function(b,pos,len) {
 	if(pos == null) {
@@ -5120,7 +5768,7 @@ var haxe_io_BytesInput = function(b,pos,len) {
 	this.totlen = len;
 };
 $hxClasses["haxe.io.BytesInput"] = haxe_io_BytesInput;
-haxe_io_BytesInput.__name__ = true;
+haxe_io_BytesInput.__name__ = "haxe.io.BytesInput";
 haxe_io_BytesInput.__super__ = haxe_io_Input;
 haxe_io_BytesInput.prototype = $extend(haxe_io_Input.prototype,{
 	b: null
@@ -5166,10 +5814,11 @@ haxe_io_BytesInput.prototype = $extend(haxe_io_Input.prototype,{
 		return len;
 	}
 	,__class__: haxe_io_BytesInput
+	,__properties__: $extend(haxe_io_Input.prototype.__properties__,{set_position:"set_position"})
 });
 var haxe_io_Output = function() { };
 $hxClasses["haxe.io.Output"] = haxe_io_Output;
-haxe_io_Output.__name__ = true;
+haxe_io_Output.__name__ = "haxe.io.Output";
 haxe_io_Output.prototype = {
 	bigEndian: null
 	,writeByte: function(c) {
@@ -5188,6 +5837,10 @@ haxe_io_Output.prototype = {
 		}
 		return len;
 	}
+	,set_bigEndian: function(b) {
+		this.bigEndian = b;
+		return b;
+	}
 	,write: function(s) {
 		var l = s.length;
 		var p = 0;
@@ -5203,6 +5856,40 @@ haxe_io_Output.prototype = {
 	,writeFloat: function(x) {
 		this.writeInt32(haxe_io_FPHelper.floatToI32(x));
 	}
+	,writeDouble: function(x) {
+		var i64 = haxe_io_FPHelper.doubleToI64(x);
+		if(this.bigEndian) {
+			this.writeInt32(i64.high);
+			this.writeInt32(i64.low);
+		} else {
+			this.writeInt32(i64.low);
+			this.writeInt32(i64.high);
+		}
+	}
+	,writeInt8: function(x) {
+		if(x < -128 || x >= 128) {
+			throw haxe_Exception.thrown(haxe_io_Error.Overflow);
+		}
+		this.writeByte(x & 255);
+	}
+	,writeInt16: function(x) {
+		if(x < -32768 || x >= 32768) {
+			throw haxe_Exception.thrown(haxe_io_Error.Overflow);
+		}
+		this.writeUInt16(x & 65535);
+	}
+	,writeUInt16: function(x) {
+		if(x < 0 || x >= 65536) {
+			throw haxe_Exception.thrown(haxe_io_Error.Overflow);
+		}
+		if(this.bigEndian) {
+			this.writeByte(x >> 8);
+			this.writeByte(x & 255);
+		} else {
+			this.writeByte(x & 255);
+			this.writeByte(x >> 8);
+		}
+	}
 	,writeInt32: function(x) {
 		if(this.bigEndian) {
 			this.writeByte(x >>> 24);
@@ -5217,12 +5904,13 @@ haxe_io_Output.prototype = {
 		}
 	}
 	,__class__: haxe_io_Output
+	,__properties__: {set_bigEndian:"set_bigEndian"}
 };
 var haxe_io_BytesOutput = function() {
 	this.b = new haxe_io_BytesBuffer();
 };
 $hxClasses["haxe.io.BytesOutput"] = haxe_io_BytesOutput;
-haxe_io_BytesOutput.__name__ = true;
+haxe_io_BytesOutput.__name__ = "haxe.io.BytesOutput";
 haxe_io_BytesOutput.__super__ = haxe_io_Output;
 haxe_io_BytesOutput.prototype = $extend(haxe_io_Output.prototype,{
 	b: null
@@ -5241,7 +5929,7 @@ haxe_io_BytesOutput.prototype = $extend(haxe_io_Output.prototype,{
 var haxe_io_Eof = function() {
 };
 $hxClasses["haxe.io.Eof"] = haxe_io_Eof;
-haxe_io_Eof.__name__ = true;
+haxe_io_Eof.__name__ = "haxe.io.Eof";
 haxe_io_Eof.prototype = {
 	toString: function() {
 		return "Eof";
@@ -5257,10 +5945,26 @@ var haxe_io_Error = $hxEnums["haxe.io.Error"] = { __ename__:true,__constructs__:
 haxe_io_Error.__constructs__ = [haxe_io_Error.Blocked,haxe_io_Error.Overflow,haxe_io_Error.OutsideBounds,haxe_io_Error.Custom];
 var haxe_io_FPHelper = function() { };
 $hxClasses["haxe.io.FPHelper"] = haxe_io_FPHelper;
-haxe_io_FPHelper.__name__ = true;
+haxe_io_FPHelper.__name__ = "haxe.io.FPHelper";
+haxe_io_FPHelper.i32ToFloat = function(i) {
+	haxe_io_FPHelper.helper.setInt32(0,i,true);
+	return haxe_io_FPHelper.helper.getFloat32(0,true);
+};
 haxe_io_FPHelper.floatToI32 = function(f) {
 	haxe_io_FPHelper.helper.setFloat32(0,f,true);
 	return haxe_io_FPHelper.helper.getInt32(0,true);
+};
+haxe_io_FPHelper.i64ToDouble = function(low,high) {
+	haxe_io_FPHelper.helper.setInt32(0,low,true);
+	haxe_io_FPHelper.helper.setInt32(4,high,true);
+	return haxe_io_FPHelper.helper.getFloat64(0,true);
+};
+haxe_io_FPHelper.doubleToI64 = function(v) {
+	var i64 = haxe_io_FPHelper.i64tmp;
+	haxe_io_FPHelper.helper.setFloat64(0,v,true);
+	i64.low = haxe_io_FPHelper.helper.getInt32(0,true);
+	i64.high = haxe_io_FPHelper.helper.getInt32(4,true);
+	return i64;
 };
 var haxe_io_UInt8Array = {};
 haxe_io_UInt8Array.fromBytes = function(bytes,bytePos,length) {
@@ -5277,7 +5981,7 @@ var haxe_iterators_ArrayIterator = function(array) {
 	this.array = array;
 };
 $hxClasses["haxe.iterators.ArrayIterator"] = haxe_iterators_ArrayIterator;
-haxe_iterators_ArrayIterator.__name__ = true;
+haxe_iterators_ArrayIterator.__name__ = "haxe.iterators.ArrayIterator";
 haxe_iterators_ArrayIterator.prototype = {
 	array: null
 	,current: null
@@ -5289,11 +5993,155 @@ haxe_iterators_ArrayIterator.prototype = {
 	}
 	,__class__: haxe_iterators_ArrayIterator
 };
+var haxe_iterators_MapKeyValueIterator = function(map) {
+	this.map = map;
+	this.keys = map.keys();
+};
+$hxClasses["haxe.iterators.MapKeyValueIterator"] = haxe_iterators_MapKeyValueIterator;
+haxe_iterators_MapKeyValueIterator.__name__ = "haxe.iterators.MapKeyValueIterator";
+haxe_iterators_MapKeyValueIterator.prototype = {
+	map: null
+	,keys: null
+	,hasNext: function() {
+		return this.keys.hasNext();
+	}
+	,next: function() {
+		var key = this.keys.next();
+		return { value : this.map.get(key), key : key};
+	}
+	,__class__: haxe_iterators_MapKeyValueIterator
+};
+var haxe_net_ReadyState = $hxEnums["haxe.net.ReadyState"] = { __ename__:true,__constructs__:null
+	,Connecting: {_hx_name:"Connecting",_hx_index:0,__enum__:"haxe.net.ReadyState",toString:$estr}
+	,Open: {_hx_name:"Open",_hx_index:1,__enum__:"haxe.net.ReadyState",toString:$estr}
+	,Closing: {_hx_name:"Closing",_hx_index:2,__enum__:"haxe.net.ReadyState",toString:$estr}
+	,Closed: {_hx_name:"Closed",_hx_index:3,__enum__:"haxe.net.ReadyState",toString:$estr}
+};
+haxe_net_ReadyState.__constructs__ = [haxe_net_ReadyState.Connecting,haxe_net_ReadyState.Open,haxe_net_ReadyState.Closing,haxe_net_ReadyState.Closed];
+var haxe_net_WebSocket = function() {
+};
+$hxClasses["haxe.net.WebSocket"] = haxe_net_WebSocket;
+haxe_net_WebSocket.__name__ = "haxe.net.WebSocket";
+haxe_net_WebSocket.create = function(url,protocols,origin,debug) {
+	if(debug == null) {
+		debug = false;
+	}
+	return new haxe_net_impl_WebSocketJs(url,protocols);
+};
+haxe_net_WebSocket.defer = function(callback) {
+	haxe_Timer.delay(callback,0);
+};
+haxe_net_WebSocket.prototype = {
+	process: function() {
+	}
+	,sendString: function(message) {
+	}
+	,sendBytes: function(message) {
+	}
+	,close: function() {
+	}
+	,get_readyState: function() {
+		throw haxe_Exception.thrown("Not implemented");
+	}
+	,onopen: function() {
+	}
+	,onerror: function(message) {
+	}
+	,onmessageString: function(message) {
+	}
+	,onmessageBytes: function(message) {
+	}
+	,onclose: function(e) {
+	}
+	,__class__: haxe_net_WebSocket
+	,__properties__: {get_readyState:"get_readyState"}
+};
+var haxe_net_impl_WebSocketJs = function(url,protocols) {
+	var _gthis = this;
+	haxe_net_WebSocket.call(this);
+	if(protocols != null) {
+		this.impl = new WebSocket(url,protocols);
+	} else {
+		this.impl = new WebSocket(url);
+	}
+	this.impl.onopen = function(e) {
+		_gthis.onopen();
+	};
+	this.impl.onclose = function(e) {
+		_gthis.onclose(e);
+	};
+	this.impl.onerror = function(e) {
+		_gthis.onerror("error");
+	};
+	this.impl.onmessage = function(e) {
+		var m = e.data;
+		if(typeof(m) == "string") {
+			_gthis.onmessageString(m);
+		} else if(((m) instanceof ArrayBuffer)) {
+			_gthis.onmessageBytes(haxe_io_Bytes.ofData(js_Boot.__cast(m , ArrayBuffer)));
+		} else if(((m) instanceof Blob)) {
+			var arrayBuffer;
+			var fileReader = new FileReader();
+			fileReader.onload = function() {
+				arrayBuffer = fileReader.result;
+				_gthis.onmessageBytes(haxe_io_Bytes.ofData(arrayBuffer));
+			};
+			fileReader.readAsArrayBuffer(js_Boot.__cast(m , Blob));
+		} else {
+			haxe_Log.trace("Unhandled websocket onmessage " + m,{ fileName : "src/haxe/net/impl/WebSocketJs.hx", lineNumber : 56, className : "haxe.net.impl.WebSocketJs", methodName : "new"});
+		}
+	};
+};
+$hxClasses["haxe.net.impl.WebSocketJs"] = haxe_net_impl_WebSocketJs;
+haxe_net_impl_WebSocketJs.__name__ = "haxe.net.impl.WebSocketJs";
+haxe_net_impl_WebSocketJs.__super__ = haxe_net_WebSocket;
+haxe_net_impl_WebSocketJs.prototype = $extend(haxe_net_WebSocket.prototype,{
+	impl: null
+	,sendString: function(message) {
+		this.impl.send(message);
+	}
+	,sendBytes: function(message) {
+		message = message.sub(0,message.length);
+		this.impl.send(message.b.bufferValue);
+	}
+	,close: function() {
+		this.impl.close();
+	}
+	,get_readyState: function() {
+		switch(this.impl.readyState) {
+		case 0:
+			return haxe_net_ReadyState.Connecting;
+		case 1:
+			return haxe_net_ReadyState.Open;
+		case 2:
+			return haxe_net_ReadyState.Closing;
+		case 3:
+			return haxe_net_ReadyState.Closed;
+		default:
+			throw haxe_Exception.thrown("Unexpected websocket state");
+		}
+	}
+	,__class__: haxe_net_impl_WebSocketJs
+});
+var haxe_rtti_Meta = function() { };
+$hxClasses["haxe.rtti.Meta"] = haxe_rtti_Meta;
+haxe_rtti_Meta.__name__ = "haxe.rtti.Meta";
+haxe_rtti_Meta.getType = function(t) {
+	var meta = haxe_rtti_Meta.getMeta(t);
+	if(meta == null || meta.obj == null) {
+		return { };
+	} else {
+		return meta.obj;
+	}
+};
+haxe_rtti_Meta.getMeta = function(t) {
+	return t.__meta__;
+};
 var instances_Cylinder = function(position) {
 	this.position = position;
 };
 $hxClasses["instances.Cylinder"] = instances_Cylinder;
-instances_Cylinder.__name__ = true;
+instances_Cylinder.__name__ = "instances.Cylinder";
 instances_Cylinder.prototype = {
 	yOffset: null
 	,position: null
@@ -5345,7 +6193,7 @@ var instances_CylinderMesh = function(sections) {
 	this.addSection(lastPoint,firstPoint,h,index);
 };
 $hxClasses["instances.CylinderMesh"] = instances_CylinderMesh;
-instances_CylinderMesh.__name__ = true;
+instances_CylinderMesh.__name__ = "instances.CylinderMesh";
 instances_CylinderMesh.prototype = {
 	vertices: null
 	,indices: null
@@ -5383,7 +6231,7 @@ var instances_GrassMesh = function() {
 	this.indices = obj.indices;
 };
 $hxClasses["instances.GrassMesh"] = instances_GrassMesh;
-instances_GrassMesh.__name__ = true;
+instances_GrassMesh.__name__ = "instances.GrassMesh";
 instances_GrassMesh.prototype = {
 	vertices: null
 	,indices: null
@@ -5393,7 +6241,7 @@ var instances_GrassPatch = function(position) {
 	this.position = position;
 };
 $hxClasses["instances.GrassPatch"] = instances_GrassPatch;
-instances_GrassPatch.__name__ = true;
+instances_GrassPatch.__name__ = "instances.GrassPatch";
 instances_GrassPatch.prototype = {
 	yOffset: null
 	,position: null
@@ -5463,7 +6311,7 @@ var instances_Instances = function(type,iX,iZ,m,vv,p,imvp) {
 	}
 };
 $hxClasses["instances.Instances"] = instances_Instances;
-instances_Instances.__name__ = true;
+instances_Instances.__name__ = "instances.Instances";
 instances_Instances.prototype = {
 	cameraStart: null
 	,model: null
@@ -5771,7 +6619,7 @@ var instances_ObjLoader = function(objData) {
 	}
 };
 $hxClasses["instances.ObjLoader"] = instances_ObjLoader;
-instances_ObjLoader.__name__ = true;
+instances_ObjLoader.__name__ = "instances.ObjLoader";
 instances_ObjLoader.prototype = {
 	data: null
 	,indices: null
@@ -5817,9 +6665,2057 @@ instances_ObjLoader.prototype = {
 	}
 	,__class__: instances_ObjLoader
 };
+var io_colyseus_Auth = function(endpoint) {
+	this.endpoint = StringTools.replace(endpoint,"ws","http");
+};
+$hxClasses["io.colyseus.Auth"] = io_colyseus_Auth;
+io_colyseus_Auth.__name__ = "io.colyseus.Auth";
+io_colyseus_Auth.prototype = {
+	token: null
+	,endpoint: null
+	,hasToken: function() {
+		return this.token != null;
+	}
+	,login: function() {
+		var query = new haxe_ds_StringMap();
+		this.request("POST","/auth",query);
+	}
+	,getDeviceId: function() {
+		return "";
+	}
+	,getPlatform: function() {
+		return "";
+	}
+	,request: function(method,segments,query,body) {
+		if(query == null) {
+			query = new haxe_ds_StringMap();
+		}
+		var queryString = [];
+		var h = query.h;
+		var field_h = h;
+		var field_keys = Object.keys(h);
+		var field_length = field_keys.length;
+		var field_current = 0;
+		while(field_current < field_length) {
+			var field = field_keys[field_current++];
+			queryString.push(field + "=" + query.h[field]);
+		}
+		if(this.hasToken()) {
+			var v = this.token;
+			query.h["token"] = v;
+		}
+		var req = new haxe_http_HttpJs(this.endpoint + segments + "?" + queryString.join("&"));
+		var responseBytes = new haxe_io_BytesOutput();
+		if(this.hasToken()) {
+			req.setHeader("authorization","Bearer " + this.token);
+		}
+		if(body != null) {
+			req.setPostData(body);
+			req.setHeader("Content-Type","application/json");
+		}
+		req.setHeader("Accept","application/json");
+		req.onData = function(json) {
+			haxe_Log.trace("RESPONSE:" + json,{ fileName : "src/io/colyseus/Auth.hx", lineNumber : 64, className : "io.colyseus.Auth", methodName : "request"});
+		};
+		req.onError = function(err) {
+			haxe_Log.trace("onError",{ fileName : "src/io/colyseus/Auth.hx", lineNumber : 68, className : "io.colyseus.Auth", methodName : "request"});
+			haxe_Log.trace(err,{ fileName : "src/io/colyseus/Auth.hx", lineNumber : 69, className : "io.colyseus.Auth", methodName : "request"});
+		};
+		req.setHeader("X-HTTP-Method-Override",method);
+		req.request(true);
+	}
+	,__class__: io_colyseus_Auth
+};
+var io_colyseus_RoomAvailable = function() { };
+$hxClasses["io.colyseus.RoomAvailable"] = io_colyseus_RoomAvailable;
+io_colyseus_RoomAvailable.__name__ = "io.colyseus.RoomAvailable";
+io_colyseus_RoomAvailable.__isInterface__ = true;
+io_colyseus_RoomAvailable.prototype = {
+	roomId: null
+	,clients: null
+	,maxClients: null
+	,metadata: null
+	,__class__: io_colyseus_RoomAvailable
+};
+var io_colyseus_DummyState = function() { };
+$hxClasses["io.colyseus.DummyState"] = io_colyseus_DummyState;
+io_colyseus_DummyState.__name__ = "io.colyseus.DummyState";
+var io_colyseus_Client = function(endpoint) {
+	this.endpoint = endpoint;
+	this.auth = new io_colyseus_Auth(this.endpoint);
+};
+$hxClasses["io.colyseus.Client"] = io_colyseus_Client;
+io_colyseus_Client.__name__ = "io.colyseus.Client";
+io_colyseus_Client.prototype = {
+	createMatchMakeRequest_reconnect_T: function(method,roomName,options,stateClass,callback) {
+		var _gthis = this;
+		if(this.auth.hasToken()) {
+			options.h["token"] = this.auth.token;
+		}
+		this.request("POST","/matchmake/" + method + "/" + roomName,JSON.stringify(options),function(err,response) {
+			if(err != null) {
+				callback(err,null);
+				return;
+			} else {
+				_gthis.consumeSeatReservation_createMatchMakeRequest_T(response,stateClass,callback);
+			}
+		});
+	}
+	,createMatchMakeRequest_joinById_T: function(method,roomName,options,stateClass,callback) {
+		var _gthis = this;
+		if(this.auth.hasToken()) {
+			options.h["token"] = this.auth.token;
+		}
+		this.request("POST","/matchmake/" + method + "/" + roomName,JSON.stringify(options),function(err,response) {
+			if(err != null) {
+				callback(err,null);
+				return;
+			} else {
+				_gthis.consumeSeatReservation_createMatchMakeRequest_T(response,stateClass,callback);
+			}
+		});
+	}
+	,createMatchMakeRequest_join_T: function(method,roomName,options,stateClass,callback) {
+		var _gthis = this;
+		if(this.auth.hasToken()) {
+			options.h["token"] = this.auth.token;
+		}
+		this.request("POST","/matchmake/" + method + "/" + roomName,JSON.stringify(options),function(err,response) {
+			if(err != null) {
+				callback(err,null);
+				return;
+			} else {
+				_gthis.consumeSeatReservation_createMatchMakeRequest_T(response,stateClass,callback);
+			}
+		});
+	}
+	,createMatchMakeRequest_create_T: function(method,roomName,options,stateClass,callback) {
+		var _gthis = this;
+		if(this.auth.hasToken()) {
+			options.h["token"] = this.auth.token;
+		}
+		this.request("POST","/matchmake/" + method + "/" + roomName,JSON.stringify(options),function(err,response) {
+			if(err != null) {
+				callback(err,null);
+				return;
+			} else {
+				_gthis.consumeSeatReservation_createMatchMakeRequest_T(response,stateClass,callback);
+			}
+		});
+	}
+	,createMatchMakeRequest_joinOrCreate_T: function(method,roomName,options,stateClass,callback) {
+		var _gthis = this;
+		if(this.auth.hasToken()) {
+			options.h["token"] = this.auth.token;
+		}
+		this.request("POST","/matchmake/" + method + "/" + roomName,JSON.stringify(options),function(err,response) {
+			if(err != null) {
+				callback(err,null);
+				return;
+			} else {
+				_gthis.consumeSeatReservation_createMatchMakeRequest_T(response,stateClass,callback);
+			}
+		});
+	}
+	,consumeSeatReservation_createMatchMakeRequest_T: function(response,stateClass,callback) {
+		var room = new io_colyseus_Room(response.room.name,stateClass);
+		room.id = response.room.roomId;
+		room.sessionId = response.sessionId;
+		var onError = function(code,message) {
+			callback(new io_colyseus_error_MatchMakeError(code,message),null);
+		};
+		var onJoin = function() {
+			HxOverrides.remove(room.onError,onError);
+			callback(null,room);
+		};
+		room.onError.push(onError);
+		room.onJoin.push(onJoin);
+		var room1 = room;
+		var tmp = Std.string(response.room.processId) + "/" + room.id;
+		var _g = new haxe_ds_StringMap();
+		_g.h["sessionId"] = room.sessionId;
+		room1.connect(this.createConnection(tmp,_g));
+	}
+	,endpoint: null
+	,auth: null
+	,getAvailableRooms: function(roomName,callback) {
+		this.request("GET","/matchmake/" + roomName,null,callback);
+	}
+	,createConnection: function(path,options) {
+		if(path == null) {
+			path = "";
+		}
+		var params = [];
+		var h = options.h;
+		var name_h = h;
+		var name_keys = Object.keys(h);
+		var name_length = name_keys.length;
+		var name_current = 0;
+		while(name_current < name_length) {
+			var name = name_keys[name_current++];
+			params.push(name + "=" + Std.string(options.h[name]));
+		}
+		return new io_colyseus_Connection(this.endpoint + "/" + path + "?" + params.join("&"));
+	}
+	,request: function(method,segments,body,callback) {
+		var req = new haxe_http_HttpJs("http" + this.endpoint.substring(2) + segments);
+		if(body != null) {
+			req.setPostData(body);
+			req.setHeader("Content-Type","application/json");
+		}
+		req.setHeader("Accept","application/json");
+		var responseStatus;
+		req.onStatus = function(status) {
+			responseStatus = status;
+		};
+		req.onData = function(json) {
+			var response = JSON.parse(json);
+			if(response.error) {
+				var code = response.code;
+				var message = response.error;
+				callback(new io_colyseus_error_MatchMakeError(code,message),null);
+			} else {
+				callback(null,response);
+			}
+		};
+		req.onError = function(err) {
+			callback(new io_colyseus_error_MatchMakeError(0,err),null);
+		};
+		req.request(method == "POST");
+	}
+	,__class__: io_colyseus_Client
+};
+var io_colyseus_Connection = function(url) {
+	this.reconnectionEnabled = false;
+	var _gthis = this;
+	this.ws = haxe_net_WebSocket.create(url);
+	this.ws.onopen = function() {
+		_gthis.onOpen();
+	};
+	this.ws.onmessageBytes = function(bytes) {
+		_gthis.onMessage(bytes);
+	};
+	this.ws.onclose = function(e) {
+		_gthis.onClose();
+	};
+	this.ws.onerror = function(message) {
+		_gthis.onError(message);
+	};
+};
+$hxClasses["io.colyseus.Connection"] = io_colyseus_Connection;
+io_colyseus_Connection.__name__ = "io.colyseus.Connection";
+io_colyseus_Connection.prototype = {
+	reconnectionEnabled: null
+	,ws: null
+	,onOpen: function() {
+	}
+	,onMessage: function(bytes) {
+	}
+	,onClose: function() {
+	}
+	,onError: function(message) {
+	}
+	,send: function(data) {
+		this.ws.sendBytes(data);
+	}
+	,close: function() {
+		this.ws.close();
+	}
+	,__class__: io_colyseus_Connection
+};
+var io_colyseus_Room = function(name,cls) {
+	this.serializer = null;
+	this.serializerId = null;
+	this.onMessageHandlers = new haxe_ds_StringMap();
+	var this1 = [];
+	this.onLeave = this1;
+	var this1 = [];
+	this.onError = this1;
+	var this1 = [];
+	this.onStateChange = this1;
+	var this1 = [];
+	this.onJoin = this1;
+	this.id = null;
+	this.name = name;
+	this.tmpStateClass = cls;
+};
+$hxClasses["io.colyseus.Room"] = io_colyseus_Room;
+io_colyseus_Room.__name__ = "io.colyseus.Room";
+io_colyseus_Room.prototype = {
+	id: null
+	,sessionId: null
+	,name: null
+	,onJoin: null
+	,onStateChange: null
+	,onError: null
+	,onLeave: null
+	,onMessageHandlers: null
+	,connection: null
+	,serializerId: null
+	,serializer: null
+	,tmpStateClass: null
+	,connect: function(connection) {
+		var _gthis = this;
+		this.connection = connection;
+		this.connection.reconnectionEnabled = false;
+		this.connection.onMessage = function(bytes) {
+			_gthis.onMessageCallback(bytes);
+		};
+		this.connection.onClose = function() {
+			_gthis.teardown();
+			var _g = 0;
+			var _g1 = _gthis.onLeave;
+			while(_g < _g1.length) {
+				var fn = _g1[_g];
+				++_g;
+				fn();
+			}
+		};
+		this.connection.onError = function(e) {
+			var _g = 0;
+			var _g1 = _gthis.onError;
+			while(_g < _g1.length) {
+				var fn = _g1[_g];
+				++_g;
+				fn(0,e);
+			}
+		};
+	}
+	,leave: function(consented) {
+		if(consented == null) {
+			consented = true;
+		}
+		if(this.connection != null) {
+			if(consented) {
+				var bytes = new haxe_io_BytesOutput();
+				bytes.writeByte(12);
+				this.connection.send(bytes.getBytes());
+			} else {
+				this.connection.close();
+			}
+		} else {
+			var _g = 0;
+			var _g1 = this.onLeave;
+			while(_g < _g1.length) {
+				var fn = _g1[_g];
+				++_g;
+				fn();
+			}
+		}
+	}
+	,send: function(type,message) {
+		var bytesToSend = new haxe_io_BytesOutput();
+		bytesToSend.writeByte(13);
+		if(typeof(type) == "string") {
+			var encodedType = haxe_io_Bytes.ofString(type);
+			bytesToSend.writeByte(encodedType.length | 160);
+			bytesToSend.writeBytes(encodedType,0,encodedType.length);
+		} else {
+			bytesToSend.writeByte(type);
+		}
+		if(message != null) {
+			var encodedMessage = new org_msgpack_Encoder(message).o.getBytes();
+			bytesToSend.writeBytes(encodedMessage,0,encodedMessage.length);
+		}
+		this.connection.send(bytesToSend.getBytes());
+	}
+	,onMessage: function(type,callback) {
+		var this1 = this.onMessageHandlers;
+		var k = this.getMessageHandlerKey(type);
+		this1.h[k] = callback;
+		return this;
+	}
+	,state: null
+	,get_state: function() {
+		return this.serializer.getState();
+	}
+	,teardown: function() {
+		if(this.serializer != null) {
+			this.serializer.teardown();
+		}
+	}
+	,onMessageCallback: function(data) {
+		var code = data.b[0];
+		var it = { offset : 1};
+		if(code == 10) {
+			this.serializerId = data.getString(it.offset + 1,data.b[it.offset]);
+			it.offset += this.serializerId.length + 1;
+			if(this.serializerId == "schema") {
+				this.serializer = new io_colyseus_serializer_SchemaSerializer(this.tmpStateClass);
+			} else if(this.serializerId == "fossil-delta") {
+				this.serializer = new io_colyseus_serializer_FossilDeltaSerializer();
+			} else {
+				this.serializer = new io_colyseus_serializer_NoneSerializer();
+			}
+			if(data.length > it.offset) {
+				this.serializer.handshake(data,it.offset);
+			}
+			var _g = 0;
+			var _g1 = this.onJoin;
+			while(_g < _g1.length) {
+				var fn = _g1[_g];
+				++_g;
+				fn();
+			}
+			var bytes = new haxe_io_BytesOutput();
+			bytes.writeByte(10);
+			this.connection.send(bytes.getBytes());
+		} else if(code == 11) {
+			var errorCode = io_colyseus_serializer_schema_Schema.decoder.number(data,it);
+			var message = io_colyseus_serializer_schema_Schema.decoder.string(data,it);
+			haxe_Log.trace("Room error: code => " + errorCode + ", message => " + message,{ fileName : "src/io/colyseus/Room.hx", lineNumber : 154, className : "io.colyseus.Room", methodName : "onMessageCallback"});
+			var _g = 0;
+			var _g1 = this.onError;
+			while(_g < _g1.length) {
+				var fn = _g1[_g];
+				++_g;
+				fn(errorCode,message);
+			}
+		} else if(code == 12) {
+			this.leave();
+		} else if(code == 14) {
+			this.setState(data.sub(it.offset,data.length - 1));
+		} else if(code == 15) {
+			this.patch(data.sub(it.offset,data.length - 1));
+		} else if(code == 13) {
+			var type = io_colyseus_serializer_schema_SPEC.stringCheck(data,it) ? io_colyseus_serializer_schema_Schema.decoder.string(data,it) : io_colyseus_serializer_schema_Schema.decoder.number(data,it);
+			var message;
+			if(data.length > it.offset) {
+				var b = data.sub(it.offset,data.length - it.offset);
+				var option = null;
+				if(option == null) {
+					option = org_msgpack_DecodeOption.AsObject;
+				}
+				message = new org_msgpack_Decoder(b,option).o;
+			} else {
+				message = null;
+			}
+			this.dispatchMessage(type,message);
+		}
+	}
+	,setState: function(encodedState) {
+		this.serializer.setState(encodedState);
+		var e = this.onStateChange;
+		var arg = this.serializer.getState();
+		var _g = 0;
+		var _g1 = e;
+		while(_g < _g1.length) {
+			var fn = _g1[_g];
+			++_g;
+			fn(arg);
+		}
+	}
+	,patch: function(binaryPatch) {
+		this.serializer.patch(binaryPatch);
+		var e = this.onStateChange;
+		var arg = this.serializer.getState();
+		var _g = 0;
+		var _g1 = e;
+		while(_g < _g1.length) {
+			var fn = _g1[_g];
+			++_g;
+			fn(arg);
+		}
+	}
+	,dispatchMessage: function(type,message) {
+		var messageType = this.getMessageHandlerKey(type);
+		if(this.onMessageHandlers.h[messageType] != null) {
+			this.onMessageHandlers.h[messageType](message);
+		} else {
+			haxe_Log.trace("onMessage not registered for type " + Std.string(type),{ fileName : "src/io/colyseus/Room.hx", lineNumber : 199, className : "io.colyseus.Room", methodName : "dispatchMessage"});
+		}
+	}
+	,getMessageHandlerKey: function(type) {
+		if(typeof(type) == "string") {
+			return type;
+		} else if(typeof(type) == "number" && ((type | 0) === type)) {
+			return "i" + Std.string(type);
+		} else {
+			var c = js_Boot.getClass(type);
+			return "$" + c.__name__;
+		}
+	}
+	,__class__: io_colyseus_Room
+	,__properties__: {get_state:"get_state"}
+};
+var io_colyseus_error_MatchMakeError = function(code,message) {
+	this.code = code;
+	this.message = message;
+};
+$hxClasses["io.colyseus.error.MatchMakeError"] = io_colyseus_error_MatchMakeError;
+io_colyseus_error_MatchMakeError.__name__ = "io.colyseus.error.MatchMakeError";
+io_colyseus_error_MatchMakeError.prototype = {
+	code: null
+	,message: null
+	,__class__: io_colyseus_error_MatchMakeError
+};
+var io_colyseus_events_EventHandler = {};
+io_colyseus_events_EventHandler.__properties__ = {get_handlers:"get_handlers"};
+io_colyseus_events_EventHandler.get_handlers = function(this1) {
+	return this1;
+};
+io_colyseus_events_EventHandler._new = function() {
+	var this1 = [];
+	return this1;
+};
+io_colyseus_events_EventHandler.add = function(this1,fn) {
+	this1.push(fn);
+};
+io_colyseus_events_EventHandler.remove = function(this1,fn) {
+	HxOverrides.remove(this1,fn);
+};
+var io_colyseus_events_EventHandlerDispatcher0 = function() { };
+$hxClasses["io.colyseus.events.EventHandlerDispatcher0"] = io_colyseus_events_EventHandlerDispatcher0;
+io_colyseus_events_EventHandlerDispatcher0.__name__ = "io.colyseus.events.EventHandlerDispatcher0";
+io_colyseus_events_EventHandlerDispatcher0.dispatch = function(e) {
+	var _g = 0;
+	var _g1 = e;
+	while(_g < _g1.length) {
+		var fn = _g1[_g];
+		++_g;
+		fn();
+	}
+};
+var io_colyseus_events_EventHandlerDispatcher1 = function() { };
+$hxClasses["io.colyseus.events.EventHandlerDispatcher1"] = io_colyseus_events_EventHandlerDispatcher1;
+io_colyseus_events_EventHandlerDispatcher1.__name__ = "io.colyseus.events.EventHandlerDispatcher1";
+io_colyseus_events_EventHandlerDispatcher1.dispatch = function(e,arg) {
+	var _g = 0;
+	var _g1 = e;
+	while(_g < _g1.length) {
+		var fn = _g1[_g];
+		++_g;
+		fn(arg);
+	}
+};
+var io_colyseus_events_EventHandlerDispatcher2 = function() { };
+$hxClasses["io.colyseus.events.EventHandlerDispatcher2"] = io_colyseus_events_EventHandlerDispatcher2;
+io_colyseus_events_EventHandlerDispatcher2.__name__ = "io.colyseus.events.EventHandlerDispatcher2";
+io_colyseus_events_EventHandlerDispatcher2.dispatch = function(e,arg1,arg2) {
+	var _g = 0;
+	var _g1 = e;
+	while(_g < _g1.length) {
+		var fn = _g1[_g];
+		++_g;
+		fn(arg1,arg2);
+	}
+};
+var io_colyseus_serializer_Serializer = function() { };
+$hxClasses["io.colyseus.serializer.Serializer"] = io_colyseus_serializer_Serializer;
+io_colyseus_serializer_Serializer.__name__ = "io.colyseus.serializer.Serializer";
+io_colyseus_serializer_Serializer.__isInterface__ = true;
+io_colyseus_serializer_Serializer.prototype = {
+	setState: null
+	,getState: null
+	,patch: null
+	,teardown: null
+	,handshake: null
+	,__class__: io_colyseus_serializer_Serializer
+};
+var io_colyseus_serializer_FossilDeltaSerializer = function() {
+	this.state = new io_colyseus_state_$listener_StateContainer({ });
+};
+$hxClasses["io.colyseus.serializer.FossilDeltaSerializer"] = io_colyseus_serializer_FossilDeltaSerializer;
+io_colyseus_serializer_FossilDeltaSerializer.__name__ = "io.colyseus.serializer.FossilDeltaSerializer";
+io_colyseus_serializer_FossilDeltaSerializer.__interfaces__ = [io_colyseus_serializer_Serializer];
+io_colyseus_serializer_FossilDeltaSerializer.prototype = {
+	state: null
+	,_previousState: null
+	,setState: function(encodedState) {
+		this._previousState = encodedState;
+		var option = null;
+		if(option == null) {
+			option = org_msgpack_DecodeOption.AsObject;
+		}
+		this.state.set(new org_msgpack_Decoder(encodedState,option).o);
+	}
+	,getState: function() {
+		return this.state.state;
+	}
+	,patch: function(patches) {
+		this._previousState = io_colyseus_serializer_fossil_$delta_FossilDelta.Apply(this._previousState,patches);
+		var option = null;
+		if(option == null) {
+			option = org_msgpack_DecodeOption.AsObject;
+		}
+		this.state.set(new org_msgpack_Decoder(this._previousState,option).o);
+	}
+	,teardown: function() {
+		this.state.removeAllListeners();
+	}
+	,handshake: function(bytes,offset) {
+	}
+	,__class__: io_colyseus_serializer_FossilDeltaSerializer
+};
+var io_colyseus_serializer_NoneSerializer = function() {
+};
+$hxClasses["io.colyseus.serializer.NoneSerializer"] = io_colyseus_serializer_NoneSerializer;
+io_colyseus_serializer_NoneSerializer.__name__ = "io.colyseus.serializer.NoneSerializer";
+io_colyseus_serializer_NoneSerializer.__interfaces__ = [io_colyseus_serializer_Serializer];
+io_colyseus_serializer_NoneSerializer.prototype = {
+	setState: function(data) {
+	}
+	,getState: function() {
+		return null;
+	}
+	,patch: function(data) {
+	}
+	,teardown: function() {
+	}
+	,handshake: function(bytes,offset) {
+	}
+	,__class__: io_colyseus_serializer_NoneSerializer
+};
+var io_colyseus_serializer_SchemaSerializer = function(cl) {
+	this.refs = new io_colyseus_serializer_schema_ReferenceTracker();
+	this.state = Type.createInstance(cl,[]);
+};
+$hxClasses["io.colyseus.serializer.SchemaSerializer"] = io_colyseus_serializer_SchemaSerializer;
+io_colyseus_serializer_SchemaSerializer.__name__ = "io.colyseus.serializer.SchemaSerializer";
+io_colyseus_serializer_SchemaSerializer.__interfaces__ = [io_colyseus_serializer_Serializer];
+io_colyseus_serializer_SchemaSerializer.prototype = {
+	state: null
+	,refs: null
+	,setState: function(data) {
+		(js_Boot.__cast(this.state , io_colyseus_serializer_schema_Schema)).decode(data,null,this.refs);
+	}
+	,getState: function() {
+		return this.state;
+	}
+	,patch: function(data) {
+		(js_Boot.__cast(this.state , io_colyseus_serializer_schema_Schema)).decode(data,null,this.refs);
+	}
+	,teardown: function() {
+		this.refs.clear();
+	}
+	,handshake: function(bytes,offset) {
+	}
+	,__class__: io_colyseus_serializer_SchemaSerializer
+};
+var io_colyseus_serializer_fossil_$delta_FossilDelta = function() { };
+$hxClasses["io.colyseus.serializer.fossil_delta.FossilDelta"] = io_colyseus_serializer_fossil_$delta_FossilDelta;
+io_colyseus_serializer_fossil_$delta_FossilDelta.__name__ = "io.colyseus.serializer.fossil_delta.FossilDelta";
+io_colyseus_serializer_fossil_$delta_FossilDelta.checksum = function(arr) {
+	var sum0 = 0;
+	var sum1 = 0;
+	var sum2 = 0;
+	var sum3 = 0;
+	var z = 0;
+	var N = arr.length;
+	while(N >= 16) {
+		sum0 = sum0 + arr.b[z] | 0;
+		sum1 = sum1 + arr.b[z + 1] | 0;
+		sum2 = sum2 + arr.b[z + 2] | 0;
+		sum3 = sum3 + arr.b[z + 3] | 0;
+		sum0 = sum0 + arr.b[z + 4] | 0;
+		sum1 = sum1 + arr.b[z + 5] | 0;
+		sum2 = sum2 + arr.b[z + 6] | 0;
+		sum3 = sum3 + arr.b[z + 7] | 0;
+		sum0 = sum0 + arr.b[z + 8] | 0;
+		sum1 = sum1 + arr.b[z + 9] | 0;
+		sum2 = sum2 + arr.b[z + 10] | 0;
+		sum3 = sum3 + arr.b[z + 11] | 0;
+		sum0 = sum0 + arr.b[z + 12] | 0;
+		sum1 = sum1 + arr.b[z + 13] | 0;
+		sum2 = sum2 + arr.b[z + 14] | 0;
+		sum3 = sum3 + arr.b[z + 15] | 0;
+		z += 16;
+		N -= 16;
+	}
+	while(N >= 4) {
+		sum0 = sum0 + arr.b[z] | 0;
+		sum1 = sum1 + arr.b[z + 1] | 0;
+		sum2 = sum2 + arr.b[z + 2] | 0;
+		sum3 = sum3 + arr.b[z + 3] | 0;
+		z += 4;
+		N -= 4;
+	}
+	sum3 = ((sum3 + (sum2 << 8) | 0) + (sum1 << 16) | 0) + (sum0 << 24) | 0;
+	switch(N) {
+	case 1:
+		sum3 = sum3 + (arr.b[z] << 24) | 0;
+		break;
+	case 2:
+		sum3 = sum3 + (arr.b[z + 1] << 16) | 0;
+		break;
+	case 3:
+		sum3 = sum3 + (arr.b[z + 2] << 8) | 0;
+		break;
+	}
+	return sum3 >>> 0;
+};
+io_colyseus_serializer_fossil_$delta_FossilDelta.Apply = function(src,delta,verifyChecksum) {
+	if(verifyChecksum == null) {
+		verifyChecksum = false;
+	}
+	var total = 0;
+	var zDelta = new io_colyseus_serializer_fossil_$delta_Reader(delta);
+	var lenSrc = src.length;
+	var lenDelta = delta.length;
+	var limit = zDelta.getInt();
+	if(zDelta.getChar() != "\n") {
+		throw haxe_Exception.thrown("size integer not terminated by 'n'");
+	}
+	var zOut = new io_colyseus_serializer_fossil_$delta_Writer();
+	while(zDelta.haveBytes()) {
+		var ofst;
+		var cnt = zDelta.getInt();
+		var char = zDelta.getChar();
+		if(char == "@") {
+			ofst = zDelta.getInt();
+			if(zDelta.haveBytes() && zDelta.getChar() != ",") {
+				throw haxe_Exception.thrown("copy command not terminated by ','");
+			}
+			total += cnt;
+			if(total > limit) {
+				throw haxe_Exception.thrown("copy exceeds output file size");
+			}
+			if(ofst + cnt > lenSrc) {
+				throw haxe_Exception.thrown("copy extends past end of input");
+			}
+			zOut.putArray(src,ofst,ofst + cnt);
+		} else if(char == ":") {
+			total += cnt;
+			if(total > limit) {
+				throw haxe_Exception.thrown("insert command gives an output larger than predicted");
+			}
+			if(cnt > lenDelta) {
+				throw haxe_Exception.thrown("insert count exceeds size of delta");
+			}
+			zOut.putArray(zDelta.bytes,zDelta.pos,zDelta.pos + cnt);
+			zDelta.pos += cnt;
+		} else if(char == ";") {
+			var out = zOut.toArray();
+			if(verifyChecksum && cnt != io_colyseus_serializer_fossil_$delta_FossilDelta.checksum(out)) {
+				throw haxe_Exception.thrown("bad checksum");
+			}
+			if(total != limit) {
+				throw haxe_Exception.thrown("generated size does not match predicted size");
+			}
+			return out;
+		} else {
+			throw haxe_Exception.thrown("unknown delta operator");
+		}
+	}
+	throw haxe_Exception.thrown("unterminated delta");
+};
+var io_colyseus_serializer_fossil_$delta_Reader = function(array) {
+	this.bytes = array;
+	this.pos = 0;
+};
+$hxClasses["io.colyseus.serializer.fossil_delta.Reader"] = io_colyseus_serializer_fossil_$delta_Reader;
+io_colyseus_serializer_fossil_$delta_Reader.__name__ = "io.colyseus.serializer.fossil_delta.Reader";
+io_colyseus_serializer_fossil_$delta_Reader.prototype = {
+	bytes: null
+	,pos: null
+	,haveBytes: function() {
+		return this.pos < this.bytes.length;
+	}
+	,getByte: function() {
+		var value = this.bytes.b[this.pos];
+		this.pos++;
+		if(this.pos > this.bytes.length) {
+			throw haxe_Exception.thrown("out of bounds");
+		}
+		return value;
+	}
+	,getChar: function() {
+		var code = this.getByte();
+		return String.fromCodePoint(code);
+	}
+	,getInt: function() {
+		var v = 0;
+		var c;
+		while(this.haveBytes()) {
+			c = io_colyseus_serializer_fossil_$delta_FossilDelta.zValue[127 & this.getByte()];
+			if(c < 0) {
+				break;
+			}
+			v = (v << 6) + c;
+		}
+		this.pos--;
+		return v >>> 0;
+	}
+	,__class__: io_colyseus_serializer_fossil_$delta_Reader
+};
+var io_colyseus_serializer_fossil_$delta_Writer = function() {
+	this.a = new haxe_io_BytesBuffer();
+};
+$hxClasses["io.colyseus.serializer.fossil_delta.Writer"] = io_colyseus_serializer_fossil_$delta_Writer;
+io_colyseus_serializer_fossil_$delta_Writer.__name__ = "io.colyseus.serializer.fossil_delta.Writer";
+io_colyseus_serializer_fossil_$delta_Writer.prototype = {
+	a: null
+	,toArray: function() {
+		return this.a.getBytes();
+	}
+	,putByte: function(b) {
+		this.a.addByte(b & 255);
+	}
+	,putChar: function(s) {
+		this.putByte(HxOverrides.cca(s,0));
+	}
+	,putInt: function(v) {
+		var i = 0;
+		var zBuf = [];
+		if(v == 0) {
+			this.putChar("0");
+			return;
+		}
+		while(v > 0) {
+			zBuf.push(io_colyseus_serializer_fossil_$delta_FossilDelta.zDigits[v & 63]);
+			++i;
+			v >>>= 6;
+		}
+		var j = i - 1;
+		while(j >= 0) {
+			this.putByte(zBuf[j]);
+			--j;
+		}
+	}
+	,putArray: function(a,start,end) {
+		var i = start;
+		while(i < end) {
+			this.a.addByte(a.b[i]);
+			++i;
+		}
+	}
+	,__class__: io_colyseus_serializer_fossil_$delta_Writer
+};
+var io_colyseus_serializer_schema_Context = function() {
+	this.schemas = [];
+	this.typeIds = new haxe_ds_IntMap();
+};
+$hxClasses["io.colyseus.serializer.schema.Context"] = io_colyseus_serializer_schema_Context;
+io_colyseus_serializer_schema_Context.__name__ = "io.colyseus.serializer.schema.Context";
+io_colyseus_serializer_schema_Context.prototype = {
+	typeIds: null
+	,schemas: null
+	,add: function(schema,typeid) {
+		if(typeid == null) {
+			typeid = this.schemas.length;
+		}
+		this.typeIds.h[typeid] = schema;
+		this.schemas.push(schema);
+	}
+	,get: function(typeid) {
+		return this.typeIds.h[typeid];
+	}
+	,__class__: io_colyseus_serializer_schema_Context
+};
+var io_colyseus_serializer_schema_types_IRef = function() { };
+$hxClasses["io.colyseus.serializer.schema.types.IRef"] = io_colyseus_serializer_schema_types_IRef;
+io_colyseus_serializer_schema_types_IRef.__name__ = "io.colyseus.serializer.schema.types.IRef";
+io_colyseus_serializer_schema_types_IRef.__isInterface__ = true;
+io_colyseus_serializer_schema_types_IRef.prototype = {
+	__refId: null
+	,setByIndex: null
+	,getByIndex: null
+	,deleteByIndex: null
+	,moveEventHandlers: null
+	,__class__: io_colyseus_serializer_schema_types_IRef
+};
+var io_colyseus_serializer_schema_types_ISchemaCollection = function() { };
+$hxClasses["io.colyseus.serializer.schema.types.ISchemaCollection"] = io_colyseus_serializer_schema_types_ISchemaCollection;
+io_colyseus_serializer_schema_types_ISchemaCollection.__name__ = "io.colyseus.serializer.schema.types.ISchemaCollection";
+io_colyseus_serializer_schema_types_ISchemaCollection.__isInterface__ = true;
+io_colyseus_serializer_schema_types_ISchemaCollection.__interfaces__ = [io_colyseus_serializer_schema_types_IRef];
+io_colyseus_serializer_schema_types_ISchemaCollection.prototype = {
+	_childType: null
+	,invokeOnAdd: null
+	,invokeOnChange: null
+	,invokeOnRemove: null
+	,iterator: null
+	,keyValueIterator: null
+	,setIndex: null
+	,getIndex: null
+	,setByIndex: null
+	,clear: null
+	,clone: null
+	,__class__: io_colyseus_serializer_schema_types_ISchemaCollection
+};
+var io_colyseus_serializer_schema_types_ArraySchemaImpl = function() {
+	this.indexes = new io_colyseus_serializer_schema_types_OrderedMap(new haxe_ds_IntMap());
+	this.items = new haxe_ds_IntMap();
+};
+$hxClasses["io.colyseus.serializer.schema.types.ArraySchemaImpl"] = io_colyseus_serializer_schema_types_ArraySchemaImpl;
+io_colyseus_serializer_schema_types_ArraySchemaImpl.__name__ = "io.colyseus.serializer.schema.types.ArraySchemaImpl";
+io_colyseus_serializer_schema_types_ArraySchemaImpl.__interfaces__ = [io_colyseus_serializer_schema_types_ISchemaCollection,io_colyseus_serializer_schema_types_IRef];
+io_colyseus_serializer_schema_types_ArraySchemaImpl.prototype = {
+	__refId: null
+	,_childType: null
+	,getIndex: function(fieldIndex) {
+		return this.indexes.get(fieldIndex);
+	}
+	,setIndex: function(fieldIndex,dynamicIndex) {
+		this.indexes.set(fieldIndex,dynamicIndex);
+	}
+	,getByIndex: function(fieldIndex) {
+		var targetIndex = -1;
+		var i = 0;
+		var _g_current = 0;
+		var _g_array = this.indexes._keys;
+		while(_g_current < _g_array.length) {
+			var key = _g_array[_g_current++];
+			if(i == fieldIndex) {
+				targetIndex = this.indexes.get(key);
+				break;
+			}
+			++i;
+		}
+		if(targetIndex == -1) {
+			return null;
+		} else {
+			var this1 = this.items;
+			var key = this.indexes.get(targetIndex);
+			return this1.h[key];
+		}
+	}
+	,setByIndex: function(index,dynamicIndex,value) {
+		this.indexes.set(index,dynamicIndex);
+		this.items.h[dynamicIndex] = value;
+	}
+	,deleteByIndex: function(fieldIndex) {
+		var index = this.indexes.get(fieldIndex);
+		this.items.remove(index);
+		this.indexes.remove(fieldIndex);
+	}
+	,items: null
+	,indexes: null
+	,length: null
+	,get_length: function() {
+		return Lambda.count(this.items);
+	}
+	,onAdd: function(item,key) {
+	}
+	,onChange: function(item,key) {
+	}
+	,onRemove: function(item,key) {
+	}
+	,invokeOnAdd: function(item,key) {
+		this.onAdd(item,key);
+	}
+	,invokeOnChange: function(item,key) {
+		this.onChange(item,key);
+	}
+	,invokeOnRemove: function(item,key) {
+		this.onRemove(item,key);
+	}
+	,moveEventHandlers: function(previousInstance) {
+		this.onAdd = previousInstance.onAdd;
+		this.onChange = previousInstance.onChange;
+		this.onRemove = previousInstance.onRemove;
+	}
+	,clear: function(refs) {
+		if(typeof(this._childType) != "string") {
+			var item = this.items.iterator();
+			while(item.hasNext()) {
+				var item1 = item.next();
+				refs.remove(Reflect.getProperty(item1,"__refId"));
+			}
+		}
+		this.items.h = { };
+		this.indexes.clear();
+	}
+	,clone: function() {
+		var cloned = new io_colyseus_serializer_schema_types_ArraySchemaImpl();
+		cloned.items = this.items.copy();
+		cloned.onAdd = $bind(this,this.onAdd);
+		cloned.onChange = $bind(this,this.onChange);
+		cloned.onRemove = $bind(this,this.onRemove);
+		return cloned;
+	}
+	,iterator: function() {
+		return this.items.iterator();
+	}
+	,keyValueIterator: function() {
+		return new haxe_iterators_MapKeyValueIterator(this.items);
+	}
+	,toString: function() {
+		var data = [];
+		var item = this.items.iterator();
+		while(item.hasNext()) {
+			var item1 = item.next();
+			data.push("" + Std.string(item1));
+		}
+		return "ArraySchema(" + Lambda.count(this.items) + ") { __refId => " + this.__refId + ", " + data.join(", ") + " } ";
+	}
+	,__class__: io_colyseus_serializer_schema_types_ArraySchemaImpl
+	,__properties__: {get_length:"get_length"}
+};
+var io_colyseus_serializer_schema_types_MapSchema = function() {
+	this.indexes = new haxe_ds_IntMap();
+	this.items = new io_colyseus_serializer_schema_types_OrderedMap(new haxe_ds_StringMap());
+	this.__isMapSchema = true;
+};
+$hxClasses["io.colyseus.serializer.schema.types.MapSchema"] = io_colyseus_serializer_schema_types_MapSchema;
+io_colyseus_serializer_schema_types_MapSchema.__name__ = "io.colyseus.serializer.schema.types.MapSchema";
+io_colyseus_serializer_schema_types_MapSchema.__interfaces__ = [io_colyseus_serializer_schema_types_ISchemaCollection,io_colyseus_serializer_schema_types_IRef];
+io_colyseus_serializer_schema_types_MapSchema.prototype = {
+	__refId: null
+	,_childType: null
+	,__isMapSchema: null
+	,getIndex: function(fieldIndex) {
+		return this.indexes.h[fieldIndex];
+	}
+	,setIndex: function(fieldIndex,dynamicIndex) {
+		this.indexes.h[fieldIndex] = dynamicIndex;
+	}
+	,getByIndex: function(fieldIndex) {
+		var index = this.indexes.h[fieldIndex];
+		if(index != null) {
+			return this.items.get(index);
+		} else {
+			return null;
+		}
+	}
+	,setByIndex: function(index,dynamicIndex,value) {
+		this.indexes.h[index] = dynamicIndex;
+		this.items.set(dynamicIndex,value);
+	}
+	,deleteByIndex: function(fieldIndex) {
+		var index = this.indexes.h[fieldIndex];
+		this.items.remove(index);
+		this.indexes.remove(fieldIndex);
+	}
+	,items: null
+	,indexes: null
+	,length: null
+	,get_length: function() {
+		return Lambda.count(this.items._keys);
+	}
+	,onAdd: function(item,key) {
+	}
+	,onChange: function(item,key) {
+	}
+	,onRemove: function(item,key) {
+	}
+	,invokeOnAdd: function(item,key) {
+		this.onAdd(item,key);
+	}
+	,invokeOnChange: function(item,key) {
+		this.onChange(item,key);
+	}
+	,invokeOnRemove: function(item,key) {
+		this.onRemove(item,key);
+	}
+	,moveEventHandlers: function(previousInstance) {
+		this.onAdd = previousInstance.onAdd;
+		this.onChange = previousInstance.onChange;
+		this.onRemove = previousInstance.onRemove;
+	}
+	,clear: function(refs) {
+		if(typeof(this._childType) != "string") {
+			var item = this.items.iterator();
+			while(item.hasNext()) {
+				var item1 = item.next();
+				refs.remove(Reflect.getProperty(item1,"__refId"));
+			}
+		}
+		this.items.clear();
+		this.indexes.h = { };
+	}
+	,clone: function() {
+		var cloned = new io_colyseus_serializer_schema_types_MapSchema();
+		var _g = 0;
+		var _g1 = this.items._keys;
+		while(_g < _g1.length) {
+			var key = _g1[_g];
+			++_g;
+			cloned.items.set(key,this.items.get(key));
+		}
+		cloned.onAdd = $bind(this,this.onAdd);
+		cloned.onChange = $bind(this,this.onChange);
+		cloned.onRemove = $bind(this,this.onRemove);
+		return cloned;
+	}
+	,iterator: function() {
+		return this.items.iterator();
+	}
+	,keyValueIterator: function() {
+		return this.items.keyValueIterator();
+	}
+	,get: function(key) {
+		return this.items.get(key);
+	}
+	,arrayWrite: function(key,value) {
+		this.items.set(key,value);
+		return value;
+	}
+	,toString: function() {
+		var data = [];
+		var _g = 0;
+		var _g1 = this.items._keys;
+		while(_g < _g1.length) {
+			var key = _g1[_g];
+			++_g;
+			data.push(key + " => " + Std.string(this.items.get(key)));
+		}
+		return "MapSchema (" + Lambda.count(this.items) + ", __refId => " + this.__refId + ") { " + data.join(", ") + " }";
+	}
+	,__class__: io_colyseus_serializer_schema_types_MapSchema
+	,__properties__: {get_length:"get_length"}
+};
+var io_colyseus_serializer_schema_CustomType = function() {
+	this.customTypes = new haxe_ds_StringMap();
+	this.types = [];
+	this.set("array",io_colyseus_serializer_schema_types_ArraySchemaImpl);
+	this.set("map",io_colyseus_serializer_schema_types_MapSchema);
+};
+$hxClasses["io.colyseus.serializer.schema.CustomType"] = io_colyseus_serializer_schema_CustomType;
+io_colyseus_serializer_schema_CustomType.__name__ = "io.colyseus.serializer.schema.CustomType";
+io_colyseus_serializer_schema_CustomType.getInstance = function() {
+	return io_colyseus_serializer_schema_CustomType.instance;
+};
+io_colyseus_serializer_schema_CustomType.prototype = {
+	types: null
+	,customTypes: null
+	,set: function(id,type) {
+		if(!Object.prototype.hasOwnProperty.call(this.customTypes.h,id)) {
+			this.customTypes.h[id] = type;
+			this.types.push(id);
+		}
+	}
+	,get: function(id) {
+		return this.customTypes.h[id];
+	}
+	,getTypes: function() {
+		var customTypes = [];
+		var h = this.customTypes.h;
+		var key_h = h;
+		var key_keys = Object.keys(h);
+		var key_length = key_keys.length;
+		var key_current = 0;
+		while(key_current < key_length) {
+			var key = key_keys[key_current++];
+			customTypes.push(key);
+		}
+		return customTypes;
+	}
+	,__class__: io_colyseus_serializer_schema_CustomType
+};
+var io_colyseus_serializer_schema_ReferenceTracker = function() {
+	this.deletedRefs = new haxe_ds_IntMap();
+	this.refCounts = new haxe_ds_IntMap();
+	this.refs = new haxe_ds_IntMap();
+	this.context = new io_colyseus_serializer_schema_Context();
+};
+$hxClasses["io.colyseus.serializer.schema.ReferenceTracker"] = io_colyseus_serializer_schema_ReferenceTracker;
+io_colyseus_serializer_schema_ReferenceTracker.__name__ = "io.colyseus.serializer.schema.ReferenceTracker";
+io_colyseus_serializer_schema_ReferenceTracker.prototype = {
+	context: null
+	,refs: null
+	,refCounts: null
+	,deletedRefs: null
+	,add: function(refId,ref,increment) {
+		if(increment == null) {
+			increment = true;
+		}
+		this.refs.h[refId] = ref;
+		if(increment) {
+			var previousCount = this.refCounts.h.hasOwnProperty(refId) ? this.refCounts.h[refId] : 0;
+			this.refCounts.h[refId] = previousCount + 1;
+		}
+	}
+	,has: function(refId) {
+		return this.refs.h.hasOwnProperty(refId);
+	}
+	,get: function(refId) {
+		return this.refs.h[refId];
+	}
+	,remove: function(refId) {
+		this.refCounts.h[refId] = this.refCounts.h[refId] - 1;
+		var addedToDeletedRefs = this.deletedRefs.h[refId] == null;
+		if(addedToDeletedRefs) {
+			this.deletedRefs.h[refId] = true;
+		}
+		return addedToDeletedRefs;
+	}
+	,count: function() {
+		return Lambda.count(this.refs);
+	}
+	,garbageCollection: function() {
+		var deletedRefs = [];
+		var refId = this.deletedRefs.keys();
+		while(refId.hasNext()) {
+			var refId1 = refId.next();
+			deletedRefs.push(refId1);
+		}
+		var _g = 0;
+		while(_g < deletedRefs.length) {
+			var refId = deletedRefs[_g];
+			++_g;
+			if(this.refCounts.h[refId] <= 0) {
+				var ref = this.refs.h[refId];
+				if(((ref) instanceof io_colyseus_serializer_schema_Schema)) {
+					var childTypes = ref._childTypes;
+					var fieldIndex = childTypes.keys();
+					while(fieldIndex.hasNext()) {
+						var fieldIndex1 = fieldIndex.next();
+						var refId1 = Reflect.getProperty(ref.getByIndex(fieldIndex1),"__refId");
+						if(refId1 > 0 && this.remove(refId1)) {
+							deletedRefs.push(refId1);
+						}
+					}
+				} else if(typeof(ref._childType) != "string") {
+					var item = ref.iterator();
+					while(item.hasNext()) {
+						var item1 = item.next();
+						var childRefId = Reflect.getProperty(item1,"__refId");
+						if(childRefId > 0 && this.remove(childRefId)) {
+							deletedRefs.push(childRefId);
+						}
+					}
+				}
+				this.refs.remove(refId);
+				this.refCounts.remove(refId);
+			}
+		}
+		this.deletedRefs.h = { };
+	}
+	,clear: function() {
+		this.refs.h = { };
+		this.refCounts.h = { };
+		this.deletedRefs.h = { };
+	}
+	,__class__: io_colyseus_serializer_schema_ReferenceTracker
+};
+var io_colyseus_serializer_schema_Decoder = function() {
+};
+$hxClasses["io.colyseus.serializer.schema.Decoder"] = io_colyseus_serializer_schema_Decoder;
+io_colyseus_serializer_schema_Decoder.__name__ = "io.colyseus.serializer.schema.Decoder";
+io_colyseus_serializer_schema_Decoder.prototype = {
+	decodePrimitiveType: function(type,bytes,it) {
+		switch(type) {
+		case "boolean":
+			return this.boolean(bytes,it);
+		case "float32":
+			return this.float32(bytes,it);
+		case "float64":
+			return this.float64(bytes,it);
+		case "int16":
+			return this.int16(bytes,it);
+		case "int32":
+			return this.int32(bytes,it);
+		case "int64":
+			return this.int64(bytes,it);
+		case "int8":
+			return this.int8(bytes,it);
+		case "number":
+			return this.number(bytes,it);
+		case "string":
+			return this.string(bytes,it);
+		case "uint16":
+			return this.uint16(bytes,it);
+		case "uint32":
+			return this.uint32(bytes,it);
+		case "uint64":
+			return this.uint64(bytes,it);
+		case "uint8":
+			return this.uint8(bytes,it);
+		default:
+			throw haxe_Exception.thrown("can't decode: " + type);
+		}
+	}
+	,string: function(bytes,it) {
+		var prefix = bytes.b[it.offset++];
+		var length = 0;
+		if(prefix < 192) {
+			length = prefix & 31;
+		} else if(prefix == 217) {
+			length = this.uint8(bytes,it);
+		} else if(prefix == 218) {
+			length = this.uint16(bytes,it);
+		} else if(prefix == 219) {
+			length = this.uint32(bytes,it);
+		}
+		var value = bytes.getString(it.offset,length);
+		it.offset += length;
+		return value;
+	}
+	,number: function(bytes,it) {
+		var prefix = bytes.b[it.offset++];
+		if(prefix < 128) {
+			return prefix;
+		} else if(prefix == 202) {
+			return this.float32(bytes,it);
+		} else if(prefix == 203) {
+			return this.float64(bytes,it);
+		} else if(prefix == 204) {
+			return this.uint8(bytes,it);
+		} else if(prefix == 205) {
+			return this.uint16(bytes,it);
+		} else if(prefix == 206) {
+			return this.uint32(bytes,it);
+		} else if(prefix == 207) {
+			return this.uint64(bytes,it);
+		} else if(prefix == 208) {
+			return this.int8(bytes,it);
+		} else if(prefix == 209) {
+			return this.int16(bytes,it);
+		} else if(prefix == 210) {
+			return this.int32(bytes,it);
+		} else if(prefix == 211) {
+			return this.int64(bytes,it);
+		} else if(prefix > 223) {
+			return (255 - prefix + 1) * -1;
+		}
+		return 0;
+	}
+	,boolean: function(bytes,it) {
+		return UInt.gt(this.uint8(bytes,it),0);
+	}
+	,int8: function(bytes,it) {
+		return this.uint8(bytes,it) << 24 >> 24;
+	}
+	,uint8: function(bytes,it) {
+		return bytes.b[it.offset++];
+	}
+	,int16: function(bytes,it) {
+		return this.uint16(bytes,it) << 16 >> 16;
+	}
+	,uint16: function(bytes,it) {
+		return bytes.b[it.offset++] | bytes.b[it.offset++] << 8;
+	}
+	,int32: function(bytes,it) {
+		var value = bytes.getInt32(it.offset);
+		it.offset += 4;
+		return value;
+	}
+	,uint32: function(bytes,it) {
+		return this.int32(bytes,it);
+	}
+	,int64: function(bytes,it) {
+		var value = bytes.getInt64(it.offset);
+		it.offset += 8;
+		return value;
+	}
+	,uint64: function(bytes,it) {
+		var low = this.uint32(bytes,it);
+		var a = this.uint32(bytes,it);
+		var b = Math.pow(2,32);
+		var high = UInt.toFloat(a) * b;
+		var this1 = new haxe__$Int64__$_$_$Int64(high,low);
+		return this1;
+	}
+	,float32: function(bytes,it) {
+		var value = bytes.getFloat(it.offset);
+		it.offset += 4;
+		return value;
+	}
+	,float64: function(bytes,it) {
+		var value = bytes.getDouble(it.offset);
+		it.offset += 8;
+		return value;
+	}
+	,__class__: io_colyseus_serializer_schema_Decoder
+};
+var io_colyseus_serializer_schema_Schema = function() {
+	this._refs = null;
+	this._childTypes = new haxe_ds_IntMap();
+	this._types = new haxe_ds_IntMap();
+	this._indexes = new haxe_ds_IntMap();
+	this.__refId = 0;
+};
+$hxClasses["io.colyseus.serializer.schema.Schema"] = io_colyseus_serializer_schema_Schema;
+io_colyseus_serializer_schema_Schema.__name__ = "io.colyseus.serializer.schema.Schema";
+io_colyseus_serializer_schema_Schema.__interfaces__ = [io_colyseus_serializer_schema_types_IRef];
+io_colyseus_serializer_schema_Schema.prototype = {
+	onChange: function(changes) {
+	}
+	,onRemove: function() {
+	}
+	,__refId: null
+	,_indexes: null
+	,_types: null
+	,_childTypes: null
+	,_refs: null
+	,setByIndex: function(fieldIndex,dynamicIndex,value) {
+		this[this._indexes.h[fieldIndex]] = value;
+	}
+	,getByIndex: function(fieldIndex) {
+		return Reflect.getProperty(this,this._indexes.h[fieldIndex]);
+	}
+	,deleteByIndex: function(fieldIndex) {
+		this[this._indexes.h[fieldIndex]] = null;
+	}
+	,setIndex: function(fieldIndex,dynamicIndex) {
+	}
+	,getIndex: function(fieldIndex,dynamicIndex) {
+	}
+	,moveEventHandlers: function(previousInstance) {
+		var previousSchemaInstance = previousInstance;
+		this.onChange = $bind(previousSchemaInstance,previousSchemaInstance.onChange);
+		this.onRemove = $bind(previousSchemaInstance,previousSchemaInstance.onRemove);
+		var map = this._childTypes;
+		var _g_map = map;
+		var _g_keys = map.keys();
+		while(_g_keys.hasNext()) {
+			var key = _g_keys.next();
+			var _g1_value = _g_map.get(key);
+			var _g1_key = key;
+			var fieldIndex = _g1_key;
+			var _ = _g1_value;
+			var childType = this.getByIndex(fieldIndex);
+			if(js_Boot.__implements(childType,io_colyseus_serializer_schema_types_IRef)) {
+				childType.moveEventHandlers(previousSchemaInstance.getByIndex(fieldIndex));
+			}
+		}
+	}
+	,decode: function(bytes,it,refs) {
+		if(it == null) {
+			it = { offset : 0};
+		}
+		if(refs == null) {
+			refs = this._refs != null ? this._refs : new io_colyseus_serializer_schema_ReferenceTracker();
+		}
+		this._refs = refs;
+		var refId = 0;
+		var ref = this;
+		refs.add(refId,ref);
+		var changes = [];
+		var allChanges = new io_colyseus_serializer_schema_types_OrderedMap(new haxe_ds_IntMap());
+		allChanges.set(refId,changes);
+		var totalBytes = bytes.length;
+		while(it.offset < totalBytes) {
+			var byte = bytes.b[it.offset++];
+			if(byte == io_colyseus_serializer_schema_SPEC.SWITCH_TO_STRUCTURE) {
+				refId = io_colyseus_serializer_schema_Schema.decoder.number(bytes,it);
+				ref = refs.get(refId);
+				if(ref == null) {
+					throw haxe_Exception.thrown("refId not found: " + refId);
+				}
+				changes = [];
+				allChanges.set(refId,changes);
+				continue;
+			}
+			var isSchema = ((ref) instanceof io_colyseus_serializer_schema_Schema);
+			var operation = isSchema ? byte >> 6 << 6 : byte;
+			if(operation == 10) {
+				ref.clear(refs);
+				continue;
+			}
+			var fieldIndex = isSchema ? byte % (operation == 0 ? 255 : operation) : io_colyseus_serializer_schema_Schema.decoder.number(bytes,it);
+			var fieldName = isSchema ? ref._indexes.h[fieldIndex] : "";
+			var fieldType = null;
+			var childType = null;
+			if(isSchema) {
+				childType = ref._childTypes.h[fieldIndex];
+				fieldType = ref._types.h[fieldIndex];
+			} else {
+				var collectionChildType = ref._childType;
+				var isPrimitiveFieldType = typeof(collectionChildType) == "string";
+				fieldType = isPrimitiveFieldType ? collectionChildType : "ref";
+				if(!isPrimitiveFieldType) {
+					childType = collectionChildType;
+				}
+			}
+			var value = null;
+			var previousValue = null;
+			var dynamicIndex = null;
+			if(!isSchema) {
+				previousValue = ref.getByIndex(fieldIndex);
+				if((operation & 128) == 128) {
+					dynamicIndex = Reflect.getProperty(ref,"__isMapSchema") == true ? io_colyseus_serializer_schema_Schema.decoder.string(bytes,it) : fieldIndex;
+					ref.setIndex(fieldIndex,dynamicIndex);
+				} else {
+					dynamicIndex = ref.getIndex(fieldIndex);
+				}
+			} else if(fieldName != null) {
+				previousValue = Reflect.getProperty(ref,fieldName);
+			}
+			if((operation & 64) == 64) {
+				if(operation != 192) {
+					ref.deleteByIndex(fieldIndex);
+				}
+				if(js_Boot.__implements(previousValue,io_colyseus_serializer_schema_types_IRef) && previousValue.__refId > 0) {
+					refs.remove(previousValue.__refId);
+				}
+				value = null;
+			}
+			if(fieldName == null) {
+				haxe_Log.trace("WARNING: @colyseus/schema definition mismatch?",{ fileName : "src/io/colyseus/serializer/schema/Schema.hx", lineNumber : 514, className : "io.colyseus.serializer.schema.Schema", methodName : "decode"});
+				var nextIterator = { offset : it.offset};
+				while(it.offset < totalBytes) {
+					if(io_colyseus_serializer_schema_SPEC.switchToStructureCheck(bytes,it)) {
+						nextIterator.offset = it.offset + 1;
+						if(refs.has(io_colyseus_serializer_schema_Schema.decoder.number(bytes,nextIterator))) {
+							break;
+						}
+					}
+					it.offset++;
+				}
+				continue;
+			} else if(operation != 64) {
+				if(fieldType == "ref") {
+					refId = io_colyseus_serializer_schema_Schema.decoder.number(bytes,it);
+					value = refs.get(refId);
+					if(operation != 0) {
+						var concreteChildType = this.getSchemaType(bytes,it,childType);
+						if(value == null) {
+							value = Type.createInstance(concreteChildType,[]);
+							value.__refId = refId;
+							if(previousValue != null) {
+								value.moveEventHandlers(previousValue);
+								if(previousValue.__refId > 0 && refId != previousValue.__refId) {
+									refs.remove(previousValue.__refId);
+								}
+							}
+						}
+						refs.add(refId,value,value != previousValue);
+					}
+				} else if(childType == null) {
+					value = io_colyseus_serializer_schema_Schema.decoder.decodePrimitiveType(fieldType,bytes,it);
+				} else {
+					refId = io_colyseus_serializer_schema_Schema.decoder.number(bytes,it);
+					value = refs.get(refId);
+					var collectionClass = fieldType == null ? js_Boot.getClass(ref) : io_colyseus_serializer_schema_CustomType.getInstance().get(fieldType);
+					var valueRef = refs.has(refId) ? previousValue : Type.createInstance(collectionClass,[]);
+					value = valueRef.clone();
+					value.__refId = refId;
+					value._childType = childType;
+					if(previousValue != null) {
+						value.moveEventHandlers(previousValue);
+						if(previousValue.__refId > 0 && refId != previousValue.__refId) {
+							refs.remove(previousValue.__refId);
+							var deletes = [];
+							var i = 0;
+							var _g = [];
+							var x = $getIterator(previousValue.items);
+							while(x.hasNext()) {
+								var x1 = x.next();
+								var index = i++;
+								_g.push(deletes.push({ op : 64, field : index, dynamicIndex : index, value : null, previousValue : x1}));
+							}
+							allChanges.set(previousValue.__refId,deletes);
+						}
+					}
+					refs.add(refId,value,valueRef != previousValue);
+				}
+			}
+			var hasChange = previousValue != value;
+			if(value != null) {
+				ref.setByIndex(fieldIndex,dynamicIndex,value);
+			}
+			if(hasChange) {
+				changes.push({ op : operation, field : fieldName, dynamicIndex : dynamicIndex, value : value, previousValue : previousValue});
+			}
+		}
+		this.triggerChanges(allChanges);
+		refs.garbageCollection();
+	}
+	,triggerChanges: function(allChanges) {
+		var refs = this._refs;
+		var it = allChanges.keyValueIterator();
+		while(it.hasNext()) {
+			var it1 = it.next();
+			var changes = it1.value;
+			if(changes.length == 0) {
+				continue;
+			}
+			var refId = it1.key;
+			var ref = refs.get(refId);
+			var isSchema = ((ref) instanceof io_colyseus_serializer_schema_Schema);
+			var _g = 0;
+			while(_g < changes.length) {
+				var change = changes[_g];
+				++_g;
+				if(!isSchema) {
+					var container = ref;
+					if(change.op == 128 && change.previousValue == null) {
+						container.invokeOnAdd(change.value,change.dynamicIndex == null ? change.field : change.dynamicIndex);
+					} else if(change.op == 64) {
+						if(change.previousValue != null) {
+							container.invokeOnRemove(change.previousValue,change.dynamicIndex == null ? change.field : change.dynamicIndex);
+						}
+					} else if(change.op == 192) {
+						if(change.previousValue != null) {
+							container.invokeOnRemove(change.previousValue,change.dynamicIndex);
+						}
+						container.invokeOnAdd(change.value,change.dynamicIndex);
+					} else if(change.op == 0 || change.value != change.previousValue) {
+						container.invokeOnChange(change.value,change.dynamicIndex);
+					}
+				}
+				if((change.op & 64) == 64 && ((change.previousValue) instanceof io_colyseus_serializer_schema_Schema)) {
+					change.previousValue.onRemove();
+				}
+			}
+			if(isSchema) {
+				ref.onChange(changes);
+			}
+		}
+	}
+	,triggerAllFillChanges: function(ref,allChanges) {
+		if(allChanges.exists(ref.__refId)) {
+			return;
+		}
+		var changes = [];
+		allChanges.set(ref.__refId,changes);
+		if(((ref) instanceof io_colyseus_serializer_schema_Schema)) {
+			var _indexes = Reflect.getProperty(ref,"_indexes");
+			var map = _indexes;
+			var fieldIndex_map = map;
+			var fieldIndex_keys = map.keys();
+			while(fieldIndex_keys.hasNext()) {
+				var key = fieldIndex_keys.next();
+				var fieldIndex_value = fieldIndex_map.get(key);
+				var fieldIndex_key = key;
+				var value = ref.getByIndex(fieldIndex_key);
+				changes.push({ field : fieldIndex_value, op : 128, value : value});
+				if(js_Boot.__implements(value,io_colyseus_serializer_schema_types_IRef)) {
+					this.triggerAllFillChanges(value,allChanges);
+				}
+			}
+		} else {
+			var items = Reflect.getProperty(ref,"items");
+			var item = items.keyValueIterator();
+			while(item.hasNext()) {
+				var item1 = item.next();
+				changes.push({ field : item1.key, dynamicIndex : item1.key, op : 128, value : item1.value});
+				if(js_Boot.__implements(item1,io_colyseus_serializer_schema_types_IRef)) {
+					this.triggerAllFillChanges(item1.value,allChanges);
+				}
+			}
+		}
+	}
+	,triggerAll: function() {
+		if(this._refs == null) {
+			return;
+		}
+		var allChanges = new io_colyseus_serializer_schema_types_OrderedMap(new haxe_ds_IntMap());
+		this.triggerAllFillChanges(this,allChanges);
+		this.triggerChanges(allChanges);
+	}
+	,getSchemaType: function(bytes,it,defaultType) {
+		var type = defaultType;
+		if(bytes.b[it.offset] == io_colyseus_serializer_schema_SPEC.TYPE_ID) {
+			it.offset++;
+			type = this._refs.context.get(io_colyseus_serializer_schema_Schema.decoder.number(bytes,it));
+		}
+		return type;
+	}
+	,toString: function() {
+		var data = [];
+		var field = this._indexes.iterator();
+		while(field.hasNext()) {
+			var field1 = field.next();
+			data.push(field1 + " => " + Std.string(Reflect.getProperty(this,field1)));
+		}
+		return "{ __refId => " + this.__refId + ", " + data.join(", ") + " }";
+	}
+	,__class__: io_colyseus_serializer_schema_Schema
+};
+var io_colyseus_serializer_schema_ReflectionField = function() {
+	io_colyseus_serializer_schema_Schema.call(this);
+	this._indexes.h[0] = "name";
+	this._types.h[0] = "string";
+	this._indexes.h[1] = "type";
+	this._types.h[1] = "string";
+	this._indexes.h[2] = "referencedType";
+	this._types.h[2] = "number";
+};
+$hxClasses["io.colyseus.serializer.schema.ReflectionField"] = io_colyseus_serializer_schema_ReflectionField;
+io_colyseus_serializer_schema_ReflectionField.__name__ = "io.colyseus.serializer.schema.ReflectionField";
+io_colyseus_serializer_schema_ReflectionField.__super__ = io_colyseus_serializer_schema_Schema;
+io_colyseus_serializer_schema_ReflectionField.prototype = $extend(io_colyseus_serializer_schema_Schema.prototype,{
+	name: null
+	,type: null
+	,referencedType: null
+	,__class__: io_colyseus_serializer_schema_ReflectionField
+});
+var io_colyseus_serializer_schema_ReflectionType = function() {
+	this.fields = io_colyseus_serializer_schema_types_ArraySchema._new();
+	io_colyseus_serializer_schema_Schema.call(this);
+	this._indexes.h[0] = "id";
+	this._types.h[0] = "number";
+	this._indexes.h[1] = "fields";
+	this._types.h[1] = "array";
+	this._childTypes.h[1] = io_colyseus_serializer_schema_ReflectionField;
+};
+$hxClasses["io.colyseus.serializer.schema.ReflectionType"] = io_colyseus_serializer_schema_ReflectionType;
+io_colyseus_serializer_schema_ReflectionType.__name__ = "io.colyseus.serializer.schema.ReflectionType";
+io_colyseus_serializer_schema_ReflectionType.__super__ = io_colyseus_serializer_schema_Schema;
+io_colyseus_serializer_schema_ReflectionType.prototype = $extend(io_colyseus_serializer_schema_Schema.prototype,{
+	id: null
+	,fields: null
+	,__class__: io_colyseus_serializer_schema_ReflectionType
+});
+var io_colyseus_serializer_schema_Reflection = function() {
+	this.types = io_colyseus_serializer_schema_types_ArraySchema._new();
+	io_colyseus_serializer_schema_Schema.call(this);
+	this._indexes.h[0] = "types";
+	this._types.h[0] = "array";
+	this._childTypes.h[0] = io_colyseus_serializer_schema_ReflectionType;
+	this._indexes.h[1] = "rootType";
+	this._types.h[1] = "number";
+};
+$hxClasses["io.colyseus.serializer.schema.Reflection"] = io_colyseus_serializer_schema_Reflection;
+io_colyseus_serializer_schema_Reflection.__name__ = "io.colyseus.serializer.schema.Reflection";
+io_colyseus_serializer_schema_Reflection.__super__ = io_colyseus_serializer_schema_Schema;
+io_colyseus_serializer_schema_Reflection.prototype = $extend(io_colyseus_serializer_schema_Schema.prototype,{
+	types: null
+	,rootType: null
+	,__class__: io_colyseus_serializer_schema_Reflection
+});
+var io_colyseus_serializer_schema_Decorator = function() { };
+$hxClasses["io.colyseus.serializer.schema.Decorator"] = io_colyseus_serializer_schema_Decorator;
+io_colyseus_serializer_schema_Decorator.__name__ = "io.colyseus.serializer.schema.Decorator";
+var io_colyseus_serializer_schema_SPEC = function() { };
+$hxClasses["io.colyseus.serializer.schema.SPEC"] = io_colyseus_serializer_schema_SPEC;
+io_colyseus_serializer_schema_SPEC.__name__ = "io.colyseus.serializer.schema.SPEC";
+io_colyseus_serializer_schema_SPEC.numberCheck = function(bytes,it) {
+	var prefix = bytes.b[it.offset];
+	if(prefix >= 128) {
+		if(prefix >= 202) {
+			return prefix <= 211;
+		} else {
+			return false;
+		}
+	} else {
+		return true;
+	}
+};
+io_colyseus_serializer_schema_SPEC.arrayCheck = function(bytes,it) {
+	return bytes.b[it.offset] < 160;
+};
+io_colyseus_serializer_schema_SPEC.switchToStructureCheck = function(bytes,it) {
+	return bytes.b[it.offset] == io_colyseus_serializer_schema_SPEC.SWITCH_TO_STRUCTURE;
+};
+io_colyseus_serializer_schema_SPEC.stringCheck = function(bytes,it) {
+	var prefix = bytes.get(it.offset);
+	if(!(prefix < 192 && prefix > 160 || prefix == 217 || prefix == 218)) {
+		return prefix == 219;
+	} else {
+		return true;
+	}
+};
+var io_colyseus_serializer_schema_types_ArraySchema = {};
+io_colyseus_serializer_schema_types_ArraySchema._new = function() {
+	var this1 = new io_colyseus_serializer_schema_types_ArraySchemaImpl();
+	return this1;
+};
+io_colyseus_serializer_schema_types_ArraySchema.arrayGet = function(this1,_key) {
+	return this1.getByIndex(_key);
+};
+io_colyseus_serializer_schema_types_ArraySchema.arraySet = function(this1,_key,_value) {
+	this1.items.h[_key] = _value;
+	return _value;
+};
+var io_colyseus_serializer_schema_types_OrderedMapIterator = function(omap) {
+	this.index = 0;
+	this.map = omap;
+};
+$hxClasses["io.colyseus.serializer.schema.types.OrderedMapIterator"] = io_colyseus_serializer_schema_types_OrderedMapIterator;
+io_colyseus_serializer_schema_types_OrderedMapIterator.__name__ = "io.colyseus.serializer.schema.types.OrderedMapIterator";
+io_colyseus_serializer_schema_types_OrderedMapIterator.prototype = {
+	map: null
+	,index: null
+	,hasNext: function() {
+		return this.index < this.map._keys.length;
+	}
+	,next: function() {
+		return this.map.get(this.map._keys[this.index++]);
+	}
+	,__class__: io_colyseus_serializer_schema_types_OrderedMapIterator
+};
+var io_colyseus_serializer_schema_types_OrderedMap = function(_map) {
+	this.idx = 0;
+	this._keys = [];
+	this.map = _map;
+};
+$hxClasses["io.colyseus.serializer.schema.types.OrderedMap"] = io_colyseus_serializer_schema_types_OrderedMap;
+io_colyseus_serializer_schema_types_OrderedMap.__name__ = "io.colyseus.serializer.schema.types.OrderedMap";
+io_colyseus_serializer_schema_types_OrderedMap.prototype = {
+	map: null
+	,_keys: null
+	,idx: null
+	,set: function(key,value) {
+		if(!this.map.exists(key)) {
+			this._keys.push(key);
+		}
+		this.map.set(key,value);
+	}
+	,toString: function() {
+		var _ret = "";
+		var _cnt = 0;
+		var _len = this._keys.length;
+		var _g = 0;
+		var _g1 = this._keys;
+		while(_g < _g1.length) {
+			var k = _g1[_g];
+			++_g;
+			_ret += "" + Std.string(k) + " => " + Std.string(this.map.get(k)) + (_cnt++ < _len - 1 ? ", " : "");
+		}
+		return "{" + _ret + "}";
+	}
+	,clear: function() {
+		this.map.clear();
+		this._keys = [];
+	}
+	,iterator: function() {
+		return new io_colyseus_serializer_schema_types_OrderedMapIterator(this);
+	}
+	,keyValueIterator: function() {
+		return this.map.keyValueIterator();
+	}
+	,remove: function(key) {
+		if(this.map.remove(key)) {
+			return HxOverrides.remove(this._keys,key);
+		} else {
+			return false;
+		}
+	}
+	,exists: function(key) {
+		return this.map.exists(key);
+	}
+	,get: function(key) {
+		return this.map.get(key);
+	}
+	,keys: function() {
+		return new haxe_iterators_ArrayIterator(this._keys);
+	}
+	,__class__: io_colyseus_serializer_schema_types_OrderedMap
+};
+var io_colyseus_state_$listener_Compare = function() { };
+$hxClasses["io.colyseus.state_listener.Compare"] = io_colyseus_state_$listener_Compare;
+io_colyseus_state_$listener_Compare.__name__ = "io.colyseus.state_listener.Compare";
+io_colyseus_state_$listener_Compare.getPatchList = function(tree1,tree2) {
+	var patches = [];
+	io_colyseus_state_$listener_Compare.generate(tree1,tree2,patches,[]);
+	return patches;
+};
+io_colyseus_state_$listener_Compare.concat = function(arr,value) {
+	var newArr = arr.slice();
+	newArr.push("" + value);
+	return newArr;
+};
+io_colyseus_state_$listener_Compare.objectKeys = function(obj) {
+	if(((obj) instanceof Array)) {
+		var keys = [];
+		var length = (js_Boot.__cast(obj , Array)).length;
+		var _g = 0;
+		var _g1 = length;
+		while(_g < _g1) {
+			var i = _g++;
+			keys.push(i);
+		}
+		return keys;
+	}
+	if(js_Boot.__implements(obj,haxe_IMap)) {
+		return obj.keys();
+	}
+	return Reflect.fields(obj);
+};
+io_colyseus_state_$listener_Compare.generate = function(mirror,obj,patches,path) {
+	var newKeys = io_colyseus_state_$listener_Compare.objectKeys(obj);
+	var oldKeys = io_colyseus_state_$listener_Compare.objectKeys(mirror);
+	var deleted = false;
+	var _g = 0;
+	var _g1 = oldKeys.length;
+	while(_g < _g1) {
+		var t = _g++;
+		var key = oldKeys[t];
+		var oldVal = io_colyseus_state_$listener_Compare.getField(mirror,key);
+		var newVal = io_colyseus_state_$listener_Compare.getField(obj,key);
+		if(oldVal == newVal) {
+			continue;
+		}
+		if(newVal != null && !(newVal == null && oldVal != null && !((obj) instanceof Array))) {
+			if(oldVal != null && newVal != null && !io_colyseus_state_$listener_Compare.isBasicType(oldVal) && !io_colyseus_state_$listener_Compare.isBasicType(newVal) && (((obj) instanceof Array) && ((mirror) instanceof Array) || Reflect.isObject(obj) && Reflect.isObject(mirror))) {
+				io_colyseus_state_$listener_Compare.generate(oldVal,newVal,patches,io_colyseus_state_$listener_Compare.concat(path,key));
+			} else if(oldVal != newVal) {
+				patches.push({ operation : "replace", path : io_colyseus_state_$listener_Compare.concat(path,key), value : newVal});
+			}
+		} else {
+			patches.push({ operation : "remove", path : io_colyseus_state_$listener_Compare.concat(path,key)});
+			deleted = true;
+		}
+	}
+	if(!deleted && newKeys.length == oldKeys.length) {
+		return;
+	}
+	var t = newKeys.length;
+	while(--t >= 0) {
+		var key = newKeys[t];
+		if(!io_colyseus_state_$listener_Compare.hasField(mirror,key) && io_colyseus_state_$listener_Compare.hasField(obj,key)) {
+			var newVal = io_colyseus_state_$listener_Compare.getField(obj,key);
+			var addPath = io_colyseus_state_$listener_Compare.concat(path,key);
+			if(!io_colyseus_state_$listener_Compare.isBasicType(newVal) && Reflect.isObject(newVal) && newVal != null) {
+				io_colyseus_state_$listener_Compare.generate({ },newVal,patches,addPath);
+			}
+			patches.push({ operation : "add", path : addPath, value : newVal});
+		}
+	}
+};
+io_colyseus_state_$listener_Compare.isBasicType = function(value) {
+	if(!(typeof(value) == "string" || typeof(value) == "number" && ((value | 0) === value) || typeof(value) == "number")) {
+		return typeof(value) == "boolean";
+	} else {
+		return true;
+	}
+};
+io_colyseus_state_$listener_Compare.getField = function(obj,field) {
+	if(((obj) instanceof Array)) {
+		return obj[field];
+	} else {
+		return Reflect.field(obj,field);
+	}
+};
+io_colyseus_state_$listener_Compare.hasField = function(obj,field) {
+	if(((obj) instanceof Array)) {
+		return obj[field] != null;
+	} else if(Std.string(obj) == "{}") {
+		return false;
+	} else {
+		return Object.prototype.hasOwnProperty.call(obj,field);
+	}
+};
+var io_colyseus_state_$listener_StateContainer = function(state) {
+	var _g = new haxe_ds_StringMap();
+	var value = new EReg("^([a-zA-Z0-9\\-_]+)$","");
+	_g.h[":id"] = value;
+	var value = new EReg("^([0-9]+)$","");
+	_g.h[":number"] = value;
+	var value = new EReg("^(\\w+)$","");
+	_g.h[":string"] = value;
+	var value = new EReg("^([xyz])$","");
+	_g.h[":axis"] = value;
+	var value = new EReg("^(.+)$","");
+	_g.h[":*"] = value;
+	this.matcherPlaceholders = _g;
+	this.listeners = [];
+	this.state = state;
+	this.reset();
+};
+$hxClasses["io.colyseus.state_listener.StateContainer"] = io_colyseus_state_$listener_StateContainer;
+io_colyseus_state_$listener_StateContainer.__name__ = "io.colyseus.state_listener.StateContainer";
+io_colyseus_state_$listener_StateContainer.prototype = {
+	state: null
+	,listeners: null
+	,defaultListener: null
+	,matcherPlaceholders: null
+	,set: function(newState) {
+		var patches = io_colyseus_state_$listener_Compare.getPatchList(this.state,newState);
+		this.checkPatches(patches,this.listeners,this.defaultListener);
+		this.state = newState;
+		return patches;
+	}
+	,registerPlaceholder: function(placeholder,matcher) {
+		this.matcherPlaceholders.h[placeholder] = matcher;
+	}
+	,listen: function(segments,callback,immediate) {
+		var _gthis = this;
+		var rawRules;
+		if(Reflect.isFunction(segments)) {
+			rawRules = [];
+			callback = segments;
+		} else {
+			rawRules = segments.split("/");
+		}
+		var result = new Array(rawRules.length);
+		var _g = 0;
+		var _g1 = rawRules.length;
+		while(_g < _g1) {
+			var i = _g++;
+			var segment = rawRules[i];
+			var listener;
+			if(typeof(segment) == "string") {
+				if(segment.indexOf(":") == 0) {
+					var matcher = _gthis.matcherPlaceholders.h[segment];
+					if(matcher == null) {
+						matcher = _gthis.matcherPlaceholders.h[":*"];
+					}
+					listener = matcher;
+				} else {
+					listener = new EReg("^" + segment + "$","m");
+				}
+			} else {
+				listener = js_Boot.__cast(segment , EReg);
+			}
+			result[i] = listener;
+		}
+		var listener = { callback : callback, rawRules : rawRules, rules : result};
+		if(rawRules.length == 0) {
+			this.defaultListener = listener;
+		} else {
+			this.listeners.push(listener);
+		}
+		if(immediate) {
+			this.checkPatches(io_colyseus_state_$listener_Compare.getPatchList({ },this.state),[listener]);
+		}
+		return listener;
+	}
+	,removeListener: function(listener) {
+		var i = this.listeners.length;
+		while(--i >= 0) if(this.listeners[i] == listener) {
+			this.listeners.splice(i,1);
+		}
+	}
+	,removeAllListeners: function() {
+		this.reset();
+	}
+	,checkPatches: function(patches,listeners,defaultListener) {
+		var i = patches.length;
+		while(--i >= 0) {
+			var matched = false;
+			var _g = 0;
+			while(_g < listeners.length) {
+				var listener = listeners[_g];
+				++_g;
+				if(listener == null) {
+					continue;
+				}
+				var pathVariables = this.getPathVariables(patches[i],listener);
+				if(pathVariables != null) {
+					listener.callback({ path : pathVariables, rawPath : patches[i].path, operation : patches[i].operation, value : patches[i].value});
+					matched = true;
+				}
+			}
+			if(!matched && defaultListener != null) {
+				this.defaultListener.callback({ path : patches[i].path, operation : patches[i].operation, value : patches[i].value});
+			}
+		}
+	}
+	,getPathVariables: function(patch,listener) {
+		if(patch.path.length != listener.rules.length) {
+			return null;
+		}
+		var i = 0;
+		var path = { };
+		var _g = 0;
+		var _g1 = listener.rules;
+		while(_g < _g1.length) {
+			var rule = _g1[_g];
+			++_g;
+			var matches = this.getMatches(rule,patch.path[i]);
+			if(matches.length == 0 || matches.length > 2) {
+				return null;
+			} else if(HxOverrides.substr(listener.rawRules[i],0,1) == ":") {
+				Reflect.setProperty(path,HxOverrides.substr(listener.rawRules[i],1,null),matches[0]);
+			}
+			++i;
+		}
+		return path;
+	}
+	,getMatches: function(ereg,input,index) {
+		if(index == null) {
+			index = 0;
+		}
+		var matches = [];
+		while(ereg.match(input)) {
+			matches.push(ereg.matched(index));
+			input = ereg.matchedRight();
+		}
+		return matches;
+	}
+	,reset: function() {
+		this.listeners = [];
+	}
+	,__class__: io_colyseus_state_$listener_StateContainer
+};
 var js_Boot = function() { };
 $hxClasses["js.Boot"] = js_Boot;
-js_Boot.__name__ = true;
+js_Boot.__name__ = "js.Boot";
 js_Boot.getClass = function(o) {
 	if(o == null) {
 		return null;
@@ -6006,6 +8902,9 @@ js_Boot.__downcastCheck = function(o,cl) {
 		return true;
 	}
 };
+js_Boot.__implements = function(o,iface) {
+	return js_Boot.__interfLoop(js_Boot.getClass(o),iface);
+};
 js_Boot.__cast = function(o,t) {
 	if(o == null || js_Boot.__instanceof(o,t)) {
 		return o;
@@ -6026,9 +8925,29 @@ js_Boot.__isNativeObj = function(o) {
 js_Boot.__resolveNativeClass = function(name) {
 	return $global[name];
 };
+var js_Browser = function() { };
+$hxClasses["js.Browser"] = js_Browser;
+js_Browser.__name__ = "js.Browser";
+js_Browser.__properties__ = {get_supported:"get_supported"};
+js_Browser.get_supported = function() {
+	if(typeof(window) != "undefined" && typeof(window.location) != "undefined") {
+		return typeof(window.location.protocol) == "string";
+	} else {
+		return false;
+	}
+};
+js_Browser.createXMLHttpRequest = function() {
+	if(typeof XMLHttpRequest != "undefined") {
+		return new XMLHttpRequest();
+	}
+	if(typeof ActiveXObject != "undefined") {
+		return new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	throw haxe_Exception.thrown("Unable to create XMLHttpRequest object.");
+};
 var js_lib__$ArrayBuffer_ArrayBufferCompat = function() { };
 $hxClasses["js.lib._ArrayBuffer.ArrayBufferCompat"] = js_lib__$ArrayBuffer_ArrayBufferCompat;
-js_lib__$ArrayBuffer_ArrayBufferCompat.__name__ = true;
+js_lib__$ArrayBuffer_ArrayBufferCompat.__name__ = "js.lib._ArrayBuffer.ArrayBufferCompat";
 js_lib__$ArrayBuffer_ArrayBufferCompat.sliceImpl = function(begin,end) {
 	var u = new Uint8Array(this,begin,end == null ? null : end - begin);
 	var resultArray = new Uint8Array(u.byteLength);
@@ -6091,7 +9010,7 @@ var kha__$Assets_ImageList = function() {
 	this.back = null;
 };
 $hxClasses["kha._Assets.ImageList"] = kha__$Assets_ImageList;
-kha__$Assets_ImageList.__name__ = true;
+kha__$Assets_ImageList.__name__ = "kha._Assets.ImageList";
 kha__$Assets_ImageList.prototype = {
 	get: function(name) {
 		return Reflect.field(this,name);
@@ -6272,7 +9191,7 @@ var kha__$Assets_SoundList = function() {
 	this.names = [];
 };
 $hxClasses["kha._Assets.SoundList"] = kha__$Assets_SoundList;
-kha__$Assets_SoundList.__name__ = true;
+kha__$Assets_SoundList.__name__ = "kha._Assets.SoundList";
 kha__$Assets_SoundList.prototype = {
 	get: function(name) {
 		return Reflect.field(this,name);
@@ -6281,7 +9200,11 @@ kha__$Assets_SoundList.prototype = {
 	,__class__: kha__$Assets_SoundList
 };
 var kha__$Assets_BlobList = function() {
-	this.names = ["grass_mtl","grass_obj"];
+	this.names = ["grass_mtl","grass_obj","theme_ksn"];
+	this.theme_ksnSize = 8718;
+	this.theme_ksnDescription = { name : "theme_ksn", file_sizes : [8718], files : ["theme.ksn"], type : "blob"};
+	this.theme_ksnName = "theme_ksn";
+	this.theme_ksn = null;
 	this.grass_objSize = 46538;
 	this.grass_objDescription = { name : "grass_obj", file_sizes : [46538], files : ["grass.obj"], type : "blob"};
 	this.grass_objName = "grass_obj";
@@ -6292,7 +9215,7 @@ var kha__$Assets_BlobList = function() {
 	this.grass_mtl = null;
 };
 $hxClasses["kha._Assets.BlobList"] = kha__$Assets_BlobList;
-kha__$Assets_BlobList.__name__ = true;
+kha__$Assets_BlobList.__name__ = "kha._Assets.BlobList";
 kha__$Assets_BlobList.prototype = {
 	get: function(name) {
 		return Reflect.field(this,name);
@@ -6323,17 +9246,81 @@ kha__$Assets_BlobList.prototype = {
 		this.grass_obj.unload();
 		this.grass_obj = null;
 	}
+	,theme_ksn: null
+	,theme_ksnName: null
+	,theme_ksnDescription: null
+	,theme_ksnSize: null
+	,theme_ksnLoad: function(done,failure) {
+		kha_Assets.loadBlob("theme_ksn",function(blob) {
+			done();
+		},failure,{ fileName : "kha/internal/AssetsBuilder.hx", lineNumber : 151, className : "kha._Assets.BlobList", methodName : "theme_ksnLoad"});
+	}
+	,theme_ksnUnload: function() {
+		this.theme_ksn.unload();
+		this.theme_ksn = null;
+	}
 	,names: null
 	,__class__: kha__$Assets_BlobList
 };
 var kha__$Assets_FontList = function() {
-	this.names = [];
+	this.names = ["Montserrat_Bold","Montserrat_Italic","Montserrat_Regular"];
+	this.Montserrat_RegularSize = 264340;
+	this.Montserrat_RegularDescription = { name : "Montserrat_Regular", file_sizes : [264340], files : ["Montserrat-Regular.ttf"], type : "font"};
+	this.Montserrat_RegularName = "Montserrat_Regular";
+	this.Montserrat_Regular = null;
+	this.Montserrat_ItalicSize = 267820;
+	this.Montserrat_ItalicDescription = { name : "Montserrat_Italic", file_sizes : [267820], files : ["Montserrat-Italic.ttf"], type : "font"};
+	this.Montserrat_ItalicName = "Montserrat_Italic";
+	this.Montserrat_Italic = null;
+	this.Montserrat_BoldSize = 262608;
+	this.Montserrat_BoldDescription = { name : "Montserrat_Bold", file_sizes : [262608], files : ["Montserrat-Bold.ttf"], type : "font"};
+	this.Montserrat_BoldName = "Montserrat_Bold";
+	this.Montserrat_Bold = null;
 };
 $hxClasses["kha._Assets.FontList"] = kha__$Assets_FontList;
-kha__$Assets_FontList.__name__ = true;
+kha__$Assets_FontList.__name__ = "kha._Assets.FontList";
 kha__$Assets_FontList.prototype = {
 	get: function(name) {
 		return Reflect.field(this,name);
+	}
+	,Montserrat_Bold: null
+	,Montserrat_BoldName: null
+	,Montserrat_BoldDescription: null
+	,Montserrat_BoldSize: null
+	,Montserrat_BoldLoad: function(done,failure) {
+		kha_Assets.loadFont("Montserrat_Bold",function(font) {
+			done();
+		},failure,{ fileName : "kha/internal/AssetsBuilder.hx", lineNumber : 155, className : "kha._Assets.FontList", methodName : "Montserrat_BoldLoad"});
+	}
+	,Montserrat_BoldUnload: function() {
+		this.Montserrat_Bold.unload();
+		this.Montserrat_Bold = null;
+	}
+	,Montserrat_Italic: null
+	,Montserrat_ItalicName: null
+	,Montserrat_ItalicDescription: null
+	,Montserrat_ItalicSize: null
+	,Montserrat_ItalicLoad: function(done,failure) {
+		kha_Assets.loadFont("Montserrat_Italic",function(font) {
+			done();
+		},failure,{ fileName : "kha/internal/AssetsBuilder.hx", lineNumber : 155, className : "kha._Assets.FontList", methodName : "Montserrat_ItalicLoad"});
+	}
+	,Montserrat_ItalicUnload: function() {
+		this.Montserrat_Italic.unload();
+		this.Montserrat_Italic = null;
+	}
+	,Montserrat_Regular: null
+	,Montserrat_RegularName: null
+	,Montserrat_RegularDescription: null
+	,Montserrat_RegularSize: null
+	,Montserrat_RegularLoad: function(done,failure) {
+		kha_Assets.loadFont("Montserrat_Regular",function(font) {
+			done();
+		},failure,{ fileName : "kha/internal/AssetsBuilder.hx", lineNumber : 155, className : "kha._Assets.FontList", methodName : "Montserrat_RegularLoad"});
+	}
+	,Montserrat_RegularUnload: function() {
+		this.Montserrat_Regular.unload();
+		this.Montserrat_Regular = null;
 	}
 	,names: null
 	,__class__: kha__$Assets_FontList
@@ -6342,7 +9329,7 @@ var kha__$Assets_VideoList = function() {
 	this.names = [];
 };
 $hxClasses["kha._Assets.VideoList"] = kha__$Assets_VideoList;
-kha__$Assets_VideoList.__name__ = true;
+kha__$Assets_VideoList.__name__ = "kha._Assets.VideoList";
 kha__$Assets_VideoList.prototype = {
 	get: function(name) {
 		return Reflect.field(this,name);
@@ -6352,7 +9339,8 @@ kha__$Assets_VideoList.prototype = {
 };
 var kha_Assets = function() { };
 $hxClasses["kha.Assets"] = kha_Assets;
-kha_Assets.__name__ = true;
+kha_Assets.__name__ = "kha.Assets";
+kha_Assets.__properties__ = {get_videoFormats:"get_videoFormats",get_fontFormats:"get_fontFormats",get_soundFormats:"get_soundFormats",get_imageFormats:"get_imageFormats"};
 kha_Assets.loadEverything = function(callback,filter,uncompressSoundsFilter,failed) {
 	var lists = [kha__$Assets_ImageList,kha__$Assets_SoundList,kha__$Assets_BlobList,kha__$Assets_FontList,kha__$Assets_VideoList];
 	var listInstances = [kha_Assets.images,kha_Assets.sounds,kha_Assets.blobs,kha_Assets.fonts,kha_Assets.videos];
@@ -6564,7 +9552,7 @@ kha_Assets.reporter = function(custom,pos) {
 };
 var kha_Canvas = function() { };
 $hxClasses["kha.Canvas"] = kha_Canvas;
-kha_Canvas.__name__ = true;
+kha_Canvas.__name__ = "kha.Canvas";
 kha_Canvas.__isInterface__ = true;
 kha_Canvas.prototype = {
 	get_width: null
@@ -6578,10 +9566,11 @@ kha_Canvas.prototype = {
 	,g2: null
 	,g4: null
 	,__class__: kha_Canvas
+	,__properties__: {get_g4:"get_g4",get_g2:"get_g2",get_g1:"get_g1",get_height:"get_height",get_width:"get_width"}
 };
 var kha_Resource = function() { };
 $hxClasses["kha.Resource"] = kha_Resource;
-kha_Resource.__name__ = true;
+kha_Resource.__name__ = "kha.Resource";
 kha_Resource.__isInterface__ = true;
 kha_Resource.prototype = {
 	unload: null
@@ -6589,8 +9578,9 @@ kha_Resource.prototype = {
 };
 var kha_Image = function() { };
 $hxClasses["kha.Image"] = kha_Image;
-kha_Image.__name__ = true;
+kha_Image.__name__ = "kha.Image";
 kha_Image.__interfaces__ = [kha_Resource,kha_Canvas];
+kha_Image.__properties__ = {get_nonPow2Supported:"get_nonPow2Supported",get_maxSize:"get_maxSize"};
 kha_Image.create = function(width,height,format,usage,readable) {
 	if(readable == null) {
 		readable = false;
@@ -6784,6 +9774,7 @@ kha_Image.prototype = {
 		return null;
 	}
 	,__class__: kha_Image
+	,__properties__: {get_g4:"get_g4",get_g2:"get_g2",get_g1:"get_g1",get_stride:"get_stride",get_realHeight:"get_realHeight",get_realWidth:"get_realWidth",get_format:"get_format",get_depth:"get_depth",get_height:"get_height",get_width:"get_width"}
 };
 var kha_CanvasImage = function(width,height,format,renderTarget) {
 	this.g2canvas = null;
@@ -6798,7 +9789,7 @@ var kha_CanvasImage = function(width,height,format,renderTarget) {
 	}
 };
 $hxClasses["kha.CanvasImage"] = kha_CanvasImage;
-kha_CanvasImage.__name__ = true;
+kha_CanvasImage.__name__ = "kha.CanvasImage";
 kha_CanvasImage.init = function() {
 	var canvas = window.document.createElement("canvas");
 	if(canvas != null) {
@@ -7000,6 +9991,7 @@ kha_CanvasImage.prototype = $extend(kha_Image.prototype,{
 	,__class__: kha_CanvasImage
 });
 var kha_Color = {};
+kha_Color.__properties__ = {set_value:"set_value",get_value:"get_value",set_A:"set_A",get_A:"get_A",set_B:"set_B",get_B:"get_B",set_G:"set_G",get_G:"get_G",set_R:"set_R",get_R:"get_R",set_Ab:"set_Ab",get_Ab:"get_Ab",set_Bb:"set_Bb",get_Bb:"get_Bb",set_Gb:"set_Gb",get_Gb:"get_Gb",set_Rb:"set_Rb",get_Rb:"get_Rb"};
 kha_Color.fromValue = function(value) {
 	return kha_Color._new(value);
 };
@@ -7096,7 +10088,8 @@ kha_Color.set_A = function(this1,f) {
 var kha_Display = function() {
 };
 $hxClasses["kha.Display"] = kha_Display;
-kha_Display.__name__ = true;
+kha_Display.__name__ = "kha.Display";
+kha_Display.__properties__ = {get_all:"get_all",get_primary:"get_primary"};
 kha_Display.init = function() {
 };
 kha_Display.get_primary = function() {
@@ -7143,6 +10136,7 @@ kha_Display.prototype = {
 		return [];
 	}
 	,__class__: kha_Display
+	,__properties__: {get_modes:"get_modes",get_pixelsPerInch:"get_pixelsPerInch",get_frequency:"get_frequency",get_height:"get_height",get_width:"get_width",get_y:"get_y",get_x:"get_x",get_name:"get_name",get_available:"get_available"}
 };
 var kha_DisplayMode = function(width,height,frequency,bitsPerPixel) {
 	this.width = width;
@@ -7151,7 +10145,7 @@ var kha_DisplayMode = function(width,height,frequency,bitsPerPixel) {
 	this.bitsPerPixel = bitsPerPixel;
 };
 $hxClasses["kha.DisplayMode"] = kha_DisplayMode;
-kha_DisplayMode.__name__ = true;
+kha_DisplayMode.__name__ = "kha.DisplayMode";
 kha_DisplayMode.prototype = {
 	width: null
 	,height: null
@@ -7166,7 +10160,7 @@ var kha_Framebuffer = function($window,g1,g2,g4) {
 	this.graphics4 = g4;
 };
 $hxClasses["kha.Framebuffer"] = kha_Framebuffer;
-kha_Framebuffer.__name__ = true;
+kha_Framebuffer.__name__ = "kha.Framebuffer";
 kha_Framebuffer.__interfaces__ = [kha_Canvas];
 kha_Framebuffer.prototype = {
 	window: null
@@ -7196,6 +10190,7 @@ kha_Framebuffer.prototype = {
 		return kha_System.windowHeight(this.window);
 	}
 	,__class__: kha_Framebuffer
+	,__properties__: {get_height:"get_height",get_width:"get_width",get_g4:"get_g4",get_g2:"get_g2",get_g1:"get_g1"}
 };
 var kha_FramebufferOptions = function(frequency,verticalSync,colorBufferBits,depthBufferBits,stencilBufferBits,samplesPerPixel) {
 	if(samplesPerPixel == null) {
@@ -7230,7 +10225,7 @@ var kha_FramebufferOptions = function(frequency,verticalSync,colorBufferBits,dep
 	this.samplesPerPixel = samplesPerPixel;
 };
 $hxClasses["kha.FramebufferOptions"] = kha_FramebufferOptions;
-kha_FramebufferOptions.__name__ = true;
+kha_FramebufferOptions.__name__ = "kha.FramebufferOptions";
 kha_FramebufferOptions.prototype = {
 	frequency: null
 	,verticalSync: null
@@ -7243,7 +10238,7 @@ kha_FramebufferOptions.prototype = {
 var kha_AlignedQuad = function() {
 };
 $hxClasses["kha.AlignedQuad"] = kha_AlignedQuad;
-kha_AlignedQuad.__name__ = true;
+kha_AlignedQuad.__name__ = "kha.AlignedQuad";
 kha_AlignedQuad.prototype = {
 	x0: null
 	,y0: null
@@ -7287,7 +10282,7 @@ var kha_KravurImage = function(size,ascent,descent,lineGap,width,height,chars,pi
 	this.texture.unlock();
 };
 $hxClasses["kha.KravurImage"] = kha_KravurImage;
-kha_KravurImage.__name__ = true;
+kha_KravurImage.__name__ = "kha.KravurImage";
 kha_KravurImage.prototype = {
 	mySize: null
 	,chars: null
@@ -7381,7 +10376,7 @@ var kha_Kravur = function(blob,fontIndex) {
 	this.fontIndex = fontIndex;
 };
 $hxClasses["kha.Kravur"] = kha_Kravur;
-kha_Kravur.__name__ = true;
+kha_Kravur.__name__ = "kha.Kravur";
 kha_Kravur.__interfaces__ = [kha_Resource];
 kha_Kravur.fromBytes = function(bytes,fontIndex) {
 	if(fontIndex == null) {
@@ -7477,7 +10472,7 @@ kha_Kravur.prototype = {
 };
 var kha_LoaderImpl = function() { };
 $hxClasses["kha.LoaderImpl"] = kha_LoaderImpl;
-kha_LoaderImpl.__name__ = true;
+kha_LoaderImpl.__name__ = "kha.LoaderImpl";
 kha_LoaderImpl.getImageFormats = function() {
 	return ["png","jpg","hdr"];
 };
@@ -7670,11 +10665,11 @@ kha_LoaderImpl.loadFontFromDescription = function(desc,done,failed) {
 };
 var kha_Macros = function() { };
 $hxClasses["kha.Macros"] = kha_Macros;
-kha_Macros.__name__ = true;
+kha_Macros.__name__ = "kha.Macros";
 var kha_TimeTask = function() {
 };
 $hxClasses["kha.TimeTask"] = kha_TimeTask;
-kha_TimeTask.__name__ = true;
+kha_TimeTask.__name__ = "kha.TimeTask";
 kha_TimeTask.prototype = {
 	task: null
 	,start: null
@@ -7695,7 +10690,7 @@ var kha_FrameTask = function(task,priority,id) {
 	this.paused = false;
 };
 $hxClasses["kha.FrameTask"] = kha_FrameTask;
-kha_FrameTask.__name__ = true;
+kha_FrameTask.__name__ = "kha.FrameTask";
 kha_FrameTask.prototype = {
 	task: null
 	,priority: null
@@ -7706,7 +10701,8 @@ kha_FrameTask.prototype = {
 };
 var kha_Scheduler = function() { };
 $hxClasses["kha.Scheduler"] = kha_Scheduler;
-kha_Scheduler.__name__ = true;
+kha_Scheduler.__name__ = "kha.Scheduler";
+kha_Scheduler.__properties__ = {get_onedifhz:"get_onedifhz"};
 kha_Scheduler.get_onedifhz = function() {
 	return 1.0 / kha_Display.get_primary().get_frequency();
 };
@@ -8200,8 +11196,19 @@ kha_Scheduler.sortFrameTasks = function() {
 };
 var kha_Shaders = function() { };
 $hxClasses["kha.Shaders"] = kha_Shaders;
-kha_Shaders.__name__ = true;
+kha_Shaders.__name__ = "kha.Shaders";
 kha_Shaders.init = function() {
+	var blobs = [];
+	var data = Reflect.field(kha_Shaders,"circle_fragData" + 0);
+	var bytes = haxe_Unserializer.run(data);
+	blobs.push(kha_internal_BytesBlob.fromBytes(bytes));
+	var data = Reflect.field(kha_Shaders,"circle_fragData" + 1);
+	var bytes = haxe_Unserializer.run(data);
+	blobs.push(kha_internal_BytesBlob.fromBytes(bytes));
+	var data = Reflect.field(kha_Shaders,"circle_fragData" + 2);
+	var bytes = haxe_Unserializer.run(data);
+	blobs.push(kha_internal_BytesBlob.fromBytes(bytes));
+	kha_Shaders.circle_frag = new kha_graphics4_FragmentShader(blobs,["circle.frag.essl","circle-webgl2.frag.essl","circle-relaxed.frag.essl"]);
 	var blobs = [];
 	var data = Reflect.field(kha_Shaders,"cylinder_fragData" + 0);
 	var bytes = haxe_Unserializer.run(data);
@@ -8335,6 +11342,28 @@ kha_Shaders.init = function() {
 	blobs.push(kha_internal_BytesBlob.fromBytes(bytes));
 	kha_Shaders.painter_video_vert = new kha_graphics4_VertexShader(blobs,["painter-video.vert.essl","painter-video-webgl2.vert.essl","painter-video-relaxed.vert.essl"]);
 	var blobs = [];
+	var data = Reflect.field(kha_Shaders,"rect_fragData" + 0);
+	var bytes = haxe_Unserializer.run(data);
+	blobs.push(kha_internal_BytesBlob.fromBytes(bytes));
+	var data = Reflect.field(kha_Shaders,"rect_fragData" + 1);
+	var bytes = haxe_Unserializer.run(data);
+	blobs.push(kha_internal_BytesBlob.fromBytes(bytes));
+	var data = Reflect.field(kha_Shaders,"rect_fragData" + 2);
+	var bytes = haxe_Unserializer.run(data);
+	blobs.push(kha_internal_BytesBlob.fromBytes(bytes));
+	kha_Shaders.rect_frag = new kha_graphics4_FragmentShader(blobs,["rect.frag.essl","rect-webgl2.frag.essl","rect-relaxed.frag.essl"]);
+	var blobs = [];
+	var data = Reflect.field(kha_Shaders,"rect_vertData" + 0);
+	var bytes = haxe_Unserializer.run(data);
+	blobs.push(kha_internal_BytesBlob.fromBytes(bytes));
+	var data = Reflect.field(kha_Shaders,"rect_vertData" + 1);
+	var bytes = haxe_Unserializer.run(data);
+	blobs.push(kha_internal_BytesBlob.fromBytes(bytes));
+	var data = Reflect.field(kha_Shaders,"rect_vertData" + 2);
+	var bytes = haxe_Unserializer.run(data);
+	blobs.push(kha_internal_BytesBlob.fromBytes(bytes));
+	kha_Shaders.rect_vert = new kha_graphics4_VertexShader(blobs,["rect.vert.essl","rect-webgl2.vert.essl","rect-relaxed.vert.essl"]);
+	var blobs = [];
 	var data = Reflect.field(kha_Shaders,"red_fragData" + 0);
 	var bytes = haxe_Unserializer.run(data);
 	blobs.push(kha_internal_BytesBlob.fromBytes(bytes));
@@ -8407,7 +11436,7 @@ var kha_Sound = function() {
 	this.length = 0;
 };
 $hxClasses["kha.Sound"] = kha_Sound;
-kha_Sound.__name__ = true;
+kha_Sound.__name__ = "kha.Sound";
 kha_Sound.__interfaces__ = [kha_Resource];
 kha_Sound.prototype = {
 	compressedData: null
@@ -8496,7 +11525,7 @@ var kha_SystemOptions = function(title,width,height,$window,framebuffer) {
 	this.framebuffer = framebuffer == null ? new kha_FramebufferOptions(60,true,32,16,8,1) : framebuffer;
 };
 $hxClasses["kha.SystemOptions"] = kha_SystemOptions;
-kha_SystemOptions.__name__ = true;
+kha_SystemOptions.__name__ = "kha.SystemOptions";
 kha_SystemOptions.prototype = {
 	title: null
 	,width: null
@@ -8507,7 +11536,8 @@ kha_SystemOptions.prototype = {
 };
 var kha_System = function() { };
 $hxClasses["kha.System"] = kha_System;
-kha_System.__name__ = true;
+kha_System.__name__ = "kha.System";
+kha_System.__properties__ = {get_refreshRate:"get_refreshRate",get_vsync:"get_vsync",get_language:"get_language",get_systemId:"get_systemId",get_screenRotation:"get_screenRotation",get_time:"get_time",get_title:"get_title"};
 kha_System.init = function(options,callback) {
 	var features = 0;
 	if(options.resizable) {
@@ -8755,7 +11785,7 @@ var kha_GamepadStates = function() {
 	this.buttons = [];
 };
 $hxClasses["kha.GamepadStates"] = kha_GamepadStates;
-kha_GamepadStates.__name__ = true;
+kha_GamepadStates.__name__ = "kha.GamepadStates";
 kha_GamepadStates.prototype = {
 	axes: null
 	,buttons: null
@@ -8763,7 +11793,7 @@ kha_GamepadStates.prototype = {
 };
 var kha_SystemImpl = function() { };
 $hxClasses["kha.SystemImpl"] = kha_SystemImpl;
-kha_SystemImpl.__name__ = true;
+kha_SystemImpl.__name__ = "kha.SystemImpl";
 kha_SystemImpl.errorHandler = function(message,source,lineno,colno,error) {
 	$global.console.error("Error: " + message);
 	if(error != null) {
@@ -9901,7 +12931,7 @@ kha_SystemImpl.allowUserChange = function() {
 var kha_Video = function() {
 };
 $hxClasses["kha.Video"] = kha_Video;
-kha_Video.__name__ = true;
+kha_Video.__name__ = "kha.Video";
 kha_Video.__interfaces__ = [kha_Resource];
 kha_Video.prototype = {
 	width: function() {
@@ -9944,6 +12974,7 @@ kha_Video.prototype = {
 	,unload: function() {
 	}
 	,__class__: kha_Video
+	,__properties__: {set_position:"set_position",get_position:"get_position"}
 };
 var kha_WebGLImage = function(width,height,format,renderTarget,depthStencilFormat,samples,readable) {
 	this.pixels = null;
@@ -9967,7 +12998,7 @@ var kha_WebGLImage = function(width,height,format,renderTarget,depthStencilForma
 	}
 };
 $hxClasses["kha.WebGLImage"] = kha_WebGLImage;
-kha_WebGLImage.__name__ = true;
+kha_WebGLImage.__name__ = "kha.WebGLImage";
 kha_WebGLImage.init = function() {
 	if(kha_WebGLImage.context == null) {
 		kha_WebGLImage.canvas = window.document.createElement("canvas");
@@ -10539,7 +13570,8 @@ var kha_Window = function(num,defaultWidth,defaultHeight,canvas) {
 	observer.observe(canvas,{ attributes : true});
 };
 $hxClasses["kha.Window"] = kha_Window;
-kha_Window.__name__ = true;
+kha_Window.__name__ = "kha.Window";
+kha_Window.__properties__ = {get_all:"get_all"};
 kha_Window.create = function(win,frame) {
 	return null;
 };
@@ -10668,6 +13700,7 @@ kha_Window.prototype = {
 		return true;
 	}
 	,__class__: kha_Window
+	,__properties__: {get_vSynced:"get_vSynced",set_title:"set_title",get_title:"get_title",set_visible:"set_visible",get_visible:"get_visible",set_mode:"set_mode",get_mode:"get_mode",set_height:"set_height",get_height:"get_height",set_width:"set_width",get_width:"get_width",set_y:"set_y",get_y:"get_y",set_x:"set_x",get_x:"get_x"}
 };
 var kha_WindowFeatures = {};
 kha_WindowFeatures._new = function(value) {
@@ -10716,7 +13749,7 @@ var kha_WindowOptions = function(title,x,y,width,height,display,visible,windowFe
 	this.mode = mode;
 };
 $hxClasses["kha.WindowOptions"] = kha_WindowOptions;
-kha_WindowOptions.__name__ = true;
+kha_WindowOptions.__name__ = "kha.WindowOptions";
 kha_WindowOptions.prototype = {
 	title: null
 	,x: null
@@ -10730,6 +13763,7 @@ kha_WindowOptions.prototype = {
 	,__class__: kha_WindowOptions
 };
 var kha_arrays_ByteArray = {};
+kha_arrays_ByteArray.__properties__ = {get_buffer:"get_buffer"};
 kha_arrays_ByteArray.get_buffer = function(this1) {
 	return this1.buffer;
 };
@@ -10872,6 +13906,7 @@ kha_arrays_ByteBuffer._new = function(length) {
 	return this1;
 };
 var kha_arrays_Float32Array = {};
+kha_arrays_Float32Array.__properties__ = {get_length:"get_length"};
 kha_arrays_Float32Array.get_length = function(this1) {
 	return this1.byteLength >> 2;
 };
@@ -10892,6 +13927,7 @@ kha_arrays_Float32Array.subarray = function(this1,start,end) {
 	return kha_arrays_ByteArray._new(this1.buffer,start1,end1 != null ? end1 - start1 : null);
 };
 var kha_arrays_Int32Array = {};
+kha_arrays_Int32Array.__properties__ = {get_length:"get_length"};
 kha_arrays_Int32Array.get_length = function(this1) {
 	return this1.byteLength >> 2;
 };
@@ -10912,6 +13948,7 @@ kha_arrays_Int32Array.subarray = function(this1,start,end) {
 	return kha_arrays_ByteArray._new(this1.buffer,start1,end1 != null ? end1 - start1 : null);
 };
 var kha_arrays_Uint32Array = {};
+kha_arrays_Uint32Array.__properties__ = {get_length:"get_length"};
 kha_arrays_Uint32Array.get_length = function(this1) {
 	return this1.byteLength >> 2;
 };
@@ -10933,7 +13970,7 @@ kha_arrays_Uint32Array.subarray = function(this1,start,end) {
 };
 var kha_audio1_AudioChannel = function() { };
 $hxClasses["kha.audio1.AudioChannel"] = kha_audio1_AudioChannel;
-kha_audio1_AudioChannel.__name__ = true;
+kha_audio1_AudioChannel.__name__ = "kha.audio1.AudioChannel";
 kha_audio1_AudioChannel.__isInterface__ = true;
 kha_audio1_AudioChannel.prototype = {
 	play: null
@@ -10948,19 +13985,20 @@ kha_audio1_AudioChannel.prototype = {
 	,finished: null
 	,get_finished: null
 	,__class__: kha_audio1_AudioChannel
+	,__properties__: {get_finished:"get_finished",set_volume:"set_volume",get_volume:"get_volume",set_position:"set_position",get_position:"get_position",get_length:"get_length"}
 };
 var kha_internal_IntBox = function(value) {
 	this.value = value;
 };
 $hxClasses["kha.internal.IntBox"] = kha_internal_IntBox;
-kha_internal_IntBox.__name__ = true;
+kha_internal_IntBox.__name__ = "kha.internal.IntBox";
 kha_internal_IntBox.prototype = {
 	value: null
 	,__class__: kha_internal_IntBox
 };
 var kha_audio2_Audio = function() { };
 $hxClasses["kha.audio2.Audio"] = kha_audio2_Audio;
-kha_audio2_Audio.__name__ = true;
+kha_audio2_Audio.__name__ = "kha.audio2.Audio";
 kha_audio2_Audio.initContext = function() {
 	try {
 		kha_audio2_Audio._context = new AudioContext();
@@ -11043,7 +14081,7 @@ kha_audio2_Audio.stream = function(sound,loop) {
 };
 var kha_audio2_Audio1 = function() { };
 $hxClasses["kha.audio2.Audio1"] = kha_audio2_Audio1;
-kha_audio2_Audio1.__name__ = true;
+kha_audio2_Audio1.__name__ = "kha.audio2.Audio1";
 kha_audio2_Audio1._init = function() {
 	var this1 = new Array(32);
 	kha_audio2_Audio1.soundChannels = this1;
@@ -11245,7 +14283,7 @@ var kha_audio2_AudioChannel = function(looping) {
 	this.myVolume = 1;
 };
 $hxClasses["kha.audio2.AudioChannel"] = kha_audio2_AudioChannel;
-kha_audio2_AudioChannel.__name__ = true;
+kha_audio2_AudioChannel.__name__ = "kha.audio2.AudioChannel";
 kha_audio2_AudioChannel.__interfaces__ = [kha_audio1_AudioChannel];
 kha_audio2_AudioChannel.max = function(a,b) {
 	if(a > b) {
@@ -11337,6 +14375,7 @@ kha_audio2_AudioChannel.prototype = {
 		return this.stopped;
 	}
 	,__class__: kha_audio2_AudioChannel
+	,__properties__: {get_finished:"get_finished",set_volume:"set_volume",get_volume:"get_volume",set_position:"set_position",get_position:"get_position",get_length:"get_length"}
 };
 var kha_audio2_Buffer = function(size,channels,samplesPerSecond) {
 	this.size = size;
@@ -11347,7 +14386,7 @@ var kha_audio2_Buffer = function(size,channels,samplesPerSecond) {
 	this.writeLocation = 0;
 };
 $hxClasses["kha.audio2.Buffer"] = kha_audio2_Buffer;
-kha_audio2_Buffer.__name__ = true;
+kha_audio2_Buffer.__name__ = "kha.audio2.Buffer";
 kha_audio2_Buffer.prototype = {
 	channels: null
 	,samplesPerSecond: null
@@ -11362,7 +14401,7 @@ var kha_audio2_ResamplingAudioChannel = function(looping,sampleRate) {
 	this.sampleRate = sampleRate;
 };
 $hxClasses["kha.audio2.ResamplingAudioChannel"] = kha_audio2_ResamplingAudioChannel;
-kha_audio2_ResamplingAudioChannel.__name__ = true;
+kha_audio2_ResamplingAudioChannel.__name__ = "kha.audio2.ResamplingAudioChannel";
 kha_audio2_ResamplingAudioChannel.max = function(a,b) {
 	if(a > b) {
 		return a;
@@ -11546,7 +14585,7 @@ var kha_audio2_StreamChannel = function(data,loop) {
 	this.reader = kha_audio2_ogg_vorbis_Reader.openFromBytes(data);
 };
 $hxClasses["kha.audio2.StreamChannel"] = kha_audio2_StreamChannel;
-kha_audio2_StreamChannel.__name__ = true;
+kha_audio2_StreamChannel.__name__ = "kha.audio2.StreamChannel";
 kha_audio2_StreamChannel.__interfaces__ = [kha_audio1_AudioChannel];
 kha_audio2_StreamChannel.prototype = {
 	reader: null
@@ -11609,6 +14648,7 @@ kha_audio2_StreamChannel.prototype = {
 		return this.atend;
 	}
 	,__class__: kha_audio2_StreamChannel
+	,__properties__: {get_finished:"get_finished",set_volume:"set_volume",get_volume:"get_volume",set_position:"set_position",get_position:"get_position",get_length:"get_length"}
 };
 var kha_audio2_VirtualStreamChannel = function(aeChannel,looping) {
 	this.mode = 2;
@@ -11618,7 +14658,7 @@ var kha_audio2_VirtualStreamChannel = function(aeChannel,looping) {
 	this.lastPosition = 0;
 };
 $hxClasses["kha.audio2.VirtualStreamChannel"] = kha_audio2_VirtualStreamChannel;
-kha_audio2_VirtualStreamChannel.__name__ = true;
+kha_audio2_VirtualStreamChannel.__name__ = "kha.audio2.VirtualStreamChannel";
 kha_audio2_VirtualStreamChannel.__interfaces__ = [kha_audio1_AudioChannel];
 kha_audio2_VirtualStreamChannel.prototype = {
 	aeChannel: null
@@ -11709,10 +14749,11 @@ kha_audio2_VirtualStreamChannel.prototype = {
 		}
 	}
 	,__class__: kha_audio2_VirtualStreamChannel
+	,__properties__: {get_finished:"get_finished",set_volume:"set_volume",get_volume:"get_volume",set_position:"set_position",get_position:"get_position",get_length:"get_length"}
 };
 var kha_audio2_ogg_tools_Crc32 = function() { };
 $hxClasses["kha.audio2.ogg.tools.Crc32"] = kha_audio2_ogg_tools_Crc32;
-kha_audio2_ogg_tools_Crc32.__name__ = true;
+kha_audio2_ogg_tools_Crc32.__name__ = "kha.audio2.ogg.tools.Crc32";
 kha_audio2_ogg_tools_Crc32.init = function() {
 	if(kha_audio2_ogg_tools_Crc32.table != null) {
 		return;
@@ -11739,7 +14780,7 @@ kha_audio2_ogg_tools_Crc32.update = function(crc,byte) {
 };
 var kha_audio2_ogg_tools_MathTools = function() { };
 $hxClasses["kha.audio2.ogg.tools.MathTools"] = kha_audio2_ogg_tools_MathTools;
-kha_audio2_ogg_tools_MathTools.__name__ = true;
+kha_audio2_ogg_tools_MathTools.__name__ = "kha.audio2.ogg.tools.MathTools";
 kha_audio2_ogg_tools_MathTools.ilog = function(n) {
 	var log2_4 = [0,1,2,2,3,3,3,3,4,4,4,4,4,4,4,4];
 	if(n < 16384) {
@@ -11766,7 +14807,7 @@ kha_audio2_ogg_tools_MathTools.ilog = function(n) {
 };
 var kha_audio2_ogg_tools_Mdct = function() { };
 $hxClasses["kha.audio2.ogg.tools.Mdct"] = kha_audio2_ogg_tools_Mdct;
-kha_audio2_ogg_tools_Mdct.__name__ = true;
+kha_audio2_ogg_tools_Mdct.__name__ = "kha.audio2.ogg.tools.Mdct";
 kha_audio2_ogg_tools_Mdct.inverseTransform = function(buffer,n,a,b,c,bitReverse) {
 	var n2 = n >> 1;
 	var n4 = n >> 2;
@@ -12565,7 +15606,7 @@ var kha_audio2_ogg_vorbis_Reader = function(input,seekFunc,inputLength) {
 	this.loopLength = this.get_header().comment.get_loopLength();
 };
 $hxClasses["kha.audio2.ogg.vorbis.Reader"] = kha_audio2_ogg_vorbis_Reader;
-kha_audio2_ogg_vorbis_Reader.__name__ = true;
+kha_audio2_ogg_vorbis_Reader.__name__ = "kha.audio2.ogg.vorbis.Reader";
 kha_audio2_ogg_vorbis_Reader.openFromBytes = function(bytes) {
 	var input = new haxe_io_BytesInput(bytes);
 	var bytes1 = input;
@@ -12671,6 +15712,7 @@ kha_audio2_ogg_vorbis_Reader.prototype = {
 		return Math.floor(UInt.toFloat(this.get_header().sampleRate) * (millseconds / 1000));
 	}
 	,__class__: kha_audio2_ogg_vorbis_Reader
+	,__properties__: {set_currentMillisecond:"set_currentMillisecond",get_currentMillisecond:"get_currentMillisecond",set_currentSample:"set_currentSample",get_currentSample:"get_currentSample",get_totalMillisecond:"get_totalMillisecond",get_totalSample:"get_totalSample",get_header:"get_header"}
 };
 var kha_audio2_ogg_vorbis_VorbisDecodeState = function(input) {
 	this.nextSeg = 0;
@@ -12683,7 +15725,7 @@ var kha_audio2_ogg_vorbis_VorbisDecodeState = function(input) {
 	kha_audio2_ogg_tools_Crc32.init();
 };
 $hxClasses["kha.audio2.ogg.vorbis.VorbisDecodeState"] = kha_audio2_ogg_vorbis_VorbisDecodeState;
-kha_audio2_ogg_vorbis_VorbisDecodeState.__name__ = true;
+kha_audio2_ogg_vorbis_VorbisDecodeState.__name__ = "kha.audio2.ogg.vorbis.VorbisDecodeState";
 kha_audio2_ogg_vorbis_VorbisDecodeState.prototype = {
 	page: null
 	,eof: null
@@ -13612,7 +16654,7 @@ var kha_audio2_ogg_vorbis_VorbisDecoder = function(header,decodeState) {
 	this.initBlocksize(1,header.blocksize1);
 };
 $hxClasses["kha.audio2.ogg.vorbis.VorbisDecoder"] = kha_audio2_ogg_vorbis_VorbisDecoder;
-kha_audio2_ogg_vorbis_VorbisDecoder.__name__ = true;
+kha_audio2_ogg_vorbis_VorbisDecoder.__name__ = "kha.audio2.ogg.vorbis.VorbisDecoder";
 kha_audio2_ogg_vorbis_VorbisDecoder.start = function(input) {
 	var decodeState = new kha_audio2_ogg_vorbis_VorbisDecodeState(input);
 	var header = kha_audio2_ogg_vorbis_data_Header.read(decodeState);
@@ -14867,7 +17909,7 @@ kha_audio2_ogg_vorbis_VorbisDecoder.prototype = {
 };
 var kha_audio2_ogg_vorbis_VorbisTools = function() { };
 $hxClasses["kha.audio2.ogg.vorbis.VorbisTools"] = kha_audio2_ogg_vorbis_VorbisTools;
-kha_audio2_ogg_vorbis_VorbisTools.__name__ = true;
+kha_audio2_ogg_vorbis_VorbisTools.__name__ = "kha.audio2.ogg.vorbis.VorbisTools";
 kha_audio2_ogg_vorbis_VorbisTools.assert = function(b,p) {
 };
 kha_audio2_ogg_vorbis_VorbisTools.neighbors = function(x,n) {
@@ -15067,7 +18109,7 @@ kha_audio2_ogg_vorbis_VorbisTools.copyVector = function(source) {
 var kha_audio2_ogg_vorbis_data_Codebook = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Codebook"] = kha_audio2_ogg_vorbis_data_Codebook;
-kha_audio2_ogg_vorbis_data_Codebook.__name__ = true;
+kha_audio2_ogg_vorbis_data_Codebook.__name__ = "kha.audio2.ogg.vorbis.data.Codebook";
 kha_audio2_ogg_vorbis_data_Codebook.read = function(decodeState) {
 	var c = new kha_audio2_ogg_vorbis_data_Codebook();
 	if(decodeState.readBits(8) != 66 || decodeState.readBits(8) != 67 || decodeState.readBits(8) != 86) {
@@ -15747,7 +18789,7 @@ var kha_audio2_ogg_vorbis_data_Comment = function() {
 	this.data = new haxe_ds_StringMap();
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Comment"] = kha_audio2_ogg_vorbis_data_Comment;
-kha_audio2_ogg_vorbis_data_Comment.__name__ = true;
+kha_audio2_ogg_vorbis_data_Comment.__name__ = "kha.audio2.ogg.vorbis.data.Comment";
 kha_audio2_ogg_vorbis_data_Comment.prototype = {
 	data: null
 	,get_title: function() {
@@ -15830,11 +18872,12 @@ kha_audio2_ogg_vorbis_data_Comment.prototype = {
 		}
 	}
 	,__class__: kha_audio2_ogg_vorbis_data_Comment
+	,__properties__: {get_artists:"get_artists",get_isrc:"get_isrc",get_contact:"get_contact",get_location:"get_location",get_date:"get_date",get_genre:"get_genre",get_description:"get_description",get_artist:"get_artist",get_license:"get_license",get_copyright:"get_copyright",get_performer:"get_performer",get_tracknumber:"get_tracknumber",get_organization:"get_organization",get_album:"get_album",get_version:"get_version",get_loopLength:"get_loopLength",get_loopStart:"get_loopStart",get_title:"get_title"}
 };
 var kha_audio2_ogg_vorbis_data_Floor = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Floor"] = kha_audio2_ogg_vorbis_data_Floor;
-kha_audio2_ogg_vorbis_data_Floor.__name__ = true;
+kha_audio2_ogg_vorbis_data_Floor.__name__ = "kha.audio2.ogg.vorbis.data.Floor";
 kha_audio2_ogg_vorbis_data_Floor.read = function(decodeState,codebooks) {
 	var floor = new kha_audio2_ogg_vorbis_data_Floor();
 	floor.type = decodeState.readBits(16);
@@ -15987,7 +19030,7 @@ kha_audio2_ogg_vorbis_data_Floor.prototype = {
 var kha_audio2_ogg_vorbis_data_Floor0 = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Floor0"] = kha_audio2_ogg_vorbis_data_Floor0;
-kha_audio2_ogg_vorbis_data_Floor0.__name__ = true;
+kha_audio2_ogg_vorbis_data_Floor0.__name__ = "kha.audio2.ogg.vorbis.data.Floor0";
 kha_audio2_ogg_vorbis_data_Floor0.prototype = {
 	order: null
 	,rate: null
@@ -16001,7 +19044,7 @@ kha_audio2_ogg_vorbis_data_Floor0.prototype = {
 var kha_audio2_ogg_vorbis_data_Floor1 = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Floor1"] = kha_audio2_ogg_vorbis_data_Floor1;
-kha_audio2_ogg_vorbis_data_Floor1.__name__ = true;
+kha_audio2_ogg_vorbis_data_Floor1.__name__ = "kha.audio2.ogg.vorbis.data.Floor1";
 kha_audio2_ogg_vorbis_data_Floor1.prototype = {
 	partitions: null
 	,partitionClassList: null
@@ -16020,7 +19063,7 @@ kha_audio2_ogg_vorbis_data_Floor1.prototype = {
 var kha_audio2_ogg_vorbis_data_Header = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Header"] = kha_audio2_ogg_vorbis_data_Header;
-kha_audio2_ogg_vorbis_data_Header.__name__ = true;
+kha_audio2_ogg_vorbis_data_Header.__name__ = "kha.audio2.ogg.vorbis.data.Header";
 kha_audio2_ogg_vorbis_data_Header.read = function(decodeState) {
 	var page = decodeState.page;
 	page.start(decodeState);
@@ -16355,7 +19398,7 @@ kha_audio2_ogg_vorbis_data_Header.prototype = {
 var kha_audio2_ogg_vorbis_data_IntPoint = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.IntPoint"] = kha_audio2_ogg_vorbis_data_IntPoint;
-kha_audio2_ogg_vorbis_data_IntPoint.__name__ = true;
+kha_audio2_ogg_vorbis_data_IntPoint.__name__ = "kha.audio2.ogg.vorbis.data.IntPoint";
 kha_audio2_ogg_vorbis_data_IntPoint.prototype = {
 	x: null
 	,y: null
@@ -16364,7 +19407,7 @@ kha_audio2_ogg_vorbis_data_IntPoint.prototype = {
 var kha_audio2_ogg_vorbis_data_Mapping = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Mapping"] = kha_audio2_ogg_vorbis_data_Mapping;
-kha_audio2_ogg_vorbis_data_Mapping.__name__ = true;
+kha_audio2_ogg_vorbis_data_Mapping.__name__ = "kha.audio2.ogg.vorbis.data.Mapping";
 kha_audio2_ogg_vorbis_data_Mapping.read = function(decodeState,channels) {
 	var m = new kha_audio2_ogg_vorbis_data_Mapping();
 	var mappingType = decodeState.readBits(16);
@@ -16489,7 +19532,7 @@ kha_audio2_ogg_vorbis_data_Mapping.prototype = {
 var kha_audio2_ogg_vorbis_data_MappingChannel = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.MappingChannel"] = kha_audio2_ogg_vorbis_data_MappingChannel;
-kha_audio2_ogg_vorbis_data_MappingChannel.__name__ = true;
+kha_audio2_ogg_vorbis_data_MappingChannel.__name__ = "kha.audio2.ogg.vorbis.data.MappingChannel";
 kha_audio2_ogg_vorbis_data_MappingChannel.prototype = {
 	magnitude: null
 	,angle: null
@@ -16499,7 +19542,7 @@ kha_audio2_ogg_vorbis_data_MappingChannel.prototype = {
 var kha_audio2_ogg_vorbis_data_Mode = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Mode"] = kha_audio2_ogg_vorbis_data_Mode;
-kha_audio2_ogg_vorbis_data_Mode.__name__ = true;
+kha_audio2_ogg_vorbis_data_Mode.__name__ = "kha.audio2.ogg.vorbis.data.Mode";
 kha_audio2_ogg_vorbis_data_Mode.read = function(decodeState) {
 	var m = new kha_audio2_ogg_vorbis_data_Mode();
 	m.blockflag = decodeState.readBits(1) != 0;
@@ -16524,7 +19567,7 @@ kha_audio2_ogg_vorbis_data_Mode.prototype = {
 var kha_audio2_ogg_vorbis_data_Page = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Page"] = kha_audio2_ogg_vorbis_data_Page;
-kha_audio2_ogg_vorbis_data_Page.__name__ = true;
+kha_audio2_ogg_vorbis_data_Page.__name__ = "kha.audio2.ogg.vorbis.data.Page";
 kha_audio2_ogg_vorbis_data_Page.prototype = {
 	flag: null
 	,clone: function() {
@@ -16584,11 +19627,11 @@ kha_audio2_ogg_vorbis_data_Page.prototype = {
 };
 var kha_audio2_ogg_vorbis_data_PageFlag = function() { };
 $hxClasses["kha.audio2.ogg.vorbis.data.PageFlag"] = kha_audio2_ogg_vorbis_data_PageFlag;
-kha_audio2_ogg_vorbis_data_PageFlag.__name__ = true;
+kha_audio2_ogg_vorbis_data_PageFlag.__name__ = "kha.audio2.ogg.vorbis.data.PageFlag";
 var kha_audio2_ogg_vorbis_data_ProbedPage = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.ProbedPage"] = kha_audio2_ogg_vorbis_data_ProbedPage;
-kha_audio2_ogg_vorbis_data_ProbedPage.__name__ = true;
+kha_audio2_ogg_vorbis_data_ProbedPage.__name__ = "kha.audio2.ogg.vorbis.data.ProbedPage";
 kha_audio2_ogg_vorbis_data_ProbedPage.prototype = {
 	pageStart: null
 	,pageEnd: null
@@ -16606,7 +19649,7 @@ var kha_audio2_ogg_vorbis_data_ReaderError = function(type,message,posInfos) {
 	this.posInfos = posInfos;
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.ReaderError"] = kha_audio2_ogg_vorbis_data_ReaderError;
-kha_audio2_ogg_vorbis_data_ReaderError.__name__ = true;
+kha_audio2_ogg_vorbis_data_ReaderError.__name__ = "kha.audio2.ogg.vorbis.data.ReaderError";
 kha_audio2_ogg_vorbis_data_ReaderError.prototype = {
 	type: null
 	,message: null
@@ -16639,7 +19682,7 @@ kha_audio2_ogg_vorbis_data_ReaderErrorType.__constructs__ = [kha_audio2_ogg_vorb
 var kha_audio2_ogg_vorbis_data_Residue = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Residue"] = kha_audio2_ogg_vorbis_data_Residue;
-kha_audio2_ogg_vorbis_data_Residue.__name__ = true;
+kha_audio2_ogg_vorbis_data_Residue.__name__ = "kha.audio2.ogg.vorbis.data.Residue";
 kha_audio2_ogg_vorbis_data_Residue.read = function(decodeState,codebooks) {
 	var r = new kha_audio2_ogg_vorbis_data_Residue();
 	r.type = decodeState.readBits(16);
@@ -17030,10 +20073,10 @@ kha_audio2_ogg_vorbis_data_Residue.prototype = {
 };
 var kha_audio2_ogg_vorbis_data_Setting = function() { };
 $hxClasses["kha.audio2.ogg.vorbis.data.Setting"] = kha_audio2_ogg_vorbis_data_Setting;
-kha_audio2_ogg_vorbis_data_Setting.__name__ = true;
+kha_audio2_ogg_vorbis_data_Setting.__name__ = "kha.audio2.ogg.vorbis.data.Setting";
 var kha_graphics1_Graphics = function() { };
 $hxClasses["kha.graphics1.Graphics"] = kha_graphics1_Graphics;
-kha_graphics1_Graphics.__name__ = true;
+kha_graphics1_Graphics.__name__ = "kha.graphics1.Graphics";
 kha_graphics1_Graphics.__isInterface__ = true;
 kha_graphics1_Graphics.prototype = {
 	begin: null
@@ -17049,7 +20092,7 @@ var kha_graphics2_Graphics = function() {
 	this.pipe = null;
 };
 $hxClasses["kha.graphics2.Graphics"] = kha_graphics2_Graphics;
-kha_graphics2_Graphics.__name__ = true;
+kha_graphics2_Graphics.__name__ = "kha.graphics2.Graphics";
 kha_graphics2_Graphics.prototype = {
 	begin: function(clear,clearColor) {
 		if(clear == null) {
@@ -17539,12 +20582,13 @@ kha_graphics2_Graphics.prototype = {
 	,setPipeline: function(pipeline) {
 	}
 	,__class__: kha_graphics2_Graphics
+	,__properties__: {set_pipeline:"set_pipeline",get_pipeline:"get_pipeline",set_opacity:"set_opacity",get_opacity:"get_opacity",set_transformation:"set_transformation",get_transformation:"get_transformation",set_fontSize:"set_fontSize",get_fontSize:"get_fontSize",set_font:"set_font",get_font:"get_font",set_color:"set_color",get_color:"get_color",set_mipmapScaleQuality:"set_mipmapScaleQuality",get_mipmapScaleQuality:"get_mipmapScaleQuality",set_imageScaleQuality:"set_imageScaleQuality",get_imageScaleQuality:"get_imageScaleQuality"}
 };
 var kha_graphics2_Graphics1 = function(canvas) {
 	this.canvas = canvas;
 };
 $hxClasses["kha.graphics2.Graphics1"] = kha_graphics2_Graphics1;
-kha_graphics2_Graphics1.__name__ = true;
+kha_graphics2_Graphics1.__name__ = "kha.graphics2.Graphics1";
 kha_graphics2_Graphics1.__interfaces__ = [kha_graphics1_Graphics];
 kha_graphics2_Graphics1.prototype = {
 	canvas: null
@@ -17567,10 +20611,384 @@ kha_graphics2_Graphics1.prototype = {
 	}
 	,__class__: kha_graphics2_Graphics1
 };
+var kha_graphics2_GraphicsExtension = function() { };
+$hxClasses["kha.graphics2.GraphicsExtension"] = kha_graphics2_GraphicsExtension;
+kha_graphics2_GraphicsExtension.__name__ = "kha.graphics2.GraphicsExtension";
+kha_graphics2_GraphicsExtension.drawArc = function(g2,cx,cy,radius,sAngle,eAngle,strength,ccw,segments) {
+	if(segments == null) {
+		segments = 0;
+	}
+	if(ccw == null) {
+		ccw = false;
+	}
+	if(strength == null) {
+		strength = 1;
+	}
+	if(kha_SystemImpl.gl == null) {
+		var g = g2;
+		radius -= strength / 2;
+		g.drawArc(cx,cy,radius,sAngle,eAngle,strength,ccw);
+		return;
+	}
+	sAngle %= Math.PI * 2;
+	eAngle %= Math.PI * 2;
+	if(ccw) {
+		if(eAngle > sAngle) {
+			eAngle -= Math.PI * 2;
+		}
+	} else if(eAngle < sAngle) {
+		eAngle += Math.PI * 2;
+	}
+	radius += strength / 2;
+	if(segments <= 0) {
+		segments = Math.floor(10 * Math.sqrt(radius));
+	}
+	var theta = (eAngle - sAngle) / segments;
+	var c = Math.cos(theta);
+	var s = Math.sin(theta);
+	var x = Math.cos(sAngle) * radius;
+	var y = Math.sin(sAngle) * radius;
+	var _g = 0;
+	var _g1 = segments;
+	while(_g < _g1) {
+		var n = _g++;
+		var px = x + cx;
+		var py = y + cy;
+		var t = x;
+		x = c * x - s * y;
+		y = c * y + s * t;
+		kha_graphics2_GraphicsExtension.drawInnerLine(g2,x + cx,y + cy,px,py,strength);
+	}
+};
+kha_graphics2_GraphicsExtension.fillArc = function(g2,cx,cy,radius,sAngle,eAngle,ccw,segments) {
+	if(segments == null) {
+		segments = 0;
+	}
+	if(ccw == null) {
+		ccw = false;
+	}
+	if(kha_SystemImpl.gl == null) {
+		var g = g2;
+		g.fillArc(cx,cy,radius,sAngle,eAngle,ccw);
+		return;
+	}
+	sAngle %= Math.PI * 2;
+	eAngle %= Math.PI * 2;
+	if(ccw) {
+		if(eAngle > sAngle) {
+			eAngle -= Math.PI * 2;
+		}
+	} else if(eAngle < sAngle) {
+		eAngle += Math.PI * 2;
+	}
+	if(segments <= 0) {
+		segments = Math.floor(10 * Math.sqrt(radius));
+	}
+	var theta = (eAngle - sAngle) / segments;
+	var c = Math.cos(theta);
+	var s = Math.sin(theta);
+	var x = Math.cos(sAngle) * radius;
+	var y = Math.sin(sAngle) * radius;
+	var sx = x + cx;
+	var sy = y + cy;
+	var _g = 0;
+	var _g1 = segments;
+	while(_g < _g1) {
+		var n = _g++;
+		var px = x + cx;
+		var py = y + cy;
+		var t = x;
+		x = c * x - s * y;
+		y = c * y + s * t;
+		g2.fillTriangle(px,py,x + cx,y + cy,sx,sy);
+	}
+};
+kha_graphics2_GraphicsExtension.drawCircle = function(g2,cx,cy,radius,strength,segments) {
+	if(segments == null) {
+		segments = 0;
+	}
+	if(strength == null) {
+		strength = 1;
+	}
+	if(kha_SystemImpl.gl == null) {
+		var g = g2;
+		radius -= strength / 2;
+		g.drawCircle(cx,cy,radius,strength);
+		return;
+	}
+	radius += strength / 2;
+	if(segments <= 0) {
+		segments = Math.floor(10 * Math.sqrt(radius));
+	}
+	var theta = 2 * Math.PI / segments;
+	var c = Math.cos(theta);
+	var s = Math.sin(theta);
+	var x = radius;
+	var y = 0.0;
+	var _g = 0;
+	var _g1 = segments;
+	while(_g < _g1) {
+		var n = _g++;
+		var px = x + cx;
+		var py = y + cy;
+		var t = x;
+		x = c * x - s * y;
+		y = c * y + s * t;
+		kha_graphics2_GraphicsExtension.drawInnerLine(g2,x + cx,y + cy,px,py,strength);
+	}
+};
+kha_graphics2_GraphicsExtension.drawInnerLine = function(g2,x1,y1,x2,y2,strength) {
+	var side = y2 > y1 ? 1 : 0;
+	if(y2 == y1) {
+		side = x2 - x1 > 0 ? 1 : 0;
+	}
+	var vec_x = 0;
+	var vec_y = 0;
+	if(y2 == y1) {
+		var x = 0;
+		var y = -1;
+		if(y == null) {
+			y = 0;
+		}
+		if(x == null) {
+			x = 0;
+		}
+		var v_x = x;
+		var v_y = y;
+		vec_x = v_x;
+		vec_y = v_y;
+	} else {
+		var x = 1;
+		var y = -(x2 - x1) / (y2 - y1);
+		if(y == null) {
+			y = 0;
+		}
+		if(x == null) {
+			x = 0;
+		}
+		var v_x = x;
+		var v_y = y;
+		vec_x = v_x;
+		vec_y = v_y;
+	}
+	var currentLength = Math.sqrt(vec_x * vec_x + vec_y * vec_y);
+	if(currentLength != 0) {
+		var mul = strength / currentLength;
+		vec_x *= mul;
+		vec_y *= mul;
+	}
+	var x = x1 + side * vec_x;
+	var y = y1 + side * vec_y;
+	if(y == null) {
+		y = 0;
+	}
+	if(x == null) {
+		x = 0;
+	}
+	var p1_x = x;
+	var p1_y = y;
+	var x = x2 + side * vec_x;
+	var y = y2 + side * vec_y;
+	if(y == null) {
+		y = 0;
+	}
+	if(x == null) {
+		x = 0;
+	}
+	var p2_x = x;
+	var p2_y = y;
+	var x = p1_x - vec_x;
+	var y = p1_y - vec_y;
+	if(y == null) {
+		y = 0;
+	}
+	if(x == null) {
+		x = 0;
+	}
+	var p3_x = x;
+	var p3_y = y;
+	var x = p2_x - vec_x;
+	var y = p2_y - vec_y;
+	if(y == null) {
+		y = 0;
+	}
+	if(x == null) {
+		x = 0;
+	}
+	var p4_x = x;
+	var p4_y = y;
+	g2.fillTriangle(p1_x,p1_y,p2_x,p2_y,p3_x,p3_y);
+	g2.fillTriangle(p3_x,p3_y,p2_x,p2_y,p4_x,p4_y);
+};
+kha_graphics2_GraphicsExtension.fillCircle = function(g2,cx,cy,radius,segments) {
+	if(segments == null) {
+		segments = 0;
+	}
+	if(kha_SystemImpl.gl == null) {
+		var g = g2;
+		g.fillCircle(cx,cy,radius);
+		return;
+	}
+	if(segments <= 0) {
+		segments = Math.floor(10 * Math.sqrt(radius));
+	}
+	var theta = 2 * Math.PI / segments;
+	var c = Math.cos(theta);
+	var s = Math.sin(theta);
+	var x = radius;
+	var y = 0.0;
+	var _g = 0;
+	var _g1 = segments;
+	while(_g < _g1) {
+		var n = _g++;
+		var px = x + cx;
+		var py = y + cy;
+		var t = x;
+		x = c * x - s * y;
+		y = c * y + s * t;
+		g2.fillTriangle(px,py,x + cx,y + cy,cx,cy);
+	}
+};
+kha_graphics2_GraphicsExtension.drawPolygon = function(g2,x,y,vertices,strength) {
+	if(strength == null) {
+		strength = 1;
+	}
+	var iterator_current = 0;
+	var iterator_array = vertices;
+	var v0 = iterator_array[iterator_current++];
+	var v1 = v0;
+	while(iterator_current < iterator_array.length) {
+		var v2 = iterator_array[iterator_current++];
+		g2.drawLine(v1.x + x,v1.y + y,v2.x + x,v2.y + y,strength);
+		v1 = v2;
+	}
+	g2.drawLine(v1.x + x,v1.y + y,v0.x + x,v0.y + y,strength);
+};
+kha_graphics2_GraphicsExtension.fillPolygon = function(g2,x,y,vertices) {
+	var iterator_current = 0;
+	var iterator_array = vertices;
+	if(iterator_current >= iterator_array.length) {
+		return;
+	}
+	var v0 = iterator_array[iterator_current++];
+	if(iterator_current >= iterator_array.length) {
+		return;
+	}
+	var v1 = iterator_array[iterator_current++];
+	while(iterator_current < iterator_array.length) {
+		var v2 = iterator_array[iterator_current++];
+		g2.fillTriangle(v0.x + x,v0.y + y,v1.x + x,v1.y + y,v2.x + x,v2.y + y);
+		v1 = v2;
+	}
+};
+kha_graphics2_GraphicsExtension.drawCubicBezier = function(g2,x,y,segments,strength) {
+	if(strength == null) {
+		strength = 1.0;
+	}
+	if(segments == null) {
+		segments = 20;
+	}
+	var t;
+	var q0 = kha_graphics2_GraphicsExtension.calculateCubicBezierPoint(0,x,y);
+	var q1;
+	var _g = 1;
+	var _g1 = segments + 1;
+	while(_g < _g1) {
+		var i = _g++;
+		t = i / segments;
+		q1 = kha_graphics2_GraphicsExtension.calculateCubicBezierPoint(t,x,y);
+		g2.drawLine(q0[0],q0[1],q1[0],q1[1],strength);
+		q0 = q1;
+	}
+};
+kha_graphics2_GraphicsExtension.drawCubicBezierPath = function(g2,x,y,segments,strength) {
+	if(strength == null) {
+		strength = 1.0;
+	}
+	if(segments == null) {
+		segments = 20;
+	}
+	var i = 0;
+	var t;
+	var q0 = null;
+	var q1 = null;
+	while(i < x.length - 3) {
+		if(i == 0) {
+			q0 = kha_graphics2_GraphicsExtension.calculateCubicBezierPoint(0,[x[i],x[i + 1],x[i + 2],x[i + 3]],[y[i],y[i + 1],y[i + 2],y[i + 3]]);
+		}
+		var _g = 1;
+		var _g1 = segments + 1;
+		while(_g < _g1) {
+			var j = _g++;
+			t = j / segments;
+			q1 = kha_graphics2_GraphicsExtension.calculateCubicBezierPoint(t,[x[i],x[i + 1],x[i + 2],x[i + 3]],[y[i],y[i + 1],y[i + 2],y[i + 3]]);
+			g2.drawLine(q0[0],q0[1],q1[0],q1[1],strength);
+			q0 = q1;
+		}
+		i += 3;
+	}
+};
+kha_graphics2_GraphicsExtension.calculateCubicBezierPoint = function(t,x,y) {
+	var u = 1 - t;
+	var tt = t * t;
+	var uu = u * u;
+	var uuu = uu * u;
+	var ttt = tt * t;
+	var p = [uuu * x[0],uuu * y[0]];
+	p[0] += 3 * uu * t * x[1];
+	p[1] += 3 * uu * t * y[1];
+	p[0] += 3 * u * tt * x[2];
+	p[1] += 3 * u * tt * y[2];
+	p[0] += ttt * x[3];
+	p[1] += ttt * y[3];
+	return p;
+};
+kha_graphics2_GraphicsExtension.drawAlignedString = function(g2,text,x,y,horAlign,verAlign) {
+	var xoffset = 0.0;
+	if(horAlign == 1 || horAlign == 2) {
+		var width = g2.get_font().width(g2.get_fontSize(),text);
+		if(horAlign == 1) {
+			xoffset = -width * 0.5;
+		} else {
+			xoffset = -width;
+		}
+	}
+	var yoffset = 0.0;
+	if(verAlign == 1 || verAlign == 2) {
+		var height = g2.get_font().height(g2.get_fontSize());
+		if(verAlign == 1) {
+			yoffset = -height * 0.5;
+		} else {
+			yoffset = -height;
+		}
+	}
+	g2.drawString(text,x + xoffset,y + yoffset);
+};
+kha_graphics2_GraphicsExtension.drawAlignedCharacters = function(g2,text,start,length,x,y,horAlign,verAlign) {
+	var xoffset = 0.0;
+	if(horAlign == 1 || horAlign == 2) {
+		var width = g2.get_font().widthOfCharacters(g2.get_fontSize(),text,start,length);
+		if(horAlign == 1) {
+			xoffset = -width * 0.5;
+		} else {
+			xoffset = -width;
+		}
+	}
+	var yoffset = 0.0;
+	if(verAlign == 1 || verAlign == 2) {
+		var height = g2.get_font().height(g2.get_fontSize());
+		if(verAlign == 1) {
+			yoffset = -height * 0.5;
+		} else {
+			yoffset = -height;
+		}
+	}
+	g2.drawCharacters(text,start,length,x + xoffset,y + yoffset);
+};
 var kha_graphics2_truetype_VectorOfIntPointer = function() {
 };
 $hxClasses["kha.graphics2.truetype.VectorOfIntPointer"] = kha_graphics2_truetype_VectorOfIntPointer;
-kha_graphics2_truetype_VectorOfIntPointer.__name__ = true;
+kha_graphics2_truetype_VectorOfIntPointer.__name__ = "kha.graphics2.truetype.VectorOfIntPointer";
 kha_graphics2_truetype_VectorOfIntPointer.prototype = {
 	value: null
 	,__class__: kha_graphics2_truetype_VectorOfIntPointer
@@ -17578,7 +20996,7 @@ kha_graphics2_truetype_VectorOfIntPointer.prototype = {
 var kha_graphics2_truetype_Stbtt_$temp_$rect = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_temp_rect"] = kha_graphics2_truetype_Stbtt_$temp_$rect;
-kha_graphics2_truetype_Stbtt_$temp_$rect.__name__ = true;
+kha_graphics2_truetype_Stbtt_$temp_$rect.__name__ = "kha.graphics2.truetype.Stbtt_temp_rect";
 kha_graphics2_truetype_Stbtt_$temp_$rect.prototype = {
 	x0: null
 	,y0: null
@@ -17589,7 +21007,7 @@ kha_graphics2_truetype_Stbtt_$temp_$rect.prototype = {
 var kha_graphics2_truetype_Stbtt_$temp_$glyph_$h_$metrics = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_temp_glyph_h_metrics"] = kha_graphics2_truetype_Stbtt_$temp_$glyph_$h_$metrics;
-kha_graphics2_truetype_Stbtt_$temp_$glyph_$h_$metrics.__name__ = true;
+kha_graphics2_truetype_Stbtt_$temp_$glyph_$h_$metrics.__name__ = "kha.graphics2.truetype.Stbtt_temp_glyph_h_metrics";
 kha_graphics2_truetype_Stbtt_$temp_$glyph_$h_$metrics.prototype = {
 	advanceWidth: null
 	,leftSideBearing: null
@@ -17598,7 +21016,7 @@ kha_graphics2_truetype_Stbtt_$temp_$glyph_$h_$metrics.prototype = {
 var kha_graphics2_truetype_Stbtt_$temp_$font_$v_$metrics = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_temp_font_v_metrics"] = kha_graphics2_truetype_Stbtt_$temp_$font_$v_$metrics;
-kha_graphics2_truetype_Stbtt_$temp_$font_$v_$metrics.__name__ = true;
+kha_graphics2_truetype_Stbtt_$temp_$font_$v_$metrics.__name__ = "kha.graphics2.truetype.Stbtt_temp_font_v_metrics";
 kha_graphics2_truetype_Stbtt_$temp_$font_$v_$metrics.prototype = {
 	ascent: null
 	,descent: null
@@ -17608,7 +21026,7 @@ kha_graphics2_truetype_Stbtt_$temp_$font_$v_$metrics.prototype = {
 var kha_graphics2_truetype_Stbtt_$temp_$region = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_temp_region"] = kha_graphics2_truetype_Stbtt_$temp_$region;
-kha_graphics2_truetype_Stbtt_$temp_$region.__name__ = true;
+kha_graphics2_truetype_Stbtt_$temp_$region.__name__ = "kha.graphics2.truetype.Stbtt_temp_region";
 kha_graphics2_truetype_Stbtt_$temp_$region.prototype = {
 	width: null
 	,height: null
@@ -17619,7 +21037,7 @@ kha_graphics2_truetype_Stbtt_$temp_$region.prototype = {
 var kha_graphics2_truetype_Stbtt_$_$buf = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt__buf"] = kha_graphics2_truetype_Stbtt_$_$buf;
-kha_graphics2_truetype_Stbtt_$_$buf.__name__ = true;
+kha_graphics2_truetype_Stbtt_$_$buf.__name__ = "kha.graphics2.truetype.Stbtt__buf";
 kha_graphics2_truetype_Stbtt_$_$buf.prototype = {
 	data: null
 	,cursor: null
@@ -17628,7 +21046,7 @@ kha_graphics2_truetype_Stbtt_$_$buf.prototype = {
 var kha_graphics2_truetype_Stbtt_$bakedchar = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_bakedchar"] = kha_graphics2_truetype_Stbtt_$bakedchar;
-kha_graphics2_truetype_Stbtt_$bakedchar.__name__ = true;
+kha_graphics2_truetype_Stbtt_$bakedchar.__name__ = "kha.graphics2.truetype.Stbtt_bakedchar";
 kha_graphics2_truetype_Stbtt_$bakedchar.prototype = {
 	x0: null
 	,y0: null
@@ -17641,7 +21059,7 @@ kha_graphics2_truetype_Stbtt_$bakedchar.prototype = {
 };
 var kha_graphics2_truetype_Stbtt_$aligned_$quad = function() { };
 $hxClasses["kha.graphics2.truetype.Stbtt_aligned_quad"] = kha_graphics2_truetype_Stbtt_$aligned_$quad;
-kha_graphics2_truetype_Stbtt_$aligned_$quad.__name__ = true;
+kha_graphics2_truetype_Stbtt_$aligned_$quad.__name__ = "kha.graphics2.truetype.Stbtt_aligned_quad";
 kha_graphics2_truetype_Stbtt_$aligned_$quad.prototype = {
 	x0: null
 	,y0: null
@@ -17655,7 +21073,7 @@ kha_graphics2_truetype_Stbtt_$aligned_$quad.prototype = {
 };
 var kha_graphics2_truetype_Stbtt_$packedchar = function() { };
 $hxClasses["kha.graphics2.truetype.Stbtt_packedchar"] = kha_graphics2_truetype_Stbtt_$packedchar;
-kha_graphics2_truetype_Stbtt_$packedchar.__name__ = true;
+kha_graphics2_truetype_Stbtt_$packedchar.__name__ = "kha.graphics2.truetype.Stbtt_packedchar";
 kha_graphics2_truetype_Stbtt_$packedchar.prototype = {
 	x0: null
 	,y0: null
@@ -17670,7 +21088,7 @@ kha_graphics2_truetype_Stbtt_$packedchar.prototype = {
 };
 var kha_graphics2_truetype_Stbtt_$pack_$range = function() { };
 $hxClasses["kha.graphics2.truetype.Stbtt_pack_range"] = kha_graphics2_truetype_Stbtt_$pack_$range;
-kha_graphics2_truetype_Stbtt_$pack_$range.__name__ = true;
+kha_graphics2_truetype_Stbtt_$pack_$range.__name__ = "kha.graphics2.truetype.Stbtt_pack_range";
 kha_graphics2_truetype_Stbtt_$pack_$range.prototype = {
 	font_size: null
 	,first_unicode_codepoint_in_range: null
@@ -17683,7 +21101,7 @@ kha_graphics2_truetype_Stbtt_$pack_$range.prototype = {
 };
 var kha_graphics2_truetype_Stbtt_$pack_$context = function() { };
 $hxClasses["kha.graphics2.truetype.Stbtt_pack_context"] = kha_graphics2_truetype_Stbtt_$pack_$context;
-kha_graphics2_truetype_Stbtt_$pack_$context.__name__ = true;
+kha_graphics2_truetype_Stbtt_$pack_$context.__name__ = "kha.graphics2.truetype.Stbtt_pack_context";
 kha_graphics2_truetype_Stbtt_$pack_$context.prototype = {
 	width: null
 	,height: null
@@ -17697,7 +21115,7 @@ kha_graphics2_truetype_Stbtt_$pack_$context.prototype = {
 var kha_graphics2_truetype_Stbtt_$fontinfo = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_fontinfo"] = kha_graphics2_truetype_Stbtt_$fontinfo;
-kha_graphics2_truetype_Stbtt_$fontinfo.__name__ = true;
+kha_graphics2_truetype_Stbtt_$fontinfo.__name__ = "kha.graphics2.truetype.Stbtt_fontinfo";
 kha_graphics2_truetype_Stbtt_$fontinfo.prototype = {
 	data: null
 	,fontstart: null
@@ -17722,7 +21140,7 @@ kha_graphics2_truetype_Stbtt_$fontinfo.prototype = {
 var kha_graphics2_truetype_Stbtt_$vertex = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_vertex"] = kha_graphics2_truetype_Stbtt_$vertex;
-kha_graphics2_truetype_Stbtt_$vertex.__name__ = true;
+kha_graphics2_truetype_Stbtt_$vertex.__name__ = "kha.graphics2.truetype.Stbtt_vertex";
 kha_graphics2_truetype_Stbtt_$vertex.prototype = {
 	x: null
 	,y: null
@@ -17737,7 +21155,7 @@ kha_graphics2_truetype_Stbtt_$vertex.prototype = {
 var kha_graphics2_truetype_Stbtt_$_$bitmap = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt__bitmap"] = kha_graphics2_truetype_Stbtt_$_$bitmap;
-kha_graphics2_truetype_Stbtt_$_$bitmap.__name__ = true;
+kha_graphics2_truetype_Stbtt_$_$bitmap.__name__ = "kha.graphics2.truetype.Stbtt__bitmap";
 kha_graphics2_truetype_Stbtt_$_$bitmap.prototype = {
 	w: null
 	,h: null
@@ -17749,7 +21167,7 @@ kha_graphics2_truetype_Stbtt_$_$bitmap.prototype = {
 var kha_graphics2_truetype_Stbtt_$_$edge = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt__edge"] = kha_graphics2_truetype_Stbtt_$_$edge;
-kha_graphics2_truetype_Stbtt_$_$edge.__name__ = true;
+kha_graphics2_truetype_Stbtt_$_$edge.__name__ = "kha.graphics2.truetype.Stbtt__edge";
 kha_graphics2_truetype_Stbtt_$_$edge.prototype = {
 	x0: null
 	,y0: null
@@ -17761,7 +21179,7 @@ kha_graphics2_truetype_Stbtt_$_$edge.prototype = {
 var kha_graphics2_truetype_Stbtt_$_$active_$edge = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt__active_edge"] = kha_graphics2_truetype_Stbtt_$_$active_$edge;
-kha_graphics2_truetype_Stbtt_$_$active_$edge.__name__ = true;
+kha_graphics2_truetype_Stbtt_$_$active_$edge.__name__ = "kha.graphics2.truetype.Stbtt__active_edge";
 kha_graphics2_truetype_Stbtt_$_$active_$edge.prototype = {
 	next: null
 	,fx: null
@@ -17775,7 +21193,7 @@ kha_graphics2_truetype_Stbtt_$_$active_$edge.prototype = {
 var kha_graphics2_truetype_Stbtt_$_$point = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt__point"] = kha_graphics2_truetype_Stbtt_$_$point;
-kha_graphics2_truetype_Stbtt_$_$point.__name__ = true;
+kha_graphics2_truetype_Stbtt_$_$point.__name__ = "kha.graphics2.truetype.Stbtt__point";
 kha_graphics2_truetype_Stbtt_$_$point.prototype = {
 	x: null
 	,y: null
@@ -17784,7 +21202,7 @@ kha_graphics2_truetype_Stbtt_$_$point.prototype = {
 var kha_graphics2_truetype_Stbtt_$_$csctx = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt__csctx"] = kha_graphics2_truetype_Stbtt_$_$csctx;
-kha_graphics2_truetype_Stbtt_$_$csctx.__name__ = true;
+kha_graphics2_truetype_Stbtt_$_$csctx.__name__ = "kha.graphics2.truetype.Stbtt__csctx";
 kha_graphics2_truetype_Stbtt_$_$csctx.prototype = {
 	bounds: null
 	,started: null
@@ -17802,7 +21220,7 @@ kha_graphics2_truetype_Stbtt_$_$csctx.prototype = {
 };
 var kha_graphics2_truetype_StbTruetype = function() { };
 $hxClasses["kha.graphics2.truetype.StbTruetype"] = kha_graphics2_truetype_StbTruetype;
-kha_graphics2_truetype_StbTruetype.__name__ = true;
+kha_graphics2_truetype_StbTruetype.__name__ = "kha.graphics2.truetype.StbTruetype";
 kha_graphics2_truetype_StbTruetype.STBTT_assert = function(value) {
 	if(!value) {
 		throw haxe_Exception.thrown("Error");
@@ -28085,7 +31503,7 @@ kha_graphics2_truetype_StbTruetype.stbtt_GetBakedQuad = function(chardata,pw,ph,
 };
 var kha_graphics4_ConstantLocation = function() { };
 $hxClasses["kha.graphics4.ConstantLocation"] = kha_graphics4_ConstantLocation;
-kha_graphics4_ConstantLocation.__name__ = true;
+kha_graphics4_ConstantLocation.__name__ = "kha.graphics4.ConstantLocation";
 kha_graphics4_ConstantLocation.__isInterface__ = true;
 var kha_graphics4_CubeMap = function(size,format,renderTarget,depthStencilFormat) {
 	this.isDepthAttachment = false;
@@ -28102,7 +31520,7 @@ var kha_graphics4_CubeMap = function(size,format,renderTarget,depthStencilFormat
 	}
 };
 $hxClasses["kha.graphics4.CubeMap"] = kha_graphics4_CubeMap;
-kha_graphics4_CubeMap.__name__ = true;
+kha_graphics4_CubeMap.__name__ = "kha.graphics4.CubeMap";
 kha_graphics4_CubeMap.__interfaces__ = [kha_Resource,kha_Canvas];
 kha_graphics4_CubeMap.createRenderTarget = function(size,format,depthStencil) {
 	if(format == null) {
@@ -28290,6 +31708,7 @@ kha_graphics4_CubeMap.prototype = {
 		return this.graphics4;
 	}
 	,__class__: kha_graphics4_CubeMap
+	,__properties__: {get_g4:"get_g4",get_g2:"get_g2",get_g1:"get_g1",get_height:"get_height",get_width:"get_width"}
 };
 var kha_graphics4_FragmentShader = function(sources,files) {
 	this.sources = [];
@@ -28304,7 +31723,7 @@ var kha_graphics4_FragmentShader = function(sources,files) {
 	this.files = files;
 };
 $hxClasses["kha.graphics4.FragmentShader"] = kha_graphics4_FragmentShader;
-kha_graphics4_FragmentShader.__name__ = true;
+kha_graphics4_FragmentShader.__name__ = "kha.graphics4.FragmentShader";
 kha_graphics4_FragmentShader.fromSource = function(source) {
 	var shader = new kha_graphics4_FragmentShader([],["runtime-string"]);
 	shader.sources.push(source);
@@ -28325,7 +31744,7 @@ kha_graphics4_FragmentShader.prototype = {
 var kha_graphics4_GeometryShader = function(sources) {
 };
 $hxClasses["kha.graphics4.GeometryShader"] = kha_graphics4_GeometryShader;
-kha_graphics4_GeometryShader.__name__ = true;
+kha_graphics4_GeometryShader.__name__ = "kha.graphics4.GeometryShader";
 kha_graphics4_GeometryShader.prototype = {
 	'delete': function() {
 	}
@@ -28333,7 +31752,7 @@ kha_graphics4_GeometryShader.prototype = {
 };
 var kha_graphics4_Graphics = function() { };
 $hxClasses["kha.graphics4.Graphics"] = kha_graphics4_Graphics;
-kha_graphics4_Graphics.__name__ = true;
+kha_graphics4_Graphics.__name__ = "kha.graphics4.Graphics";
 kha_graphics4_Graphics.__isInterface__ = true;
 kha_graphics4_Graphics.prototype = {
 	begin: null
@@ -28391,7 +31810,7 @@ var kha_graphics4_InternalPipeline = function(pipeline,projectionLocation,textur
 	this.textureLocation = textureLocation;
 };
 $hxClasses["kha.graphics4.InternalPipeline"] = kha_graphics4_InternalPipeline;
-kha_graphics4_InternalPipeline.__name__ = true;
+kha_graphics4_InternalPipeline.__name__ = "kha.graphics4.InternalPipeline";
 kha_graphics4_InternalPipeline.prototype = {
 	pipeline: null
 	,projectionLocation: null
@@ -28400,7 +31819,7 @@ kha_graphics4_InternalPipeline.prototype = {
 };
 var kha_graphics4_PipelineCache = function() { };
 $hxClasses["kha.graphics4.PipelineCache"] = kha_graphics4_PipelineCache;
-kha_graphics4_PipelineCache.__name__ = true;
+kha_graphics4_PipelineCache.__name__ = "kha.graphics4.PipelineCache";
 kha_graphics4_PipelineCache.__isInterface__ = true;
 kha_graphics4_PipelineCache.prototype = {
 	get: null
@@ -28426,7 +31845,7 @@ var kha_graphics4_SimplePipelineCache = function(pipeline,texture) {
 	this.pipeline = new kha_graphics4_InternalPipeline(pipeline,projectionLocation,textureLocation);
 };
 $hxClasses["kha.graphics4.SimplePipelineCache"] = kha_graphics4_SimplePipelineCache;
-kha_graphics4_SimplePipelineCache.__name__ = true;
+kha_graphics4_SimplePipelineCache.__name__ = "kha.graphics4.SimplePipelineCache";
 kha_graphics4_SimplePipelineCache.__interfaces__ = [kha_graphics4_PipelineCache];
 kha_graphics4_SimplePipelineCache.prototype = {
 	pipeline: null
@@ -28457,7 +31876,7 @@ var kha_graphics4_PerFramebufferPipelineCache = function(pipeline,texture) {
 	this.pipelines.push(new kha_graphics4_InternalPipeline(pipeline,projectionLocation,textureLocation));
 };
 $hxClasses["kha.graphics4.PerFramebufferPipelineCache"] = kha_graphics4_PerFramebufferPipelineCache;
-kha_graphics4_PerFramebufferPipelineCache.__name__ = true;
+kha_graphics4_PerFramebufferPipelineCache.__name__ = "kha.graphics4.PerFramebufferPipelineCache";
 kha_graphics4_PerFramebufferPipelineCache.__interfaces__ = [kha_graphics4_PipelineCache];
 kha_graphics4_PerFramebufferPipelineCache.prototype = {
 	pipelines: null
@@ -28481,7 +31900,7 @@ var kha_graphics4_ImageShaderPainter = function(g4) {
 	this.initBuffers();
 };
 $hxClasses["kha.graphics4.ImageShaderPainter"] = kha_graphics4_ImageShaderPainter;
-kha_graphics4_ImageShaderPainter.__name__ = true;
+kha_graphics4_ImageShaderPainter.__name__ = "kha.graphics4.ImageShaderPainter";
 kha_graphics4_ImageShaderPainter.initShaders = function() {
 	if(kha_graphics4_ImageShaderPainter.structure == null) {
 		kha_graphics4_ImageShaderPainter.structure = kha_graphics4_Graphics2.createImageVertexStructure();
@@ -28785,6 +32204,7 @@ kha_graphics4_ImageShaderPainter.prototype = {
 		kha_graphics4_ImageShaderPainter.lastTexture = null;
 	}
 	,__class__: kha_graphics4_ImageShaderPainter
+	,__properties__: {set_pipeline:"set_pipeline",get_pipeline:"get_pipeline"}
 };
 var kha_graphics4_ColoredShaderPainter = function(g4) {
 	this.myPipeline = null;
@@ -28796,7 +32216,7 @@ var kha_graphics4_ColoredShaderPainter = function(g4) {
 	this.initBuffers();
 };
 $hxClasses["kha.graphics4.ColoredShaderPainter"] = kha_graphics4_ColoredShaderPainter;
-kha_graphics4_ColoredShaderPainter.__name__ = true;
+kha_graphics4_ColoredShaderPainter.__name__ = "kha.graphics4.ColoredShaderPainter";
 kha_graphics4_ColoredShaderPainter.initShaders = function() {
 	if(kha_graphics4_ColoredShaderPainter.structure == null) {
 		kha_graphics4_ColoredShaderPainter.structure = kha_graphics4_Graphics2.createColoredVertexStructure();
@@ -29014,6 +32434,7 @@ kha_graphics4_ColoredShaderPainter.prototype = {
 		}
 	}
 	,__class__: kha_graphics4_ColoredShaderPainter
+	,__properties__: {set_pipeline:"set_pipeline",get_pipeline:"get_pipeline"}
 };
 var kha_graphics4_TextShaderPainter = function(g4) {
 	this.bakedQuadCache = new kha_AlignedQuad();
@@ -29026,7 +32447,7 @@ var kha_graphics4_TextShaderPainter = function(g4) {
 	this.initBuffers();
 };
 $hxClasses["kha.graphics4.TextShaderPainter"] = kha_graphics4_TextShaderPainter;
-kha_graphics4_TextShaderPainter.__name__ = true;
+kha_graphics4_TextShaderPainter.__name__ = "kha.graphics4.TextShaderPainter";
 kha_graphics4_TextShaderPainter.initShaders = function() {
 	if(kha_graphics4_TextShaderPainter.structure == null) {
 		kha_graphics4_TextShaderPainter.structure = kha_graphics4_Graphics2.createTextVertexStructure();
@@ -29427,6 +32848,7 @@ kha_graphics4_TextShaderPainter.prototype = {
 		kha_graphics4_TextShaderPainter.lastTexture = null;
 	}
 	,__class__: kha_graphics4_TextShaderPainter
+	,__properties__: {set_pipeline:"set_pipeline",get_pipeline:"get_pipeline"}
 };
 var kha_graphics4_Graphics2 = function(canvas) {
 	this.scissorH = -1;
@@ -29456,7 +32878,7 @@ var kha_graphics4_Graphics2 = function(canvas) {
 	}
 };
 $hxClasses["kha.graphics4.Graphics2"] = kha_graphics4_Graphics2;
-kha_graphics4_Graphics2.__name__ = true;
+kha_graphics4_Graphics2.__name__ = "kha.graphics4.Graphics2";
 kha_graphics4_Graphics2.upperPowerOfTwo = function(v) {
 	--v;
 	v |= v >>> 1;
@@ -30883,7 +34305,7 @@ var kha_graphics4_IndexBuffer = function(indexCount,usage,canRead) {
 	this._data = kha_arrays_Uint32Array._new(indexCount);
 };
 $hxClasses["kha.graphics4.IndexBuffer"] = kha_graphics4_IndexBuffer;
-kha_graphics4_IndexBuffer.__name__ = true;
+kha_graphics4_IndexBuffer.__name__ = "kha.graphics4.IndexBuffer";
 kha_graphics4_IndexBuffer.prototype = {
 	_data: null
 	,buffer: null
@@ -31000,7 +34422,7 @@ var kha_graphics4_PipelineStateBase = function() {
 	this.conservativeRasterization = false;
 };
 $hxClasses["kha.graphics4.PipelineStateBase"] = kha_graphics4_PipelineStateBase;
-kha_graphics4_PipelineStateBase.__name__ = true;
+kha_graphics4_PipelineStateBase.__name__ = "kha.graphics4.PipelineStateBase";
 kha_graphics4_PipelineStateBase.prototype = {
 	inputLayout: null
 	,vertexShader: null
@@ -31067,6 +34489,7 @@ kha_graphics4_PipelineStateBase.prototype = {
 	}
 	,conservativeRasterization: null
 	,__class__: kha_graphics4_PipelineStateBase
+	,__properties__: {set_colorWriteMaskAlpha:"set_colorWriteMaskAlpha",get_colorWriteMaskAlpha:"get_colorWriteMaskAlpha",set_colorWriteMaskBlue:"set_colorWriteMaskBlue",get_colorWriteMaskBlue:"get_colorWriteMaskBlue",set_colorWriteMaskGreen:"set_colorWriteMaskGreen",get_colorWriteMaskGreen:"get_colorWriteMaskGreen",set_colorWriteMaskRed:"set_colorWriteMaskRed",get_colorWriteMaskRed:"get_colorWriteMaskRed",set_colorWriteMask:"set_colorWriteMask"}
 };
 var kha_graphics4_PipelineState = function() {
 	this.program = null;
@@ -31075,7 +34498,7 @@ var kha_graphics4_PipelineState = function() {
 	this.textureValues = [];
 };
 $hxClasses["kha.graphics4.PipelineState"] = kha_graphics4_PipelineState;
-kha_graphics4_PipelineState.__name__ = true;
+kha_graphics4_PipelineState.__name__ = "kha.graphics4.PipelineState";
 kha_graphics4_PipelineState.__super__ = kha_graphics4_PipelineStateBase;
 kha_graphics4_PipelineState.prototype = $extend(kha_graphics4_PipelineStateBase.prototype,{
 	program: null
@@ -31220,7 +34643,7 @@ kha_graphics4_StencilValue.__constructs__ = [kha_graphics4_StencilValue.Dynamic,
 var kha_graphics4_TessellationControlShader = function(sources,files) {
 };
 $hxClasses["kha.graphics4.TessellationControlShader"] = kha_graphics4_TessellationControlShader;
-kha_graphics4_TessellationControlShader.__name__ = true;
+kha_graphics4_TessellationControlShader.__name__ = "kha.graphics4.TessellationControlShader";
 kha_graphics4_TessellationControlShader.prototype = {
 	'delete': function() {
 	}
@@ -31229,7 +34652,7 @@ kha_graphics4_TessellationControlShader.prototype = {
 var kha_graphics4_TessellationEvaluationShader = function(sources,files) {
 };
 $hxClasses["kha.graphics4.TessellationEvaluationShader"] = kha_graphics4_TessellationEvaluationShader;
-kha_graphics4_TessellationEvaluationShader.__name__ = true;
+kha_graphics4_TessellationEvaluationShader.__name__ = "kha.graphics4.TessellationEvaluationShader";
 kha_graphics4_TessellationEvaluationShader.prototype = {
 	'delete': function() {
 	}
@@ -31237,7 +34660,7 @@ kha_graphics4_TessellationEvaluationShader.prototype = {
 };
 var kha_graphics4_TextureUnit = function() { };
 $hxClasses["kha.graphics4.TextureUnit"] = kha_graphics4_TextureUnit;
-kha_graphics4_TextureUnit.__name__ = true;
+kha_graphics4_TextureUnit.__name__ = "kha.graphics4.TextureUnit";
 kha_graphics4_TextureUnit.__isInterface__ = true;
 var kha_graphics4_VertexBuffer = function(vertexCount,structure,usage,instanceDataStepRate,canRead) {
 	if(canRead == null) {
@@ -31391,7 +34814,7 @@ var kha_graphics4_VertexBuffer = function(vertexCount,structure,usage,instanceDa
 	tmp.bufferData(34962,kha_arrays_ByteArray._new(this1.buffer,start,end != null ? end - start : null),usage == 1 ? 35048 : 35044);
 };
 $hxClasses["kha.graphics4.VertexBuffer"] = kha_graphics4_VertexBuffer;
-kha_graphics4_VertexBuffer.__name__ = true;
+kha_graphics4_VertexBuffer.__name__ = "kha.graphics4.VertexBuffer";
 kha_graphics4_VertexBuffer.prototype = {
 	_data: null
 	,buffer: null
@@ -31568,7 +34991,7 @@ var kha_graphics4_VertexElement = function(name,data) {
 	this.data = data;
 };
 $hxClasses["kha.graphics4.VertexElement"] = kha_graphics4_VertexElement;
-kha_graphics4_VertexElement.__name__ = true;
+kha_graphics4_VertexElement.__name__ = "kha.graphics4.VertexElement";
 kha_graphics4_VertexElement.prototype = {
 	name: null
 	,data: null
@@ -31587,7 +35010,7 @@ var kha_graphics4_VertexShader = function(sources,files) {
 	this.files = files;
 };
 $hxClasses["kha.graphics4.VertexShader"] = kha_graphics4_VertexShader;
-kha_graphics4_VertexShader.__name__ = true;
+kha_graphics4_VertexShader.__name__ = "kha.graphics4.VertexShader";
 kha_graphics4_VertexShader.fromSource = function(source) {
 	var shader = new kha_graphics4_VertexShader([],["runtime-string"]);
 	shader.sources.push(source);
@@ -31610,7 +35033,7 @@ var kha_graphics4_VertexStructure = function() {
 	this.instanced = false;
 };
 $hxClasses["kha.graphics4.VertexStructure"] = kha_graphics4_VertexStructure;
-kha_graphics4_VertexStructure.__name__ = true;
+kha_graphics4_VertexStructure.__name__ = "kha.graphics4.VertexStructure";
 kha_graphics4_VertexStructure.dataByteSize = function(data) {
 	switch(data) {
 	case 0:
@@ -31683,7 +35106,7 @@ var kha_input_Gamepad = $hx_exports["kha"]["input"]["Gamepad"] = function(index,
 	kha_input_Gamepad.instances[index] = this;
 };
 $hxClasses["kha.input.Gamepad"] = kha_input_Gamepad;
-kha_input_Gamepad.__name__ = true;
+kha_input_Gamepad.__name__ = "kha.input.Gamepad";
 kha_input_Gamepad.get = function(index) {
 	if(index == null) {
 		index = 0;
@@ -31780,6 +35203,7 @@ kha_input_Gamepad.prototype = {
 		}
 	}
 	,__class__: kha_input_Gamepad
+	,__properties__: {get_vendor:"get_vendor",get_id:"get_id"}
 };
 var kha_input_BlockInterventions = $hxEnums["kha.input.BlockInterventions"] = { __ename__:true,__constructs__:null
 	,Default: {_hx_name:"Default",_hx_index:0,__enum__:"kha.input.BlockInterventions",toString:$estr}
@@ -31793,7 +35217,7 @@ var kha_netsync_Controller = function() {
 	this._inputBuffer = new haxe_io_Bytes(new ArrayBuffer(1));
 };
 $hxClasses["kha.netsync.Controller"] = kha_netsync_Controller;
-kha_netsync_Controller.__name__ = true;
+kha_netsync_Controller.__name__ = "kha.netsync.Controller";
 kha_netsync_Controller.prototype = {
 	__id: null
 	,_inputBufferIndex: null
@@ -31813,7 +35237,7 @@ var kha_input_Keyboard = $hx_exports["kha"]["input"]["Keyboard"] = function() {
 	kha_input_Keyboard.instance = this;
 };
 $hxClasses["kha.input.Keyboard"] = kha_input_Keyboard;
-kha_input_Keyboard.__name__ = true;
+kha_input_Keyboard.__name__ = "kha.input.Keyboard";
 kha_input_Keyboard.get = function(num) {
 	if(num == null) {
 		num = 0;
@@ -31949,7 +35373,7 @@ var kha_input_Mouse = $hx_exports["kha"]["input"]["Mouse"] = function() {
 	kha_input_Mouse.instance = this;
 };
 $hxClasses["kha.input.Mouse"] = kha_input_Mouse;
-kha_input_Mouse.__name__ = true;
+kha_input_Mouse.__name__ = "kha.input.Mouse";
 kha_input_Mouse.get = function(num) {
 	if(num == null) {
 		num = 0;
@@ -32227,7 +35651,7 @@ var kha_input_MouseImpl = function() {
 	kha_input_Mouse.call(this);
 };
 $hxClasses["kha.input.MouseImpl"] = kha_input_MouseImpl;
-kha_input_MouseImpl.__name__ = true;
+kha_input_MouseImpl.__name__ = "kha.input.MouseImpl";
 kha_input_MouseImpl.__super__ = kha_input_Mouse;
 kha_input_MouseImpl.prototype = $extend(kha_input_Mouse.prototype,{
 	lock: function() {
@@ -32325,7 +35749,7 @@ var kha_input_Pen = function() {
 	kha_input_Pen.instance = this;
 };
 $hxClasses["kha.input.Pen"] = kha_input_Pen;
-kha_input_Pen.__name__ = true;
+kha_input_Pen.__name__ = "kha.input.Pen";
 kha_input_Pen.get = function(num) {
 	if(num == null) {
 		num = 0;
@@ -32503,7 +35927,7 @@ var kha_input_Sensor = function() {
 	this.listeners = [];
 };
 $hxClasses["kha.input.Sensor"] = kha_input_Sensor;
-kha_input_Sensor.__name__ = true;
+kha_input_Sensor.__name__ = "kha.input.Sensor";
 kha_input_Sensor.get = function(type) {
 	switch(type) {
 	case 0:
@@ -32546,7 +35970,7 @@ var kha_input_Surface = $hx_exports["kha"]["input"]["Surface"] = function() {
 	kha_input_Surface.instance = this;
 };
 $hxClasses["kha.input.Surface"] = kha_input_Surface;
-kha_input_Surface.__name__ = true;
+kha_input_Surface.__name__ = "kha.input.Surface";
 kha_input_Surface.get = function(num) {
 	if(num == null) {
 		num = 0;
@@ -32618,7 +36042,7 @@ var kha_internal_BytesBlob = function(bytes) {
 	this.bytes = bytes;
 };
 $hxClasses["kha.internal.BytesBlob"] = kha_internal_BytesBlob;
-kha_internal_BytesBlob.__name__ = true;
+kha_internal_BytesBlob.__name__ = "kha.internal.BytesBlob";
 kha_internal_BytesBlob.__interfaces__ = [kha_Resource];
 kha_internal_BytesBlob.fromBytes = function(bytes) {
 	return new kha_internal_BytesBlob(bytes);
@@ -32790,10 +36214,11 @@ kha_internal_BytesBlob.prototype = {
 		this.bytes = null;
 	}
 	,__class__: kha_internal_BytesBlob
+	,__properties__: {get_length:"get_length"}
 };
 var kha_internal_HdrFormat = function() { };
 $hxClasses["kha.internal.HdrFormat"] = kha_internal_HdrFormat;
-kha_internal_HdrFormat.__name__ = true;
+kha_internal_HdrFormat.__name__ = "kha.internal.HdrFormat";
 kha_internal_HdrFormat.readBuf = function(buf) {
 	var bytesRead = 0;
 	while(true) {
@@ -32971,7 +36396,7 @@ var kha_js_AEAudioChannel = function(element,looping) {
 	this.looping = looping;
 };
 $hxClasses["kha.js.AEAudioChannel"] = kha_js_AEAudioChannel;
-kha_js_AEAudioChannel.__name__ = true;
+kha_js_AEAudioChannel.__name__ = "kha.js.AEAudioChannel";
 kha_js_AEAudioChannel.__interfaces__ = [kha_audio1_AudioChannel];
 kha_js_AEAudioChannel.prototype = {
 	element: null
@@ -33031,10 +36456,11 @@ kha_js_AEAudioChannel.prototype = {
 		}
 	}
 	,__class__: kha_js_AEAudioChannel
+	,__properties__: {get_finished:"get_finished",set_volume:"set_volume",get_volume:"get_volume",set_position:"set_position",get_position:"get_position",get_length:"get_length"}
 };
 var kha_js_AudioElementAudio = function() { };
 $hxClasses["kha.js.AudioElementAudio"] = kha_js_AudioElementAudio;
-kha_js_AudioElementAudio.__name__ = true;
+kha_js_AudioElementAudio.__name__ = "kha.js.AudioElementAudio";
 kha_js_AudioElementAudio.play = function(sound,loop) {
 	if(loop == null) {
 		loop = false;
@@ -33059,7 +36485,7 @@ var kha_js_CanvasGraphics = function(canvas) {
 	this.myColor = kha_Color.fromBytes(0,0,0);
 };
 $hxClasses["kha.js.CanvasGraphics"] = kha_js_CanvasGraphics;
-kha_js_CanvasGraphics.__name__ = true;
+kha_js_CanvasGraphics.__name__ = "kha.js.CanvasGraphics";
 kha_js_CanvasGraphics.stringWidth = function(font,text) {
 	if(kha_js_CanvasGraphics.instance == null) {
 		return 5 * text.length;
@@ -33313,7 +36739,7 @@ var kha_js_Font = function(blob) {
 	this.kravur = new kha_js_Font.Kravur(blob);
 };
 $hxClasses["kha.js.Font"] = kha_js_Font;
-kha_js_Font.__name__ = true;
+kha_js_Font.__name__ = "kha.js.Font";
 kha_js_Font.__interfaces__ = [kha_Resource];
 kha_js_Font.fromBytes = function(bytes) {
 	return new kha_js_Font(kha_internal_BytesBlob.fromBytes(bytes));
@@ -33376,7 +36802,7 @@ kha_js_Font.prototype = {
 };
 var kha_js_MobileWebAudio = function() { };
 $hxClasses["kha.js.MobileWebAudio"] = kha_js_MobileWebAudio;
-kha_js_MobileWebAudio.__name__ = true;
+kha_js_MobileWebAudio.__name__ = "kha.js.MobileWebAudio";
 kha_js_MobileWebAudio._init = function() {
 	try {
 		kha_js_MobileWebAudio._context = new AudioContext();
@@ -33411,7 +36837,7 @@ var kha_js_MobileWebAudioChannel = function(sound,loop) {
 	this.createSource();
 };
 $hxClasses["kha.js.MobileWebAudioChannel"] = kha_js_MobileWebAudioChannel;
-kha_js_MobileWebAudioChannel.__name__ = true;
+kha_js_MobileWebAudioChannel.__name__ = "kha.js.MobileWebAudioChannel";
 kha_js_MobileWebAudioChannel.__interfaces__ = [kha_audio1_AudioChannel];
 kha_js_MobileWebAudioChannel.prototype = {
 	buffer: null
@@ -33492,6 +36918,7 @@ kha_js_MobileWebAudioChannel.prototype = {
 		return this.stopped;
 	}
 	,__class__: kha_js_MobileWebAudioChannel
+	,__properties__: {get_finished:"get_finished",set_volume:"set_volume",get_volume:"get_volume",set_position:"set_position",get_position:"get_position",get_length:"get_length"}
 };
 var kha_js_MobileWebAudioSound = function(filename,done,failed) {
 	var _gthis = this;
@@ -33517,7 +36944,7 @@ var kha_js_MobileWebAudioSound = function(filename,done,failed) {
 	request.send(null);
 };
 $hxClasses["kha.js.MobileWebAudioSound"] = kha_js_MobileWebAudioSound;
-kha_js_MobileWebAudioSound.__name__ = true;
+kha_js_MobileWebAudioSound.__name__ = "kha.js.MobileWebAudioSound";
 kha_js_MobileWebAudioSound.__super__ = kha_Sound;
 kha_js_MobileWebAudioSound.prototype = $extend(kha_Sound.prototype,{
 	_buffer: null
@@ -33554,7 +36981,7 @@ var kha_js_Sound = function(filenames,done,failed) {
 	this.element.load();
 };
 $hxClasses["kha.js.Sound"] = kha_js_Sound;
-kha_js_Sound.__name__ = true;
+kha_js_Sound.__name__ = "kha.js.Sound";
 kha_js_Sound.__super__ = kha_Sound;
 kha_js_Sound.prototype = $extend(kha_Sound.prototype,{
 	filenames: null
@@ -33594,7 +37021,7 @@ var kha_js_Video = function() {
 	kha_Video.call(this);
 };
 $hxClasses["kha.js.Video"] = kha_js_Video;
-kha_js_Video.__name__ = true;
+kha_js_Video.__name__ = "kha.js.Video";
 kha_js_Video.fromElement = function(element) {
 	var video = new kha_js_Video();
 	video.element = element;
@@ -33734,7 +37161,7 @@ var kha_js_WebAudioSound = function(filename,done,failed) {
 	request.send(null);
 };
 $hxClasses["kha.js.WebAudioSound"] = kha_js_WebAudioSound;
-kha_js_WebAudioSound.__name__ = true;
+kha_js_WebAudioSound.__name__ = "kha.js.WebAudioSound";
 kha_js_WebAudioSound.__super__ = kha_Sound;
 kha_js_WebAudioSound.prototype = $extend(kha_Sound.prototype,{
 	superUncompress: function(done) {
@@ -33784,7 +37211,7 @@ var kha_js_graphics4_ConstantLocation = function(value,type) {
 	this.type = type;
 };
 $hxClasses["kha.js.graphics4.ConstantLocation"] = kha_js_graphics4_ConstantLocation;
-kha_js_graphics4_ConstantLocation.__name__ = true;
+kha_js_graphics4_ConstantLocation.__name__ = "kha.js.graphics4.ConstantLocation";
 kha_js_graphics4_ConstantLocation.__interfaces__ = [kha_graphics4_ConstantLocation];
 kha_js_graphics4_ConstantLocation.prototype = {
 	value: null
@@ -33813,7 +37240,7 @@ var kha_js_graphics4_Graphics = function(renderTarget) {
 	}
 };
 $hxClasses["kha.js.graphics4.Graphics"] = kha_js_graphics4_Graphics;
-kha_js_graphics4_Graphics.__name__ = true;
+kha_js_graphics4_Graphics.__name__ = "kha.js.graphics4.Graphics";
 kha_js_graphics4_Graphics.__interfaces__ = [kha_graphics4_Graphics];
 kha_js_graphics4_Graphics.getBlendFunc = function(factor) {
 	switch(factor) {
@@ -34485,7 +37912,7 @@ var kha_js_graphics4_Graphics2 = function(canvas) {
 	kha_graphics4_Graphics2.call(this,canvas);
 };
 $hxClasses["kha.js.graphics4.Graphics2"] = kha_js_graphics4_Graphics2;
-kha_js_graphics4_Graphics2.__name__ = true;
+kha_js_graphics4_Graphics2.__name__ = "kha.js.graphics4.Graphics2";
 kha_js_graphics4_Graphics2.__super__ = kha_graphics4_Graphics2;
 kha_js_graphics4_Graphics2.prototype = $extend(kha_graphics4_Graphics2.prototype,{
 	drawVideoInternal: function(video,x,y,width,height) {
@@ -34507,7 +37934,7 @@ var kha_js_graphics4_TextureUnit = function(value) {
 	this.value = value;
 };
 $hxClasses["kha.js.graphics4.TextureUnit"] = kha_js_graphics4_TextureUnit;
-kha_js_graphics4_TextureUnit.__name__ = true;
+kha_js_graphics4_TextureUnit.__name__ = "kha.js.graphics4.TextureUnit";
 kha_js_graphics4_TextureUnit.__interfaces__ = [kha_graphics4_TextureUnit];
 kha_js_graphics4_TextureUnit.prototype = {
 	value: null
@@ -34516,7 +37943,7 @@ kha_js_graphics4_TextureUnit.prototype = {
 var kha_vr_VrInterface = function() {
 };
 $hxClasses["kha.vr.VrInterface"] = kha_vr_VrInterface;
-kha_vr_VrInterface.__name__ = true;
+kha_vr_VrInterface.__name__ = "kha.vr.VrInterface";
 kha_vr_VrInterface.prototype = {
 	GetSensorState: function() {
 		return null;
@@ -34572,7 +37999,7 @@ var kha_js_vr_VrInterface = function() {
 	}
 };
 $hxClasses["kha.js.vr.VrInterface"] = kha_js_vr_VrInterface;
-kha_js_vr_VrInterface.__name__ = true;
+kha_js_vr_VrInterface.__name__ = "kha.js.vr.VrInterface";
 kha_js_vr_VrInterface.__super__ = kha_vr_VrInterface;
 kha_js_vr_VrInterface.prototype = $extend(kha_vr_VrInterface.prototype,{
 	vrEnabled: null
@@ -34771,7 +38198,7 @@ var kha_math_FastMatrix3 = function(_00,_10,_20,_01,_11,_21,_02,_12,_22) {
 	this._22 = _22;
 };
 $hxClasses["kha.math.FastMatrix3"] = kha_math_FastMatrix3;
-kha_math_FastMatrix3.__name__ = true;
+kha_math_FastMatrix3.__name__ = "kha.math.FastMatrix3";
 kha_math_FastMatrix3.fromMatrix3 = function(m) {
 	return new kha_math_FastMatrix3(m._00,m._10,m._20,m._01,m._11,m._21,m._02,m._12,m._22);
 };
@@ -34806,7 +38233,7 @@ var kha_math_FastMatrix4 = function(_00,_10,_20,_30,_01,_11,_21,_31,_02,_12,_22,
 	this._33 = _33;
 };
 $hxClasses["kha.math.FastMatrix4"] = kha_math_FastMatrix4;
-kha_math_FastMatrix4.__name__ = true;
+kha_math_FastMatrix4.__name__ = "kha.math.FastMatrix4";
 kha_math_FastMatrix4.fromMatrix4 = function(m) {
 	return new kha_math_FastMatrix4(m._00,m._10,m._20,m._30,m._01,m._11,m._21,m._31,m._02,m._12,m._22,m._32,m._03,m._13,m._23,m._33);
 };
@@ -34949,7 +38376,7 @@ var kha_math_FastVector2 = function(x,y) {
 	this.y = y;
 };
 $hxClasses["kha.math.FastVector2"] = kha_math_FastVector2;
-kha_math_FastVector2.__name__ = true;
+kha_math_FastVector2.__name__ = "kha.math.FastVector2";
 kha_math_FastVector2.fromVector2 = function(v) {
 	return new kha_math_FastVector2(v.x,v.y);
 };
@@ -34973,6 +38400,7 @@ kha_math_FastVector2.prototype = {
 		return "FastVector2(" + this.x + ", " + this.y + ")";
 	}
 	,__class__: kha_math_FastVector2
+	,__properties__: {set_length:"set_length",get_length:"get_length"}
 };
 var kha_math_FastVector3 = function(x,y,z) {
 	if(z == null) {
@@ -34989,7 +38417,7 @@ var kha_math_FastVector3 = function(x,y,z) {
 	this.z = z;
 };
 $hxClasses["kha.math.FastVector3"] = kha_math_FastVector3;
-kha_math_FastVector3.__name__ = true;
+kha_math_FastVector3.__name__ = "kha.math.FastVector3";
 kha_math_FastVector3.fromVector3 = function(v) {
 	return new kha_math_FastVector3(v.x,v.y,v.z);
 };
@@ -35015,6 +38443,7 @@ kha_math_FastVector3.prototype = {
 		return "FastVector3(" + this.x + ", " + this.y + ", " + this.z + ")";
 	}
 	,__class__: kha_math_FastVector3
+	,__properties__: {set_length:"set_length",get_length:"get_length"}
 };
 var kha_math_FastVector4 = function(x,y,z,w) {
 	if(w == null) {
@@ -35035,7 +38464,7 @@ var kha_math_FastVector4 = function(x,y,z,w) {
 	this.w = w;
 };
 $hxClasses["kha.math.FastVector4"] = kha_math_FastVector4;
-kha_math_FastVector4.__name__ = true;
+kha_math_FastVector4.__name__ = "kha.math.FastVector4";
 kha_math_FastVector4.fromVector4 = function(v) {
 	return new kha_math_FastVector4(v.x,v.y,v.z,v.w);
 };
@@ -35063,6 +38492,7 @@ kha_math_FastVector4.prototype = {
 		return "FastVector4(" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + ")";
 	}
 	,__class__: kha_math_FastVector4
+	,__properties__: {set_length:"set_length",get_length:"get_length"}
 };
 var kha_math_Matrix3 = function(_00,_10,_20,_01,_11,_21,_02,_12,_22) {
 	this._00 = _00;
@@ -35076,7 +38506,7 @@ var kha_math_Matrix3 = function(_00,_10,_20,_01,_11,_21,_02,_12,_22) {
 	this._22 = _22;
 };
 $hxClasses["kha.math.Matrix3"] = kha_math_Matrix3;
-kha_math_Matrix3.__name__ = true;
+kha_math_Matrix3.__name__ = "kha.math.Matrix3";
 kha_math_Matrix3.fromFastMatrix3 = function(m) {
 	return new kha_math_Matrix3(m._00,m._10,m._20,m._01,m._11,m._21,m._02,m._12,m._22);
 };
@@ -35111,7 +38541,7 @@ var kha_math_Matrix4 = function(_00,_10,_20,_30,_01,_11,_21,_31,_02,_12,_22,_32,
 	this._33 = _33;
 };
 $hxClasses["kha.math.Matrix4"] = kha_math_Matrix4;
-kha_math_Matrix4.__name__ = true;
+kha_math_Matrix4.__name__ = "kha.math.Matrix4";
 kha_math_Matrix4.fromFastMatrix4 = function(m) {
 	return new kha_math_Matrix4(m._00,m._10,m._20,m._30,m._01,m._11,m._21,m._31,m._02,m._12,m._22,m._32,m._03,m._13,m._23,m._33);
 };
@@ -35263,7 +38693,7 @@ var kha_math_Quaternion = function(x,y,z,w) {
 	this.values.push(w);
 };
 $hxClasses["kha.math.Quaternion"] = kha_math_Quaternion;
-kha_math_Quaternion.__name__ = true;
+kha_math_Quaternion.__name__ = "kha.math.Quaternion";
 kha_math_Quaternion.fromAxisAngle = function(axis,radians) {
 	var q = new kha_math_Quaternion();
 	q.set_w(Math.cos(radians / 2.0));
@@ -35475,6 +38905,7 @@ kha_math_Quaternion.prototype = {
 		return result;
 	}
 	,__class__: kha_math_Quaternion
+	,__properties__: {set_length:"set_length",get_length:"get_length",set_w:"set_w",get_w:"get_w",set_z:"set_z",get_z:"get_z",set_y:"set_y",get_y:"get_y",set_x:"set_x",get_x:"get_x"}
 };
 var kha_math_Random = function(seed) {
 	this.d = seed;
@@ -35498,7 +38929,7 @@ var kha_math_Random = function(seed) {
 	this.Get();
 };
 $hxClasses["kha.math.Random"] = kha_math_Random;
-kha_math_Random.__name__ = true;
+kha_math_Random.__name__ = "kha.math.Random";
 kha_math_Random.init = function(seed) {
 	kha_math_Random.Default = new kha_math_Random(seed);
 };
@@ -35556,7 +38987,7 @@ var kha_math_Vector2 = function(x,y) {
 	this.y = y;
 };
 $hxClasses["kha.math.Vector2"] = kha_math_Vector2;
-kha_math_Vector2.__name__ = true;
+kha_math_Vector2.__name__ = "kha.math.Vector2";
 kha_math_Vector2.prototype = {
 	x: null
 	,y: null
@@ -35574,6 +39005,7 @@ kha_math_Vector2.prototype = {
 		return length;
 	}
 	,__class__: kha_math_Vector2
+	,__properties__: {set_length:"set_length",get_length:"get_length"}
 };
 var kha_math_Vector3 = function(x,y,z) {
 	if(z == null) {
@@ -35590,7 +39022,7 @@ var kha_math_Vector3 = function(x,y,z) {
 	this.z = z;
 };
 $hxClasses["kha.math.Vector3"] = kha_math_Vector3;
-kha_math_Vector3.__name__ = true;
+kha_math_Vector3.__name__ = "kha.math.Vector3";
 kha_math_Vector3.prototype = {
 	x: null
 	,y: null
@@ -35610,6 +39042,7 @@ kha_math_Vector3.prototype = {
 		return length;
 	}
 	,__class__: kha_math_Vector3
+	,__properties__: {set_length:"set_length",get_length:"get_length"}
 };
 var kha_math_Vector4 = function(x,y,z,w) {
 	if(w == null) {
@@ -35630,7 +39063,7 @@ var kha_math_Vector4 = function(x,y,z,w) {
 	this.w = w;
 };
 $hxClasses["kha.math.Vector4"] = kha_math_Vector4;
-kha_math_Vector4.__name__ = true;
+kha_math_Vector4.__name__ = "kha.math.Vector4";
 kha_math_Vector4.prototype = {
 	x: null
 	,y: null
@@ -35652,10 +39085,11 @@ kha_math_Vector4.prototype = {
 		return length;
 	}
 	,__class__: kha_math_Vector4
+	,__properties__: {set_length:"set_length",get_length:"get_length"}
 };
 var kha_netsync_Client = function() { };
 $hxClasses["kha.netsync.Client"] = kha_netsync_Client;
-kha_netsync_Client.__name__ = true;
+kha_netsync_Client.__name__ = "kha.netsync.Client";
 kha_netsync_Client.__isInterface__ = true;
 kha_netsync_Client.prototype = {
 	get_id: null
@@ -35664,13 +39098,14 @@ kha_netsync_Client.prototype = {
 	,receive: null
 	,onClose: null
 	,__class__: kha_netsync_Client
+	,__properties__: {get_id:"get_id"}
 };
 var kha_netsync_ControllerBuilder = function() { };
 $hxClasses["kha.netsync.ControllerBuilder"] = kha_netsync_ControllerBuilder;
-kha_netsync_ControllerBuilder.__name__ = true;
+kha_netsync_ControllerBuilder.__name__ = "kha.netsync.ControllerBuilder";
 var kha_netsync_Entity = function() { };
 $hxClasses["kha.netsync.Entity"] = kha_netsync_Entity;
-kha_netsync_Entity.__name__ = true;
+kha_netsync_Entity.__name__ = "kha.netsync.Entity";
 kha_netsync_Entity.__isInterface__ = true;
 kha_netsync_Entity.prototype = {
 	_id: null
@@ -35683,7 +39118,7 @@ var kha_netsync_LocalClient = function(id) {
 	this.myId = id;
 };
 $hxClasses["kha.netsync.LocalClient"] = kha_netsync_LocalClient;
-kha_netsync_LocalClient.__name__ = true;
+kha_netsync_LocalClient.__name__ = "kha.netsync.LocalClient";
 kha_netsync_LocalClient.__interfaces__ = [kha_netsync_Client];
 kha_netsync_LocalClient.prototype = {
 	myId: null
@@ -35702,6 +39137,7 @@ kha_netsync_LocalClient.prototype = {
 		return this.myId;
 	}
 	,__class__: kha_netsync_LocalClient
+	,__properties__: {get_id:"get_id",get_controllers:"get_controllers"}
 };
 var kha_netsync_Network = function(url,port,errorCallback,closeCallback) {
 	this.open = false;
@@ -35721,7 +39157,7 @@ var kha_netsync_Network = function(url,port,errorCallback,closeCallback) {
 	};
 };
 $hxClasses["kha.netsync.Network"] = kha_netsync_Network;
-kha_netsync_Network.__name__ = true;
+kha_netsync_Network.__name__ = "kha.netsync.Network";
 kha_netsync_Network.webSocketCloseReason = function(code) {
 	switch(code) {
 	case 1000:
@@ -35772,7 +39208,7 @@ var kha_netsync_State = function(time,data) {
 	this.data = data;
 };
 $hxClasses["kha.netsync.State"] = kha_netsync_State;
-kha_netsync_State.__name__ = true;
+kha_netsync_State.__name__ = "kha.netsync.State";
 kha_netsync_State.prototype = {
 	time: null
 	,data: null
@@ -35789,7 +39225,7 @@ var kha_netsync_Session = function(maxPlayers,address,port) {
 	this.port = port;
 };
 $hxClasses["kha.netsync.Session"] = kha_netsync_Session;
-kha_netsync_Session.__name__ = true;
+kha_netsync_Session.__name__ = "kha.netsync.Session";
 kha_netsync_Session.the = function() {
 	return kha_netsync_Session.instance;
 };
@@ -36004,10 +39440,11 @@ kha_netsync_Session.prototype = {
 		this.network.send(bytes,false);
 	}
 	,__class__: kha_netsync_Session
+	,__properties__: {get_me:"get_me"}
 };
 var kha_netsync_SyncBuilder = function() { };
 $hxClasses["kha.netsync.SyncBuilder"] = kha_netsync_SyncBuilder;
-kha_netsync_SyncBuilder.__name__ = true;
+kha_netsync_SyncBuilder.__name__ = "kha.netsync.SyncBuilder";
 var kha_simd_Float32x4 = function(_0,_1,_2,_3) {
 	this._0 = _0;
 	this._1 = _1;
@@ -36015,7 +39452,7 @@ var kha_simd_Float32x4 = function(_0,_1,_2,_3) {
 	this._3 = _3;
 };
 $hxClasses["kha.simd.Float32x4"] = kha_simd_Float32x4;
-kha_simd_Float32x4.__name__ = true;
+kha_simd_Float32x4.__name__ = "kha.simd.Float32x4";
 kha_simd_Float32x4.create = function() {
 	return new kha_simd_Float32x4(0,0,0,0);
 };
@@ -36103,7 +39540,7 @@ var kha_vr_Pose = function() {
 	this.Position = new kha_math_Vector3();
 };
 $hxClasses["kha.vr.Pose"] = kha_vr_Pose;
-kha_vr_Pose.__name__ = true;
+kha_vr_Pose.__name__ = "kha.vr.Pose";
 kha_vr_Pose.prototype = {
 	Orientation: null
 	,Position: null
@@ -36112,7 +39549,7 @@ kha_vr_Pose.prototype = {
 var kha_vr_PoseState = function() {
 };
 $hxClasses["kha.vr.PoseState"] = kha_vr_PoseState;
-kha_vr_PoseState.__name__ = true;
+kha_vr_PoseState.__name__ = "kha.vr.PoseState";
 kha_vr_PoseState.prototype = {
 	Pose: null
 	,AngularVelocity: null
@@ -36125,7 +39562,7 @@ kha_vr_PoseState.prototype = {
 var kha_vr_SensorState = function() {
 };
 $hxClasses["kha.vr.SensorState"] = kha_vr_SensorState;
-kha_vr_SensorState.__name__ = true;
+kha_vr_SensorState.__name__ = "kha.vr.SensorState";
 kha_vr_SensorState.prototype = {
 	Predicted: null
 	,Recorded: null
@@ -36136,7 +39573,7 @@ kha_vr_SensorState.prototype = {
 var kha_vr_TimeWarpImage = function() {
 };
 $hxClasses["kha.vr.TimeWarpImage"] = kha_vr_TimeWarpImage;
-kha_vr_TimeWarpImage.__name__ = true;
+kha_vr_TimeWarpImage.__name__ = "kha.vr.TimeWarpImage";
 kha_vr_TimeWarpImage.prototype = {
 	Image: null
 	,TexCoordsFromTanAngles: null
@@ -36146,13 +39583,6676 @@ kha_vr_TimeWarpImage.prototype = {
 var kha_vr_TimeWarpParms = function() {
 };
 $hxClasses["kha.vr.TimeWarpParms"] = kha_vr_TimeWarpParms;
-kha_vr_TimeWarpParms.__name__ = true;
+kha_vr_TimeWarpParms.__name__ = "kha.vr.TimeWarpParms";
 kha_vr_TimeWarpParms.prototype = {
 	LeftImage: null
 	,RightImage: null
 	,LeftOverlay: null
 	,RightOverlay: null
 	,__class__: kha_vr_TimeWarpParms
+};
+var koui_Config = function() { };
+$hxClasses["koui.Config"] = koui_Config;
+koui_Config.__name__ = "koui.Config";
+var koui_Koui = function() { };
+$hxClasses["koui.Koui"] = koui_Koui;
+koui_Koui.__name__ = "koui.Koui";
+koui_Koui.init = function(done) {
+	koui_theme_Style.init();
+	koui_graphics_KGraphics.initTextPipeline();
+	var windowId = 0;
+	var screenWidth = kha_Window.get(windowId).get_width();
+	var screenHeight = kha_Window.get(windowId).get_height();
+	var antialiasing = 1;
+	koui_Koui.backbuffer = kha_Image.createRenderTarget(screenWidth,screenHeight,null,0,antialiasing);
+	koui_Koui.g = new koui_graphics_KGraphics(koui_Koui.backbuffer);
+	koui_Koui.anchorPane = new koui_elements_layouts_AnchorPane(0,0,screenWidth,screenHeight);
+	kha_Assets.loadEverything(function() {
+		koui_utils_Cursor.init();
+		koui_Koui.font = koui_Koui.g.set_font(kha_Assets.fonts.get(koui_theme_Style.styles.h["_root" + "_" + "default"].font.family));
+		koui_Koui.fontSize = koui_Koui.g.set_fontSize(koui_theme_Style.styles.h["_root" + "_" + "default"].font.size);
+		koui_events_EventHandler.init();
+		kha_Window.get(windowId).notifyOnResize(koui_Koui.onResize);
+		koui_Koui.initialized = true;
+		done();
+	},koui_Koui.filterAssets);
+};
+koui_Koui.filterAssets = function(asset) {
+	return koui_theme_Style.requiredAssets.indexOf(asset.name) != -1;
+};
+koui_Koui.add = function(element,anchor) {
+	if(anchor == null) {
+		anchor = 0;
+	}
+	koui_Koui.anchorPane.add(element,anchor);
+};
+koui_Koui.remove = function(element) {
+	koui_Koui.anchorPane.remove(element);
+};
+koui_Koui.setPadding = function(left,right,top,bottom) {
+	var _this = koui_Koui.anchorPane;
+	_this.set_paddingLeft(left);
+	_this.set_paddingRight(right);
+	_this.set_paddingTop(top);
+	_this.set_paddingBottom(bottom);
+};
+koui_Koui.setPaddingLeft = function(left) {
+	koui_Koui.anchorPane.set_paddingLeft(left);
+};
+koui_Koui.setPaddingRight = function(right) {
+	koui_Koui.anchorPane.set_paddingRight(right);
+};
+koui_Koui.setPaddingTop = function(top) {
+	koui_Koui.anchorPane.set_paddingTop(top);
+};
+koui_Koui.setPaddingBottom = function(bottom) {
+	koui_Koui.anchorPane.set_paddingBottom(bottom);
+};
+koui_Koui.registerOverlay = function(element) {
+	koui_Koui.overlays.push(element);
+	koui_Koui.overlay_offsets.push(element.getLayoutOffset());
+};
+koui_Koui.unregisterOverlay = function(element) {
+	var pos = koui_Koui.overlays.indexOf(element);
+	HxOverrides.remove(koui_Koui.overlays,element);
+	HxOverrides.remove(koui_Koui.overlay_offsets,koui_Koui.overlay_offsets[pos]);
+};
+koui_Koui.render = function(g2) {
+	if(!koui_Koui.initialized) {
+		return;
+	}
+	if(kha_System.windowWidth() == 0 || kha_System.windowHeight() == 0) {
+		return;
+	}
+	koui_events_EventHandler.update();
+	koui_Koui.g.begin(true,0);
+	koui_Koui.anchorPane.draw(koui_Koui.g);
+	var _g = 0;
+	var _g1 = koui_Koui.overlays.length;
+	while(_g < _g1) {
+		var i = _g++;
+		var offset = koui_Koui.overlay_offsets[i];
+		koui_Koui.g.pushTranslation(-offset[0],-offset[1]);
+		var overlayElem = koui_Koui.overlays[i];
+		var state = overlayElem.disabled ? "disabled" : "default";
+		var ctxElement = "";
+		if(ctxElement == null) {
+			ctxElement = "";
+		}
+		overlayElem.state = state;
+		overlayElem.ctxElement = ctxElement;
+		overlayElem.loadStyle();
+		var _g2 = 0;
+		var _g3 = overlayElem.children;
+		while(_g2 < _g3.length) {
+			var c = _g3[_g2];
+			++_g2;
+			var ctxElement1 = ctxElement;
+			var recursive = true;
+			if(recursive == null) {
+				recursive = true;
+			}
+			if(ctxElement1 == null) {
+				ctxElement1 = "";
+			}
+			c.state = state;
+			c.ctxElement = ctxElement1;
+			c.loadStyle();
+			if(recursive) {
+				var _g4 = 0;
+				var _g5 = c.children;
+				while(_g4 < _g5.length) {
+					var c1 = _g5[_g4];
+					++_g4;
+					c1.setContext(state,ctxElement1,true);
+				}
+			}
+		}
+		if(overlayElem.disabled) {
+			overlayElem.state = "disabled";
+			overlayElem.loadStyle();
+			var _g6 = 0;
+			var _g7 = overlayElem.children;
+			while(_g6 < _g7.length) {
+				var c2 = _g7[_g6];
+				++_g6;
+				var recursive1 = true;
+				if(recursive1 == null) {
+					recursive1 = true;
+				}
+				c2.state = "disabled";
+				c2.loadStyle();
+				if(recursive1) {
+					var _g8 = 0;
+					var _g9 = c2.children;
+					while(_g8 < _g9.length) {
+						var c3 = _g9[_g8];
+						++_g8;
+						c3.setContextState("disabled",true);
+					}
+				}
+			}
+		}
+		overlayElem.drawOverlay(koui_Koui.g);
+		koui_Koui.g.popTransformation();
+	}
+	koui_Koui.g.end();
+	koui_events_EventHandler.reset();
+	g2.begin(false);
+	g2.set_color(-1);
+	g2.set_opacity(1);
+	g2.drawImage(koui_Koui.backbuffer,0,0);
+	g2.end();
+	var elem = koui_elements_Element.invalidations.map.keys();
+	while(elem.hasNext()) {
+		var elem1 = elem.next();
+		if(elem1.layout != null) {
+			elem1.layout.elemUpdated(elem1);
+		}
+	}
+	koui_elements_Element.invalidations.map.clear();
+};
+koui_Koui.getElementAtPosition = function(x,y) {
+	var sorted_overlays = koui_Koui.overlays.slice();
+	sorted_overlays.reverse();
+	var _g = 0;
+	var _g1 = sorted_overlays.length;
+	while(_g < _g1) {
+		var i = _g++;
+		var element = sorted_overlays[i];
+		var offset = koui_Koui.overlay_offsets[i];
+		var relX = x + offset[0];
+		var relY = y + offset[1];
+		var tmp;
+		if(!element.visible) {
+			tmp = false;
+		} else {
+			var posX = element.drawX;
+			var posY = element.drawY;
+			tmp = relX >= posX && relX <= posX + element.drawWidth && relY >= posY && relY <= posY + element.drawHeight;
+		}
+		if(tmp) {
+			return element;
+		}
+	}
+	return koui_Koui.anchorPane.getElementAtPosition(x,y);
+};
+koui_Koui.onResize = function(width,height) {
+	if(kha_System.windowWidth() == 0 || kha_System.windowHeight() == 0) {
+		return;
+	}
+	koui_Koui.anchorPane.resize(width,height);
+	koui_Koui.backbuffer = kha_Image.createRenderTarget(width,height,null,0,1);
+	koui_Koui.g = new koui_graphics_KGraphics(koui_Koui.backbuffer);
+};
+var koui_effects_Effect = function() { };
+$hxClasses["koui.effects.Effect"] = koui_effects_Effect;
+koui_effects_Effect.__name__ = "koui.effects.Effect";
+koui_effects_Effect.init = function() {
+};
+koui_effects_Effect.initAll = function() {
+	var _g = 0;
+	var _g1 = haxe_rtti_Meta.getType(koui_effects_Effect).subclasses;
+	while(_g < _g1.length) {
+		var subclassName = _g1[_g];
+		++_g;
+		var subclass = $hxClasses[subclassName];
+		var initField = Reflect.field(subclass,"init");
+		var tmpClass = subclass;
+		while(initField == null && tmpClass.__super__ != null) {
+			tmpClass = tmpClass.__super__;
+			initField = Reflect.field(subclass,"init");
+		}
+		if(initField != null) {
+			initField.apply(subclass,[]);
+		}
+	}
+};
+var koui_effects_Border = function() { };
+$hxClasses["koui.effects.Border"] = koui_effects_Border;
+koui_effects_Border.__name__ = "koui.effects.Border";
+koui_effects_Border.draw = function(g,element) {
+	var propertiesBorder = koui_theme_Style.styles.h[element.tID + "_" + "default"].border;
+	if(propertiesBorder == null || propertiesBorder.size <= 0) {
+		return;
+	}
+	var thickness = propertiesBorder.size;
+	g.set_color(propertiesBorder.color);
+	switch(propertiesBorder.style) {
+	case "inset":
+		g.drawRect(element.drawX + thickness / 2,element.drawY + thickness / 2,element.drawWidth - thickness,element.drawHeight - thickness,thickness);
+		break;
+	case "middle":
+		g.drawRect(element.drawX,element.drawY,element.drawWidth,element.drawHeight,thickness);
+		break;
+	case "outset":
+		g.drawRect(element.drawX - thickness / 2,element.drawY - thickness / 2,element.drawWidth + thickness,element.drawHeight + thickness,thickness);
+		break;
+	default:
+		haxe_Log.trace("Koui warning: Border style " + propertiesBorder.style + " not supported!",{ fileName : "koui/effects/Border.hx", lineNumber : 29, className : "koui.effects.Border", methodName : "draw"});
+	}
+};
+koui_effects_Border.__super__ = koui_effects_Effect;
+koui_effects_Border.prototype = $extend(koui_effects_Effect.prototype,{
+	__class__: koui_effects_Border
+});
+var koui_utils_Set_$koui_$elements_$Element = function() {
+	this.map = new haxe_ds_ObjectMap();
+};
+$hxClasses["koui.utils.Set_koui_elements_Element"] = koui_utils_Set_$koui_$elements_$Element;
+koui_utils_Set_$koui_$elements_$Element.__name__ = "koui.utils.Set_koui_elements_Element";
+koui_utils_Set_$koui_$elements_$Element.prototype = {
+	map: null
+	,add: function(val) {
+		this.map.set(val,true);
+	}
+	,remove: function(val) {
+		this.map.remove(val);
+	}
+	,has: function(val) {
+		return this.map.exists(val);
+	}
+	,clear: function() {
+		this.map.clear();
+	}
+	,toArray: function() {
+		var out = [];
+		var key = this.map.keys();
+		while(key.hasNext()) {
+			var key1 = key.next();
+			out.push(key1);
+		}
+		return out;
+	}
+	,iterator: function() {
+		return this.map.keys();
+	}
+	,__class__: koui_utils_Set_$koui_$elements_$Element
+};
+var koui_elements_Element = function(__isSuperCall) {
+	if(__isSuperCall == null) {
+		__isSuperCall = false;
+	}
+	this.eventListeners = new haxe_ds_StringMap();
+	this.styleInitialized = false;
+	this.ctxElement = "";
+	this.state = "default";
+	var _g = new haxe_ds_StringMap();
+	_g.h[""] = ["default","disabled"];
+	this.states = _g;
+	this.tID = "_root";
+	this.autoRenderChildren = true;
+	this.children = [];
+	this.parent = null;
+	this.layout = null;
+	this.visible = true;
+	this.disabled = false;
+	this.anchor = 9;
+	this.height = 0;
+	this.width = 0;
+	this.posY = 0;
+	this.posX = 0;
+	this.onBuild();
+	this.initStyle();
+	this.onTIDChange();
+	koui_events_EventHandler.registerElement(this);
+};
+$hxClasses["koui.elements.Element"] = koui_elements_Element;
+koui_elements_Element.__name__ = "koui.elements.Element";
+koui_elements_Element.prototype = {
+	posX: null
+	,posY: null
+	,width: null
+	,height: null
+	,anchor: null
+	,disabled: null
+	,visible: null
+	,layout: null
+	,set_layout: function(value) {
+		this.parent = value;
+		return this.layout = value;
+	}
+	,parent: null
+	,children: null
+	,autoRenderChildren: null
+	,tID: null
+	,stylesCache: null
+	,style: null
+	,states: null
+	,state: null
+	,ctxElement: null
+	,styleInitialized: null
+	,drawX: null
+	,drawY: null
+	,drawWidth: null
+	,drawHeight: null
+	,layoutX: null
+	,layoutY: null
+	,layoutWidth: null
+	,layoutHeight: null
+	,eventListeners: null
+	,onBuild: function() {
+	}
+	,initStyle: function() {
+	}
+	,addChild: function(child) {
+		child.parent = this;
+		this.children.push(child);
+	}
+	,removeChild: function(child) {
+		child.parent = null;
+		HxOverrides.remove(this.children,child);
+	}
+	,getChild: function(matchBehaviour) {
+		var _g = 0;
+		var _g1 = this.children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			if(matchBehaviour.match(child)) {
+				return child;
+			}
+		}
+		return null;
+	}
+	,toString: function() {
+		var c = js_Boot.getClass(this);
+		return "Element: <" + c.__name__ + ">";
+	}
+	,renderElement: function(g,element) {
+		if(!element.visible) {
+			return;
+		}
+		g.set_opacity(element.style.opacity);
+		element.draw(g);
+		if(element.autoRenderChildren) {
+			g.pushTranslation(element.drawX,element.drawY);
+			var _g = 0;
+			var _g1 = element.children;
+			while(_g < _g1.length) {
+				var c = _g1[_g];
+				++_g;
+				this.renderElement(g,c);
+			}
+			g.popTransformation();
+		}
+	}
+	,renderChildren: function(g,element) {
+		g.pushTranslation(element.drawX,element.drawY);
+		var _g = 0;
+		var _g1 = element.children;
+		while(_g < _g1.length) {
+			var c = _g1[_g];
+			++_g;
+			if(c.visible) {
+				g.set_opacity(c.style.opacity);
+				c.draw(g);
+				if(c.autoRenderChildren) {
+					g.pushTranslation(c.drawX,c.drawY);
+					var _g2 = 0;
+					var _g3 = c.children;
+					while(_g2 < _g3.length) {
+						var c1 = _g3[_g2];
+						++_g2;
+						this.renderElement(g,c1);
+					}
+					g.popTransformation();
+				}
+			}
+		}
+		g.popTransformation();
+	}
+	,draw: function(g) {
+		throw new haxe_Exception("[Koui Error] " + "draw() function must be overriden by element!");
+	}
+	,drawOverlay: function(g) {
+	}
+	,setPosition: function(posX,posY) {
+		this.set_posX(posX);
+		this.set_posY(posY);
+	}
+	,setSize: function(width,height) {
+		this.set_width(width);
+		this.set_height(height);
+	}
+	,getLayoutOffset: function() {
+		var this1 = new Array(2);
+		var offset = this1;
+		offset[0] = 0;
+		offset[1] = 0;
+		var currentParent = this;
+		while(currentParent.layout != null) {
+			currentParent = currentParent.layout;
+			if(((currentParent) instanceof koui_elements_layouts_Layout)) {
+				offset[0] -= currentParent.layoutX;
+				offset[1] -= currentParent.layoutY;
+				if(((currentParent) instanceof koui_elements_layouts_ScrollPane)) {
+					var sp = js_Boot.__cast(currentParent , koui_elements_layouts_ScrollPane);
+					offset[0] += sp.scrollX | 0;
+					offset[1] += sp.scrollY | 0;
+				}
+			}
+		}
+		return offset;
+	}
+	,isAtPosition: function(x,y) {
+		if(!this.visible) {
+			return false;
+		}
+		var posX = this.drawX;
+		var posY = this.drawY;
+		if(x >= posX && x <= posX + this.drawWidth && y >= posY) {
+			return y <= posY + this.drawHeight;
+		} else {
+			return false;
+		}
+	}
+	,getAnchorResolved: function() {
+		if(this.anchor == 9 && this.layout != null) {
+			return this.layout.defaultAnchor;
+		}
+		return this.anchor;
+	}
+	,invalidateElem: function() {
+		koui_elements_Element.invalidations.map.set(this,true);
+	}
+	,onResize: function() {
+	}
+	,set_posX: function(value) {
+		if(value != this.posX) {
+			koui_elements_Element.invalidations.map.set(this,true);
+		}
+		return this.posX = this.set_layoutX(value);
+	}
+	,set_posY: function(value) {
+		if(value != this.posY) {
+			koui_elements_Element.invalidations.map.set(this,true);
+		}
+		return this.posY = this.set_layoutY(value);
+	}
+	,set_width: function(value) {
+		var changed = value != this.width;
+		if(changed) {
+			koui_elements_Element.invalidations.map.set(this,true);
+		}
+		this.width = this.set_layoutWidth(value);
+		if(changed) {
+			this.onResize();
+		}
+		return this.width;
+	}
+	,set_height: function(value) {
+		var changed = value != this.height;
+		if(changed) {
+			koui_elements_Element.invalidations.map.set(this,true);
+		}
+		this.height = this.set_layoutHeight(value);
+		if(changed) {
+			this.onResize();
+		}
+		return this.height;
+	}
+	,set_layoutX: function(value) {
+		return this.layoutX = this.drawX = value;
+	}
+	,set_layoutY: function(value) {
+		return this.layoutY = this.drawY = value;
+	}
+	,set_layoutWidth: function(value) {
+		return this.layoutWidth = this.drawWidth = value;
+	}
+	,set_layoutHeight: function(value) {
+		return this.layoutHeight = this.drawHeight = value;
+	}
+	,set_tID: function(value) {
+		this.tID = value;
+		this.stylesCache = new haxe_ds_StringMap();
+		var h = this.states.h;
+		var _g_h = h;
+		var _g_keys = Object.keys(h);
+		var _g_length = _g_keys.length;
+		var _g_current = 0;
+		while(_g_current < _g_length) {
+			var key = _g_keys[_g_current++];
+			var _g1_key = key;
+			var _g1_value = _g_h[key];
+			var ctxElementName = _g1_key;
+			var ctxElementStates = _g1_value;
+			this.cacheStates(ctxElementStates,ctxElementName);
+		}
+		this.loadStyle();
+		return this.tID;
+	}
+	,initTID: function(tID,constrCalled) {
+		if(!this.styleInitialized) {
+			this.set_tID(tID);
+			this.styleInitialized = true;
+		}
+	}
+	,setTID: function(tID) {
+		if(this.tID != tID) {
+			this.set_tID(tID);
+			var ctxElement = "";
+			if(ctxElement == null) {
+				ctxElement = "";
+			}
+			this.ctxElement = ctxElement;
+			this.loadStyle();
+			this.onTIDChange();
+		}
+	}
+	,getTID: function() {
+		return this.tID;
+	}
+	,requireStates: function(states,ctxElement) {
+		if(ctxElement == null) {
+			ctxElement = "";
+		}
+		if(!Object.prototype.hasOwnProperty.call(this.states.h,ctxElement)) {
+			var v = ["default","disabled"];
+			this.states.h[ctxElement] = v;
+			this.cacheStates(this.states.h[ctxElement],ctxElement);
+		}
+		var this1 = this.states;
+		var v = this.states.h[ctxElement].concat(states);
+		this1.h[ctxElement] = v;
+		this.cacheStates(this.states.h[ctxElement],ctxElement);
+	}
+	,cacheStates: function(states,ctxElement) {
+		if(ctxElement == null) {
+			ctxElement = "";
+		}
+		var selectorBaseName = ctxElement == "" ? this.tID : this.tID + "_" + ctxElement;
+		var _g = 0;
+		while(_g < states.length) {
+			var s = states[_g];
+			++_g;
+			var key = ctxElement + "!" + s;
+			var state = s;
+			if(state == null) {
+				state = "default";
+			}
+			var v = koui_theme_Style.styles.h[selectorBaseName + "_" + state];
+			this.stylesCache.h[key] = v;
+			if(this.stylesCache.h[key] == null) {
+				haxe_Log.trace("[Koui Warning] " + ("Missing selector in theme file: \"" + (selectorBaseName + "!" + s) + "\", trying to use default state instead."),{ fileName : "koui/utils/Log.hx", lineNumber : 20, className : "koui.utils.Log", methodName : "warn"});
+				var state1 = "default";
+				if(state1 == null) {
+					state1 = "default";
+				}
+				var v1 = koui_theme_Style.styles.h[selectorBaseName + "_" + state1];
+				this.stylesCache.h[key] = v1;
+				if(this.stylesCache.h[key] == null) {
+					throw new haxe_Exception("[Koui Error] " + ("Missing selector in theme file: \"" + (selectorBaseName + "!" + s) + "\"!"));
+				}
+			}
+		}
+	}
+	,requireContextElement: function(ctxElement) {
+		if(!Object.prototype.hasOwnProperty.call(this.states.h,ctxElement)) {
+			var v = ["default","disabled"];
+			this.states.h[ctxElement] = v;
+			this.cacheStates(this.states.h[ctxElement],ctxElement);
+		}
+	}
+	,setContext: function(state,ctxElement,recursive) {
+		if(recursive == null) {
+			recursive = true;
+		}
+		if(ctxElement == null) {
+			ctxElement = "";
+		}
+		this.state = state;
+		this.ctxElement = ctxElement;
+		this.loadStyle();
+		if(recursive) {
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var c = _g1[_g];
+				++_g;
+				c.setContext(state,ctxElement,true);
+			}
+		}
+	}
+	,setContextElement: function(ctxElement) {
+		if(ctxElement == null) {
+			ctxElement = "";
+		}
+		this.ctxElement = ctxElement;
+		this.loadStyle();
+	}
+	,setContextState: function(state,recursive) {
+		if(recursive == null) {
+			recursive = true;
+		}
+		this.state = state;
+		this.loadStyle();
+		if(recursive) {
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var c = _g1[_g];
+				++_g;
+				c.setContextState(state,true);
+			}
+		}
+	}
+	,getContextState: function() {
+		return this.state;
+	}
+	,loadStyle: function() {
+		var stateStyle = this.stylesCache.h[this.ctxElement + "!" + this.state];
+		if(stateStyle != null) {
+			this.style = stateStyle;
+		} else {
+			if(this.ctxElement == "") {
+				this.ctxElement = this.tID;
+			} else {
+				this.ctxElement = this.tID + "_" + this.ctxElement;
+			}
+			throw new haxe_Exception("[Koui Error] " + ("" + Std.string(this) + ", " + this.tID + ": No cached style found for tID \"" + this.ctxElement + "\" and state \"" + this.state + "\"!"));
+		}
+	}
+	,resetContext: function() {
+		var state = this.disabled ? "disabled" : "default";
+		var ctxElement = "";
+		if(ctxElement == null) {
+			ctxElement = "";
+		}
+		this.state = state;
+		this.ctxElement = ctxElement;
+		this.loadStyle();
+		var _g = 0;
+		var _g1 = this.children;
+		while(_g < _g1.length) {
+			var c = _g1[_g];
+			++_g;
+			var ctxElement1 = ctxElement;
+			var recursive = true;
+			if(recursive == null) {
+				recursive = true;
+			}
+			if(ctxElement1 == null) {
+				ctxElement1 = "";
+			}
+			c.state = state;
+			c.ctxElement = ctxElement1;
+			c.loadStyle();
+			if(recursive) {
+				var _g2 = 0;
+				var _g3 = c.children;
+				while(_g2 < _g3.length) {
+					var c1 = _g3[_g2];
+					++_g2;
+					c1.setContext(state,ctxElement1,true);
+				}
+			}
+		}
+	}
+	,resetContextState: function() {
+		var state = this.disabled ? "disabled" : "default";
+		this.state = state;
+		this.loadStyle();
+		var _g = 0;
+		var _g1 = this.children;
+		while(_g < _g1.length) {
+			var c = _g1[_g];
+			++_g;
+			var recursive = true;
+			if(recursive == null) {
+				recursive = true;
+			}
+			c.state = state;
+			c.loadStyle();
+			if(recursive) {
+				var _g2 = 0;
+				var _g3 = c.children;
+				while(_g2 < _g3.length) {
+					var c1 = _g3[_g2];
+					++_g2;
+					c1.setContextState(state,true);
+				}
+			}
+		}
+	}
+	,onTIDChange: function() {
+	}
+	,addEventListener: function(eventClass,callback) {
+		var typeUID = haxe_rtti_Meta.getType(eventClass).typeUID[0];
+		if(this.eventListeners.h[typeUID] == null) {
+			var this1 = this.eventListeners;
+			var value = [];
+			this1.h[typeUID] = value;
+		}
+		this.eventListeners.h[typeUID].push(new koui_events_EventListener(callback));
+	}
+	,listensTo: function(eventClass) {
+		var this1 = this.eventListeners;
+		var key = haxe_rtti_Meta.getType(eventClass).typeUID[0];
+		return Object.prototype.hasOwnProperty.call(this1.h,key);
+	}
+	,listensToUID: function(eventTypeUID) {
+		return Object.prototype.hasOwnProperty.call(this.eventListeners.h,eventTypeUID);
+	}
+	,getElementAtPosition: function(x,y) {
+		var tmp;
+		if(!this.visible) {
+			tmp = false;
+		} else {
+			var posX = this.drawX;
+			var posY = this.drawY;
+			tmp = x >= posX && x <= posX + this.drawWidth && y >= posY && y <= posY + this.drawHeight;
+		}
+		if(!tmp) {
+			return null;
+		}
+		if(this.children.length == 0) {
+			return this;
+		}
+		x -= this.layoutX;
+		y -= this.layoutY;
+		var sortedElements = this.children.slice();
+		sortedElements.reverse();
+		var _g = 0;
+		while(_g < sortedElements.length) {
+			var element = sortedElements[_g];
+			++_g;
+			if(!element.visible) {
+				continue;
+			}
+			var hit = element.getElementAtPosition(x,y);
+			if(hit != null) {
+				return hit;
+			}
+			var tmp;
+			if(!element.visible) {
+				tmp = false;
+			} else {
+				var posX = element.drawX;
+				var posY = element.drawY;
+				tmp = x >= posX && x <= posX + element.drawWidth && y >= posY && y <= posY + element.drawHeight;
+			}
+			if(tmp) {
+				return element;
+			}
+		}
+		return this;
+	}
+	,__class__: koui_elements_Element
+	,__properties__: {set_layoutHeight:"set_layoutHeight",set_layoutWidth:"set_layoutWidth",set_layoutY:"set_layoutY",set_layoutX:"set_layoutX",set_tID:"set_tID",set_layout:"set_layout",set_height:"set_height",set_width:"set_width",set_posY:"set_posY",set_posX:"set_posX"}
+};
+var koui_elements_Button = function(text) {
+	this.isClicked = false;
+	this.isHovered = false;
+	this.text = "";
+	koui_elements_Element.call(this);
+	this.set_text(text);
+	this.addEventListener(koui_events_MouseHoverEvent,$bind(this,this._onHover));
+	this.addEventListener(koui_events_MouseClickEvent,$bind(this,this._onClick));
+};
+$hxClasses["koui.elements.Button"] = koui_elements_Button;
+koui_elements_Button.__name__ = "koui.elements.Button";
+koui_elements_Button.__super__ = koui_elements_Element;
+koui_elements_Button.prototype = $extend(koui_elements_Element.prototype,{
+	text: null
+	,icon: null
+	,cElemLabel: null
+	,cElemIcon: null
+	,isHovered: null
+	,isClicked: null
+	,onBuild: function() {
+		this.cElemLabel = new koui_elements_Label(this.text);
+		this.cElemLabel.alignmentHor = 1;
+		this.cElemLabel.alignmentVert = 1;
+		var child = this.cElemLabel;
+		child.parent = this;
+		this.children.push(child);
+		this.cElemIcon = new koui_elements_ImagePanel(null);
+	}
+	,initStyle: function() {
+		if(!this.styleInitialized) {
+			this.set_tID("_button");
+			this.styleInitialized = true;
+		}
+		if(!Object.prototype.hasOwnProperty.call(this.states.h,"")) {
+			var v = ["default","disabled"];
+			this.states.h[""] = v;
+			this.cacheStates(this.states.h[""],"");
+		}
+		var this1 = this.states;
+		var v = this.states.h[""].concat(["hover","click"]);
+		this1.h[""] = v;
+		this.cacheStates(this.states.h[""],"");
+		var _this = this.cElemLabel;
+		if(!Object.prototype.hasOwnProperty.call(_this.states.h,"")) {
+			var v = ["default","disabled"];
+			_this.states.h[""] = v;
+			_this.cacheStates(_this.states.h[""],"");
+		}
+		var this1 = _this.states;
+		var v = _this.states.h[""].concat(["hover","click"]);
+		this1.h[""] = v;
+		_this.cacheStates(_this.states.h[""],"");
+		this.cElemLabel.setTID(this.tID);
+		var _this = this.cElemIcon;
+		if(!Object.prototype.hasOwnProperty.call(_this.states.h,"")) {
+			var v = ["default","disabled"];
+			_this.states.h[""] = v;
+			_this.cacheStates(_this.states.h[""],"");
+		}
+		var this1 = _this.states;
+		var v = _this.states.h[""].concat(["hover","click"]);
+		this1.h[""] = v;
+		_this.cacheStates(_this.states.h[""],"");
+	}
+	,onResize: function() {
+		var _this = this.cElemLabel;
+		var posY = this.drawHeight / 2 | 0;
+		_this.set_posX(this.drawWidth / 2 | 0);
+		_this.set_posY(posY);
+		var padding = (this.drawHeight - this.cElemIcon.layoutHeight) / 2 | 0;
+		var _this = this.cElemIcon;
+		_this.set_posX(padding);
+		_this.set_posY(padding);
+	}
+	,set_text: function(value) {
+		this.cElemLabel.set_text(value);
+		return this.text = value;
+	}
+	,set_icon: function(img) {
+		if(this.icon != null && img == null) {
+			var child = this.cElemIcon;
+			child.parent = null;
+			HxOverrides.remove(this.children,child);
+		} else if(this.icon == null && img != null) {
+			var child = this.cElemIcon;
+			child.parent = this;
+			this.children.push(child);
+		}
+		if(img != null) {
+			this.cElemIcon.set_image(img);
+			this.onResize();
+		}
+		return this.icon = img;
+	}
+	,_onHover: function(event) {
+		switch(event.getState()) {
+		case 1:
+			this.isHovered = true;
+			break;
+		case 2:
+			this.isHovered = false;
+			break;
+		case 4:
+			break;
+		}
+	}
+	,_onClick: function(event) {
+		if(event.mouseButton != 0) {
+			return;
+		}
+		switch(event.getState()) {
+		case 1:
+			this.isClicked = true;
+			break;
+		case 4:
+			break;
+		case 2:case 8:
+			this.isClicked = false;
+			break;
+		}
+	}
+	,onTIDChange: function() {
+		if(this.style.textureBg == "") {
+			this.set_width(this.style.size.width);
+			this.set_height(this.style.size.height);
+		} else {
+			this.set_width(this.style.atlas.w);
+			this.set_height(this.style.atlas.h);
+		}
+	}
+	,draw: function(g) {
+		if(this.isClicked) {
+			this.state = "click";
+			this.loadStyle();
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var c = _g1[_g];
+				++_g;
+				var recursive = true;
+				if(recursive == null) {
+					recursive = true;
+				}
+				c.state = "click";
+				c.loadStyle();
+				if(recursive) {
+					var _g2 = 0;
+					var _g3 = c.children;
+					while(_g2 < _g3.length) {
+						var c1 = _g3[_g2];
+						++_g2;
+						c1.setContextState("click",true);
+					}
+				}
+			}
+		} else if(this.isHovered) {
+			this.state = "hover";
+			this.loadStyle();
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var c = _g1[_g];
+				++_g;
+				var recursive = true;
+				if(recursive == null) {
+					recursive = true;
+				}
+				c.state = "hover";
+				c.loadStyle();
+				if(recursive) {
+					var _g2 = 0;
+					var _g3 = c.children;
+					while(_g2 < _g3.length) {
+						var c1 = _g3[_g2];
+						++_g2;
+						c1.setContextState("hover",true);
+					}
+				}
+			}
+		} else {
+			var state = this.disabled ? "disabled" : "default";
+			this.state = state;
+			this.loadStyle();
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var c = _g1[_g];
+				++_g;
+				var recursive = true;
+				if(recursive == null) {
+					recursive = true;
+				}
+				c.state = state;
+				c.loadStyle();
+				if(recursive) {
+					var _g2 = 0;
+					var _g3 = c.children;
+					while(_g2 < _g3.length) {
+						var c1 = _g3[_g2];
+						++_g2;
+						c1.setContextState(state,true);
+					}
+				}
+			}
+		}
+		if(!koui_utils_TextureAtlas.drawFromAtlas(g,this)) {
+			g.fillKRect(this.drawX,this.drawY,this.drawWidth,this.drawHeight,this.style);
+		}
+	}
+	,toString: function() {
+		var c = js_Boot.getClass(this);
+		return "Element: <" + c.__name__ + ">{Label: \"" + this.text + "\"}";
+	}
+	,__class__: koui_elements_Button
+	,__properties__: $extend(koui_elements_Element.prototype.__properties__,{set_icon:"set_icon",set_text:"set_text"})
+});
+var koui_elements_Panel = function() {
+	koui_elements_Element.call(this);
+};
+$hxClasses["koui.elements.Panel"] = koui_elements_Panel;
+koui_elements_Panel.__name__ = "koui.elements.Panel";
+koui_elements_Panel.__super__ = koui_elements_Element;
+koui_elements_Panel.prototype = $extend(koui_elements_Element.prototype,{
+	draw: function(g) {
+		g.fillKRect(this.drawX,this.drawY,this.drawWidth,this.drawHeight,this.style);
+	}
+	,initStyle: function() {
+		if(!this.styleInitialized) {
+			this.set_tID("_panel");
+			this.styleInitialized = true;
+		}
+	}
+	,__class__: koui_elements_Panel
+});
+var koui_elements_ImagePanel = function(image) {
+	this.scale = false;
+	koui_elements_Panel.call(this);
+	this.set_image(image);
+};
+$hxClasses["koui.elements.ImagePanel"] = koui_elements_ImagePanel;
+koui_elements_ImagePanel.__name__ = "koui.elements.ImagePanel";
+koui_elements_ImagePanel.__super__ = koui_elements_Panel;
+koui_elements_ImagePanel.prototype = $extend(koui_elements_Panel.prototype,{
+	image: null
+	,scale: null
+	,setScale: function(scale,width,height) {
+		this.scale = scale;
+		this.set_layoutWidth(width);
+		this.set_layoutHeight(height);
+	}
+	,setScaleQuality: function(quality) {
+		this.image.get_g2().set_imageScaleQuality(quality);
+		this.image.get_g2().set_mipmapScaleQuality(quality);
+	}
+	,set_image: function(img) {
+		this.image = img;
+		if(img != null) {
+			this.set_layoutHeight(this.image.get_realHeight());
+			this.set_layoutWidth(this.image.get_realWidth());
+		}
+		return img;
+	}
+	,draw: function(g) {
+		g.set_color(-1);
+		if(this.scale) {
+			g.drawScaledImage(this.image,this.drawX,this.drawY,this.drawWidth,this.drawHeight);
+		} else {
+			g.drawImage(this.image,this.drawX,this.drawY);
+		}
+		koui_effects_Border.draw(g,this);
+	}
+	,initStyle: function() {
+		if(!this.styleInitialized) {
+			this.set_tID("_imagepanel");
+			this.styleInitialized = true;
+		}
+	}
+	,__class__: koui_elements_ImagePanel
+	,__properties__: $extend(koui_elements_Panel.prototype.__properties__,{set_image:"set_image"})
+});
+var koui_elements_Label = function(text,alignmentHor,alignmentVert) {
+	this.alignmentVert = 0;
+	this.alignmentHor = 0;
+	this.text = "";
+	koui_elements_Element.call(this);
+	this.set_text(text);
+	if(alignmentHor != null) {
+		this.alignmentHor = alignmentHor;
+	}
+	if(alignmentVert != null) {
+		this.alignmentVert = alignmentVert;
+	}
+};
+$hxClasses["koui.elements.Label"] = koui_elements_Label;
+koui_elements_Label.__name__ = "koui.elements.Label";
+koui_elements_Label.__super__ = koui_elements_Element;
+koui_elements_Label.prototype = $extend(koui_elements_Element.prototype,{
+	text: null
+	,set_text: function(value) {
+		var _g = 0;
+		var _g1 = value.length;
+		while(_g < _g1) {
+			var i = _g++;
+			var _this = koui_utils_FontUtil.additionalGlyphs;
+			var val = value.charCodeAt(i);
+			_this.map.set(val,true);
+		}
+		koui_utils_FontUtil.setKhaGlyphs();
+		if(this.style != null) {
+			this.set_width(kha_Assets.fonts.get(this.style.font.family).width(this.style.font.size,value) | 0);
+		}
+		return this.text = value;
+	}
+	,alignmentHor: null
+	,alignmentVert: null
+	,onTIDChange: function() {
+		if(this.style.textureBg == "") {
+			this.set_width(kha_Assets.fonts.get(this.style.font.family).width(this.style.font.size,this.text) | 0);
+			this.set_height(this.style.font.size | 0);
+		} else {
+			this.set_width(this.style.atlas.w);
+			this.set_height(this.style.atlas.h);
+		}
+	}
+	,draw: function(g) {
+		koui_utils_TextureAtlas.drawFromAtlas(g,this,1,1,0,0);
+		var margin = this.style.margin;
+		var drawAtX = this.drawX;
+		var drawAtY = this.drawY;
+		switch(this.anchor == 9 && this.layout != null ? this.layout.defaultAnchor : this.anchor) {
+		case 0:
+			drawAtX += margin.left;
+			break;
+		case 1:
+			drawAtX = this.drawX + this.drawWidth / 2 + margin.left | 0;
+			break;
+		case 2:
+			drawAtX = this.drawX + this.drawWidth - margin.right;
+			break;
+		case 3:
+			drawAtX += margin.left;
+			drawAtY = this.drawY + this.drawHeight / 2 | 0;
+			break;
+		case 4:
+			drawAtX = this.drawX + this.drawWidth / 2 + margin.left | 0;
+			drawAtY = this.drawY + this.drawHeight / 2 | 0;
+			break;
+		case 5:
+			drawAtX = this.drawX + this.drawWidth - margin.right;
+			drawAtY = this.drawY + this.drawHeight / 2 | 0;
+			break;
+		case 6:
+			drawAtX += margin.left;
+			drawAtY = this.drawY + this.drawHeight;
+			break;
+		case 7:
+			drawAtX = this.drawX + this.drawWidth / 2 + margin.left | 0;
+			drawAtY = this.drawY + this.drawHeight;
+			break;
+		case 8:
+			drawAtX = this.drawX + this.drawWidth - margin.right;
+			drawAtY = this.drawY + this.drawHeight;
+			break;
+		default:
+		}
+		g.drawKAlignedString(this.text,drawAtX,drawAtY,this.alignmentHor,this.alignmentVert,this.style);
+	}
+	,toString: function() {
+		var c = js_Boot.getClass(this);
+		return "Element: <" + c.__name__ + ">{Text: \"" + this.text + "\"}";
+	}
+	,initStyle: function() {
+		if(!this.styleInitialized) {
+			this.set_tID("_label");
+			this.styleInitialized = true;
+		}
+	}
+	,__class__: koui_elements_Label
+	,__properties__: $extend(koui_elements_Element.prototype.__properties__,{set_text:"set_text"})
+});
+var koui_elements_layouts_Layout = function(posX,posY,width,height) {
+	this.spreadEvents = false;
+	this.absorbEvents = false;
+	this.invalidLayout = false;
+	this.defaultAnchor = 0;
+	this.paddingBottom = 0;
+	this.paddingTop = 0;
+	this.paddingRight = 0;
+	this.paddingLeft = 0;
+	koui_elements_Element.call(this);
+	this.set_posX(posX);
+	this.set_posY(posY);
+	this.set_width(width);
+	this.set_height(height);
+};
+$hxClasses["koui.elements.layouts.Layout"] = koui_elements_layouts_Layout;
+koui_elements_layouts_Layout.__name__ = "koui.elements.layouts.Layout";
+koui_elements_layouts_Layout.resizeIfLayout = function(element) {
+	if(((element) instanceof koui_elements_layouts_Layout)) {
+		var lyt = js_Boot.__cast(element , koui_elements_layouts_Layout);
+		lyt.resize(element.layoutWidth,element.layoutHeight);
+	}
+};
+koui_elements_layouts_Layout.__super__ = koui_elements_Element;
+koui_elements_layouts_Layout.prototype = $extend(koui_elements_Element.prototype,{
+	paddingLeft: null
+	,paddingRight: null
+	,paddingTop: null
+	,paddingBottom: null
+	,defaultAnchor: null
+	,invalidLayout: null
+	,absorbEvents: null
+	,spreadEvents: null
+	,onTIDChange: function() {
+		this.set_paddingLeft(this.style.padding.left);
+		this.set_paddingRight(this.style.padding.right);
+		this.set_paddingTop(this.style.padding.top);
+		this.set_paddingBottom(this.style.padding.bottom);
+	}
+	,resize: function(width,height) {
+		this.set_layoutWidth(width);
+		this.set_layoutHeight(height);
+		if(koui_elements_layouts_Layout.isValidating) {
+			this.invalidLayout = false;
+		}
+	}
+	,invalidateLayout: function() {
+		this.invalidLayout = true;
+		var parent = this;
+		while(parent.layout != null) {
+			parent = parent.layout;
+			parent.invalidLayout = true;
+		}
+	}
+	,needsValidation: function(element) {
+		if(koui_elements_layouts_Layout.isValidating && ((element) instanceof koui_elements_layouts_Expander)) {
+			if(!(js_Boot.__cast(element , koui_elements_layouts_Expander)).invalidLayout) {
+				return false;
+			}
+		}
+		return true;
+	}
+	,draw: function(g) {
+		throw new haxe_Exception("[Koui Error] " + "draw() function must be overriden by layout!");
+	}
+	,calcElementSize: function(element,parentWidth,parentHeight) {
+		var minWidth = element.style.size.minWidth;
+		var maxWidth = element.style.size.maxWidth;
+		var minHeight = element.style.size.minHeight;
+		var maxHeight = element.style.size.maxHeight;
+		var resized = false;
+		if(minWidth > 0 || maxWidth > 0) {
+			element.set_layoutWidth(parentWidth - this.paddingLeft - this.paddingRight);
+			switch(element.anchor == 9 && element.layout != null ? element.layout.defaultAnchor : element.anchor) {
+			case 0:case 1:case 3:case 4:case 6:case 7:
+				element.set_layoutWidth(element.layoutWidth - (Math.abs(element.posX) | 0));
+				break;
+			case 2:case 5:case 8:
+				element.set_layoutWidth(element.layoutWidth + (Math.abs(element.posX) | 0));
+				break;
+			default:
+			}
+			if(minWidth > 0 && element.layoutWidth < minWidth) {
+				element.set_layoutWidth(minWidth);
+			}
+			if(maxWidth > 0 && element.layoutWidth > maxWidth) {
+				element.set_layoutWidth(maxWidth);
+			}
+			resized = true;
+		}
+		if(minHeight > 0 || maxHeight > 0) {
+			element.set_layoutHeight(parentHeight - this.paddingTop - this.paddingBottom);
+			switch(element.anchor == 9 && element.layout != null ? element.layout.defaultAnchor : element.anchor) {
+			case 0:case 1:case 2:case 3:case 4:case 5:
+				element.set_layoutHeight(element.layoutHeight - (Math.abs(element.posY) | 0));
+				break;
+			case 6:case 7:case 8:
+				element.set_layoutHeight(element.layoutHeight + (Math.abs(element.posY) | 0));
+				break;
+			default:
+			}
+			if(minHeight > 0 && element.layoutHeight < minHeight) {
+				element.set_layoutHeight(minHeight);
+			}
+			if(maxHeight > 0 && element.layoutHeight > maxHeight) {
+				element.set_layoutHeight(maxHeight);
+			}
+			resized = true;
+		}
+		return resized;
+	}
+	,elemUpdated: function(element) {
+	}
+	,setPadding: function(left,right,top,bottom) {
+		this.set_paddingLeft(left);
+		this.set_paddingRight(right);
+		this.set_paddingTop(top);
+		this.set_paddingBottom(bottom);
+	}
+	,set_paddingLeft: function(left) {
+		this.invalidateLayout();
+		return this.paddingLeft = left;
+	}
+	,set_paddingRight: function(right) {
+		this.invalidateLayout();
+		return this.paddingRight = right;
+	}
+	,set_paddingTop: function(top) {
+		this.invalidateLayout();
+		return this.paddingTop = top;
+	}
+	,set_paddingBottom: function(bottom) {
+		this.invalidateLayout();
+		return this.paddingBottom = bottom;
+	}
+	,getAllElements: function() {
+		throw new haxe_Exception("[Koui Error] " + "getAllElements() must be overriden by subclass of layout!");
+	}
+	,initStyle: function() {
+		if(!this.styleInitialized) {
+			this.set_tID("_layout");
+			this.styleInitialized = true;
+		}
+	}
+	,__class__: koui_elements_layouts_Layout
+	,__properties__: $extend(koui_elements_Element.prototype.__properties__,{set_paddingBottom:"set_paddingBottom",set_paddingTop:"set_paddingTop",set_paddingRight:"set_paddingRight",set_paddingLeft:"set_paddingLeft"})
+});
+var koui_elements_layouts_AnchorPane = function(posX,posY,width,height) {
+	this.elements = [];
+	koui_elements_layouts_Layout.call(this,posX,posY,width,height);
+	this.defaultAnchor = 0;
+};
+$hxClasses["koui.elements.layouts.AnchorPane"] = koui_elements_layouts_AnchorPane;
+koui_elements_layouts_AnchorPane.__name__ = "koui.elements.layouts.AnchorPane";
+koui_elements_layouts_AnchorPane.__super__ = koui_elements_layouts_Layout;
+koui_elements_layouts_AnchorPane.prototype = $extend(koui_elements_layouts_Layout.prototype,{
+	elements: null
+	,add: function(element,anchor) {
+		element.parent = this;
+		element.layout = this;
+		if(anchor != null) {
+			element.anchor = anchor;
+		}
+		this.elements.push(element);
+		this.recalcElement(element);
+	}
+	,remove: function(element) {
+		HxOverrides.remove(this.elements,element);
+		var value = null;
+		element.parent = value;
+		element.layout = value;
+	}
+	,draw: function(g) {
+		g.pushTranslation(this.drawX,this.drawY);
+		var _g = 0;
+		var _g1 = this.elements;
+		while(_g < _g1.length) {
+			var element = _g1[_g];
+			++_g;
+			if(element.visible) {
+				g.set_opacity(element.style.opacity);
+				element.draw(g);
+				if(element.autoRenderChildren) {
+					g.pushTranslation(element.drawX,element.drawY);
+					var _g2 = 0;
+					var _g3 = element.children;
+					while(_g2 < _g3.length) {
+						var c = _g3[_g2];
+						++_g2;
+						if(c.visible) {
+							g.set_opacity(c.style.opacity);
+							c.draw(g);
+							if(c.autoRenderChildren) {
+								g.pushTranslation(c.drawX,c.drawY);
+								var _g4 = 0;
+								var _g5 = c.children;
+								while(_g4 < _g5.length) {
+									var c1 = _g5[_g4];
+									++_g4;
+									this.renderElement(g,c1);
+								}
+								g.popTransformation();
+							}
+						}
+					}
+					g.popTransformation();
+				}
+			}
+		}
+		g.popTransformation();
+	}
+	,resize: function(width,height) {
+		koui_elements_layouts_Layout.prototype.resize.call(this,width,height);
+		var _g = 0;
+		var _g1 = this.elements;
+		while(_g < _g1.length) {
+			var element = _g1[_g];
+			++_g;
+			if(this.needsValidation(element)) {
+				this.recalcElement(element);
+			}
+		}
+	}
+	,getAllElements: function() {
+		return this.elements;
+	}
+	,getElementAtPosition: function(x,y) {
+		var tmp;
+		if(!this.visible) {
+			tmp = false;
+		} else {
+			var posX = this.drawX;
+			var posY = this.drawY;
+			tmp = x >= posX && x <= posX + this.drawWidth && y >= posY && y <= posY + this.drawHeight;
+		}
+		if(!tmp) {
+			return null;
+		}
+		if(this.absorbEvents) {
+			return this;
+		}
+		x -= this.layoutX;
+		y -= this.layoutY;
+		var sortedElements = this.elements.slice();
+		sortedElements.reverse();
+		var _g = 0;
+		while(_g < sortedElements.length) {
+			var element = sortedElements[_g];
+			++_g;
+			if(!element.visible) {
+				continue;
+			}
+			var hit = element.getElementAtPosition(x,y);
+			if(hit != null) {
+				return hit;
+			}
+			var tmp;
+			if(!element.visible) {
+				tmp = false;
+			} else {
+				var posX = element.drawX;
+				var posY = element.drawY;
+				tmp = x >= posX && x <= posX + element.drawWidth && y >= posY && y <= posY + element.drawHeight;
+			}
+			if(tmp) {
+				return element;
+			}
+		}
+		return null;
+	}
+	,elemUpdated: function(element) {
+		this.recalcElement(element);
+	}
+	,recalcElement: function(element) {
+		var invalid = this.calcElementSize(element,this.layoutWidth,this.layoutHeight);
+		switch(element.anchor == 9 && element.layout != null ? element.layout.defaultAnchor : element.anchor) {
+		case 1:case 4:case 7:
+			element.set_layoutX(this.layoutWidth / 2 - element.layoutWidth / 2 + element.posX | 0);
+			break;
+		case 0:case 3:case 6:
+			element.set_layoutX(element.posX + this.paddingLeft);
+			break;
+		case 2:case 5:case 8:
+			element.set_layoutX(this.layoutWidth - element.layoutWidth + element.posX - this.paddingRight);
+			break;
+		default:
+		}
+		switch(element.anchor == 9 && element.layout != null ? element.layout.defaultAnchor : element.anchor) {
+		case 0:case 1:case 2:
+			element.set_layoutY(element.posY + this.paddingTop);
+			break;
+		case 3:case 4:case 5:
+			element.set_layoutY(this.layoutHeight / 2 - element.layoutHeight / 2 + element.posY | 0);
+			break;
+		case 6:case 7:case 8:
+			element.set_layoutY(this.layoutHeight - element.layoutHeight + element.posY - this.paddingBottom);
+			break;
+		default:
+		}
+		if(invalid || ((element) instanceof koui_elements_layouts_Expander)) {
+			koui_elements_layouts_Layout.resizeIfLayout(element);
+		}
+	}
+	,initStyle: function() {
+		if(!this.styleInitialized) {
+			this.set_tID("_anchorpane");
+			this.styleInitialized = true;
+		}
+	}
+	,__class__: koui_elements_layouts_AnchorPane
+});
+var koui_elements_layouts_Expander = function(posX,posY,width,height,direction) {
+	this.elements = [];
+	this.spacing = 0;
+	koui_elements_layouts_Layout.call(this,posX,posY,width,height);
+	this.set_direction(direction);
+};
+$hxClasses["koui.elements.layouts.Expander"] = koui_elements_layouts_Expander;
+koui_elements_layouts_Expander.__name__ = "koui.elements.layouts.Expander";
+koui_elements_layouts_Expander.__super__ = koui_elements_layouts_Layout;
+koui_elements_layouts_Expander.prototype = $extend(koui_elements_layouts_Layout.prototype,{
+	spacing: null
+	,direction: null
+	,set_direction: function(value) {
+		this.direction = value;
+		this.invalidateLayout();
+		return this.direction;
+	}
+	,elements: null
+	,add: function(element,index) {
+		if(element == null) {
+			return;
+		}
+		element.parent = this;
+		element.layout = this;
+		if(index == null) {
+			this.elements.push(element);
+		} else {
+			this.elements.splice(index,0,element);
+		}
+		this.invalidateLayout();
+	}
+	,remove: function(element) {
+		HxOverrides.remove(this.elements,element);
+		var value = null;
+		element.parent = value;
+		element.layout = value;
+		this.invalidateLayout();
+	}
+	,removeByIndex: function(index) {
+		var _this = this.elements[index];
+		var value = null;
+		_this.parent = value;
+		_this.layout = value;
+		this.elements.splice(index,1);
+		this.invalidateLayout();
+	}
+	,resize: function(width,height) {
+		koui_elements_layouts_Layout.prototype.resize.call(this,width,height);
+		this.recalcSize(false);
+	}
+	,elemUpdated: function(element) {
+		this.invalidateLayout();
+	}
+	,recalcSize: function(invalidate) {
+		if(invalidate == null) {
+			invalidate = true;
+		}
+		var first = true;
+		switch(this.direction) {
+		case 0:case 1:
+			this.set_layoutHeight(this.paddingTop);
+			var _g = 0;
+			var _g1 = this.elements.length;
+			while(_g < _g1) {
+				var i = _g++;
+				var element = this.direction == 1 ? this.elements[i] : this.elements[this.elements.length - 1 - i];
+				if(first) {
+					first = false;
+				} else {
+					this.set_layoutHeight(this.layoutHeight + this.spacing);
+				}
+				element.set_layoutX(element.posX + this.paddingLeft);
+				element.set_layoutY(element.posY + this.layoutHeight);
+				var invalid = this.calcElementSize(element,this.layoutWidth,element.layoutHeight);
+				if(invalid || ((element) instanceof koui_elements_layouts_Expander)) {
+					koui_elements_layouts_Layout.resizeIfLayout(element);
+				}
+				this.set_layoutHeight(this.layoutHeight + element.drawHeight);
+			}
+			this.set_layoutHeight(this.layoutHeight + this.paddingBottom);
+			break;
+		case 2:case 3:
+			this.set_layoutWidth(this.paddingLeft);
+			var _g = 0;
+			var _g1 = this.elements.length;
+			while(_g < _g1) {
+				var i = _g++;
+				var element = this.direction == 3 ? this.elements[i] : this.elements[this.elements.length - 1 - i];
+				if(first) {
+					first = false;
+				} else {
+					this.set_layoutWidth(this.layoutWidth + this.spacing);
+				}
+				element.set_layoutX(element.posX + this.layoutWidth);
+				element.set_layoutY(element.posY + this.paddingTop);
+				var invalid = this.calcElementSize(element,element.layoutWidth,this.layoutHeight);
+				if(invalid || ((element) instanceof koui_elements_layouts_Expander)) {
+					koui_elements_layouts_Layout.resizeIfLayout(element);
+				}
+				this.set_layoutWidth(this.layoutWidth + element.drawWidth);
+			}
+			this.set_layoutWidth(this.layoutWidth + this.paddingRight);
+			break;
+		}
+		if(invalidate) {
+			this.invalidateLayout();
+		}
+	}
+	,draw: function(g) {
+		g.pushTranslation(this.drawX,this.drawY);
+		var _g = 0;
+		var _g1 = this.elements;
+		while(_g < _g1.length) {
+			var element = _g1[_g];
+			++_g;
+			if(element.visible) {
+				g.set_opacity(element.style.opacity);
+				element.draw(g);
+				if(element.autoRenderChildren) {
+					g.pushTranslation(element.drawX,element.drawY);
+					var _g2 = 0;
+					var _g3 = element.children;
+					while(_g2 < _g3.length) {
+						var c = _g3[_g2];
+						++_g2;
+						if(c.visible) {
+							g.set_opacity(c.style.opacity);
+							c.draw(g);
+							if(c.autoRenderChildren) {
+								g.pushTranslation(c.drawX,c.drawY);
+								var _g4 = 0;
+								var _g5 = c.children;
+								while(_g4 < _g5.length) {
+									var c1 = _g5[_g4];
+									++_g4;
+									this.renderElement(g,c1);
+								}
+								g.popTransformation();
+							}
+						}
+					}
+					g.popTransformation();
+				}
+			}
+		}
+		g.popTransformation();
+	}
+	,getElementAtPosition: function(x,y) {
+		var tmp;
+		if(!this.visible) {
+			tmp = false;
+		} else {
+			var posX = this.drawX;
+			var posY = this.drawY;
+			tmp = x >= posX && x <= posX + this.drawWidth && y >= posY && y <= posY + this.drawHeight;
+		}
+		if(!tmp) {
+			return null;
+		}
+		if(this.absorbEvents) {
+			return this;
+		}
+		x -= this.layoutX;
+		y -= this.layoutY;
+		var _g = 1 - this.elements.length;
+		var _g1 = 1;
+		while(_g < _g1) {
+			var idx = _g++;
+			var element = this.elements[-idx];
+			if(!element.visible) {
+				continue;
+			}
+			if(((element) instanceof koui_elements_layouts_Layout)) {
+				var hit = (js_Boot.__cast(element , koui_elements_layouts_Layout)).getElementAtPosition(x,y);
+				if(hit != null) {
+					return hit;
+				}
+				continue;
+			}
+			var tmp;
+			if(!element.visible) {
+				tmp = false;
+			} else {
+				var posX = element.drawX;
+				var posY = element.drawY;
+				tmp = x >= posX && x <= posX + element.drawWidth && y >= posY && y <= posY + element.drawHeight;
+			}
+			if(tmp) {
+				return element;
+			}
+		}
+		return null;
+	}
+	,initStyle: function() {
+		if(!this.styleInitialized) {
+			this.set_tID("_expander");
+			this.styleInitialized = true;
+		}
+	}
+	,__class__: koui_elements_layouts_Expander
+	,__properties__: $extend(koui_elements_layouts_Layout.prototype.__properties__,{set_direction:"set_direction"})
+});
+var koui_elements_layouts_ScrollPane = function(posX,posY,width,height) {
+	this.clickOffsetBottom = 0;
+	this.clickOffsetRight = 0;
+	this.clicked = 0;
+	this.isHovered = false;
+	this.scrollbarLengthBottom = -1;
+	this.scrollbarLengthRight = -1;
+	this.scrollbarWidth = 16;
+	this.contentWidth = 0.0;
+	this.contentHeight = 0.0;
+	this.scrollY = 0.0;
+	this.scrollX = 0.0;
+	this.elements = [];
+	koui_elements_layouts_Layout.call(this,posX,posY,width,height);
+	this.scrollTexture = kha_Image.createRenderTarget(this.width | 0,this.height | 0,null,0,1);
+	this.sG = new koui_graphics_KGraphics(this.scrollTexture);
+	this.addEventListener(koui_events_MouseScrollEvent,$bind(this,this._onScroll));
+	this.addEventListener(koui_events_MouseClickEvent,$bind(this,this._onClick));
+	this.addEventListener(koui_events_MouseHoverEvent,$bind(this,this._onHover));
+};
+$hxClasses["koui.elements.layouts.ScrollPane"] = koui_elements_layouts_ScrollPane;
+koui_elements_layouts_ScrollPane.__name__ = "koui.elements.layouts.ScrollPane";
+koui_elements_layouts_ScrollPane.__super__ = koui_elements_layouts_Layout;
+koui_elements_layouts_ScrollPane.prototype = $extend(koui_elements_layouts_Layout.prototype,{
+	elements: null
+	,scrollX: null
+	,scrollY: null
+	,contentHeight: null
+	,contentWidth: null
+	,scrollTexture: null
+	,sG: null
+	,scrollbarWidth: null
+	,scrollbarLengthRight: null
+	,scrollbarLengthBottom: null
+	,isHovered: null
+	,clicked: null
+	,clickOffsetRight: null
+	,clickOffsetBottom: null
+	,initStyle: function() {
+		if(!this.styleInitialized) {
+			this.set_tID("_scrollpane");
+			this.styleInitialized = true;
+		}
+		var ctxElement = "bar_thumb";
+		if(ctxElement == null) {
+			ctxElement = "";
+		}
+		if(!Object.prototype.hasOwnProperty.call(this.states.h,ctxElement)) {
+			var v = ["default","disabled"];
+			this.states.h[ctxElement] = v;
+			this.cacheStates(this.states.h[ctxElement],ctxElement);
+		}
+		var this1 = this.states;
+		var v = this.states.h[ctxElement].concat(["hover","click"]);
+		this1.h[ctxElement] = v;
+		this.cacheStates(this.states.h[ctxElement],ctxElement);
+		var ctxElement = "bar_track";
+		if(ctxElement == null) {
+			ctxElement = "";
+		}
+		if(!Object.prototype.hasOwnProperty.call(this.states.h,ctxElement)) {
+			var v = ["default","disabled"];
+			this.states.h[ctxElement] = v;
+			this.cacheStates(this.states.h[ctxElement],ctxElement);
+		}
+		var this1 = this.states;
+		var v = this.states.h[ctxElement].concat(["hover","click"]);
+		this1.h[ctxElement] = v;
+		this.cacheStates(this.states.h[ctxElement],ctxElement);
+		if(!Object.prototype.hasOwnProperty.call(this.states.h,"corner")) {
+			var v = ["default","disabled"];
+			this.states.h["corner"] = v;
+			this.cacheStates(this.states.h["corner"],"corner");
+		}
+	}
+	,createNewScrollTexture: function() {
+		this.scrollTexture = kha_Image.createRenderTarget(this.width | 0,this.height | 0,null,0,1);
+		this.sG = new koui_graphics_KGraphics(this.scrollTexture);
+	}
+	,onTIDChange: function() {
+		if(this.style.scrollbar == null) {
+			throw new haxe_Exception("[Koui Error] " + ("ScrollPane: Style must define properties for the \"scrollbar\" group! tID: " + this.tID));
+		}
+		this.scrollbarWidth = this.style.scrollbar.width;
+	}
+	,add: function(element) {
+		element.parent = this;
+		element.layout = this;
+		this.elements.push(element);
+	}
+	,recalculateScrollbarLengths: function() {
+		if(this.contentHeight > this.height) {
+			this.scrollbarLengthRight = this.height / this.contentHeight * this.height | 0;
+		}
+		if(this.contentWidth > this.width) {
+			this.scrollbarLengthBottom = this.width / this.contentWidth * this.width | 0;
+		}
+	}
+	,recalcElement: function(element) {
+		element.set_layoutX(element.posX + this.paddingLeft);
+		element.set_layoutY(element.posY + this.paddingTop);
+		if(element.layoutX + element.layoutWidth + this.paddingRight > this.contentWidth) {
+			this.contentWidth = element.layoutX + element.layoutWidth + this.paddingRight;
+		}
+		if(element.layoutY + element.layoutHeight + this.paddingBottom > this.contentHeight) {
+			this.contentHeight = element.layoutY + element.layoutHeight + this.paddingBottom;
+		}
+		koui_elements_layouts_Layout.resizeIfLayout(element);
+	}
+	,remove: function(element) {
+		HxOverrides.remove(this.elements,element);
+		var value = null;
+		element.parent = value;
+		element.layout = value;
+	}
+	,resize: function(width,height) {
+		koui_elements_layouts_Layout.prototype.resize.call(this,width,height);
+		this.scrollTexture = kha_Image.createRenderTarget(this.width | 0,this.height | 0,null,0,1);
+		this.sG = new koui_graphics_KGraphics(this.scrollTexture);
+		var _g = 0;
+		var _g1 = this.elements;
+		while(_g < _g1.length) {
+			var element = _g1[_g];
+			++_g;
+			if(this.needsValidation(element)) {
+				this.recalcElement(element);
+			}
+		}
+		this.recalculateScrollbarLengths();
+	}
+	,elemUpdated: function(element) {
+		this.recalcElement(element);
+	}
+	,getAllElements: function() {
+		return this.elements;
+	}
+	,_onScroll: function(event) {
+		var mouseY = koui_events_EventHandler.mouseY + this.getLayoutOffset()[1];
+		if(this.scrollbarLengthBottom != -1 && mouseY > this.drawY + this.drawHeight - this.scrollbarWidth) {
+			this.scrollX += event.scrollDelta * koui_Config.scrollSensitivity;
+			this.scrollX = Math.max(0,Math.min(this.contentWidth - this.width,this.scrollX));
+		} else {
+			this.scrollY += event.scrollDelta * koui_Config.scrollSensitivity;
+			this.scrollY = Math.max(0,Math.min(this.contentHeight - this.height,this.scrollY));
+		}
+	}
+	,_onHover: function(event) {
+		switch(event.getState()) {
+		case 1:case 4:
+			this.isHovered = true;
+			break;
+		case 2:
+			this.isHovered = false;
+			break;
+		}
+	}
+	,_onClick: function(event) {
+		switch(event.getState()) {
+		case 1:
+			var layoutOffset = this.getLayoutOffset();
+			var mouseX = koui_events_EventHandler.mouseX + layoutOffset[0];
+			var mouseY = koui_events_EventHandler.mouseY + layoutOffset[1];
+			if(this.scrollbarLengthRight != -1 && mouseX >= this.drawX + this.width && mouseY < this.drawY + this.height) {
+				this.clicked = 1;
+				var scrollOffset = this.scrollY / this.contentHeight * this.height;
+				this.clickOffsetRight = mouseY - this.posY - scrollOffset | 0;
+			}
+			if(this.scrollbarLengthBottom != -1 && mouseY >= this.drawY + this.height && mouseX < this.drawX + this.width) {
+				this.clicked = 2;
+				var scrollOffset = this.scrollX / this.contentWidth * this.width;
+				this.clickOffsetBottom = mouseX - this.posX - scrollOffset | 0;
+			}
+			koui_events_EventHandler.block(this);
+			break;
+		case 4:
+			var layoutOffset = this.getLayoutOffset();
+			var mouseX = koui_events_EventHandler.mouseX + layoutOffset[0];
+			var mouseY = koui_events_EventHandler.mouseY + layoutOffset[1];
+			if(this.clicked == 1) {
+				var fromLeft = this.posY;
+				this.scrollY = (mouseY - this.clickOffsetRight - fromLeft) * (this.contentHeight - this.height) / (this.posY + this.height - this.scrollbarLengthRight - fromLeft);
+				this.scrollY = Math.max(0,Math.min(this.contentHeight - this.height,this.scrollY));
+			}
+			if(this.clicked == 2) {
+				var fromLeft = this.posX;
+				this.scrollX = (mouseX - this.clickOffsetBottom - fromLeft) * (this.contentWidth - this.width) / (this.posX + this.width - this.scrollbarLengthBottom - fromLeft);
+				this.scrollX = Math.max(0,Math.min(this.contentWidth - this.width,this.scrollX));
+			}
+			break;
+		case 2:case 8:
+			this.clicked = 0;
+			koui_events_EventHandler.unblock();
+			break;
+		}
+	}
+	,draw: function(g) {
+		g.end();
+		var state = this.disabled ? "disabled" : "default";
+		var ctxElement = "";
+		if(ctxElement == null) {
+			ctxElement = "";
+		}
+		this.state = state;
+		this.ctxElement = ctxElement;
+		this.loadStyle();
+		var _g = 0;
+		var _g1 = this.children;
+		while(_g < _g1.length) {
+			var c = _g1[_g];
+			++_g;
+			var ctxElement1 = ctxElement;
+			var recursive = true;
+			if(recursive == null) {
+				recursive = true;
+			}
+			if(ctxElement1 == null) {
+				ctxElement1 = "";
+			}
+			c.state = state;
+			c.ctxElement = ctxElement1;
+			c.loadStyle();
+			if(recursive) {
+				var _g2 = 0;
+				var _g3 = c.children;
+				while(_g2 < _g3.length) {
+					var c1 = _g3[_g2];
+					++_g2;
+					c1.setContext(state,ctxElement1,true);
+				}
+			}
+		}
+		this.sG.begin(true,this.style.color.bg);
+		this.sG.pushTranslation(-this.scrollX,-this.scrollY);
+		var _g = 0;
+		var _g1 = this.elements;
+		while(_g < _g1.length) {
+			var element = _g1[_g];
+			++_g;
+			var g1 = this.sG;
+			if(element.visible) {
+				g1.set_opacity(element.style.opacity);
+				element.draw(g1);
+				if(element.autoRenderChildren) {
+					g1.pushTranslation(element.drawX,element.drawY);
+					var _g2 = 0;
+					var _g3 = element.children;
+					while(_g2 < _g3.length) {
+						var c = _g3[_g2];
+						++_g2;
+						if(c.visible) {
+							g1.set_opacity(c.style.opacity);
+							c.draw(g1);
+							if(c.autoRenderChildren) {
+								g1.pushTranslation(c.drawX,c.drawY);
+								var _g4 = 0;
+								var _g5 = c.children;
+								while(_g4 < _g5.length) {
+									var c1 = _g5[_g4];
+									++_g4;
+									this.renderElement(g1,c1);
+								}
+								g1.popTransformation();
+							}
+						}
+					}
+					g1.popTransformation();
+				}
+			}
+		}
+		this.sG.popTransformation();
+		this.sG.end();
+		g.begin(false);
+		g.pushTranslation(this.drawX,this.drawY);
+		g.set_color(-1);
+		g.set_opacity(1);
+		g.drawImage(this.scrollTexture,0,0);
+		this.drawScrollbars(g);
+		g.popTransformation();
+	}
+	,drawScrollbars: function(g) {
+		if(this.scrollbarLengthRight != -1) {
+			this.drawWidth = this.width + this.scrollbarWidth;
+			var scrollRatio = this.scrollY / this.contentHeight;
+			var ctxElement = "bar_track";
+			if(ctxElement == null) {
+				ctxElement = "";
+			}
+			this.ctxElement = ctxElement;
+			this.loadStyle();
+			if(this.clicked == 1) {
+				this.state = "click";
+				this.loadStyle();
+				var _g = 0;
+				var _g1 = this.children;
+				while(_g < _g1.length) {
+					var c = _g1[_g];
+					++_g;
+					var recursive = true;
+					if(recursive == null) {
+						recursive = true;
+					}
+					c.state = "click";
+					c.loadStyle();
+					if(recursive) {
+						var _g2 = 0;
+						var _g3 = c.children;
+						while(_g2 < _g3.length) {
+							var c1 = _g3[_g2];
+							++_g2;
+							c1.setContextState("click",true);
+						}
+					}
+				}
+			} else if(this.isHovered) {
+				this.state = "hover";
+				this.loadStyle();
+				var _g = 0;
+				var _g1 = this.children;
+				while(_g < _g1.length) {
+					var c = _g1[_g];
+					++_g;
+					var recursive = true;
+					if(recursive == null) {
+						recursive = true;
+					}
+					c.state = "hover";
+					c.loadStyle();
+					if(recursive) {
+						var _g2 = 0;
+						var _g3 = c.children;
+						while(_g2 < _g3.length) {
+							var c1 = _g3[_g2];
+							++_g2;
+							c1.setContextState("hover",true);
+						}
+					}
+				}
+			}
+			g.set_opacity(this.style.opacity);
+			g.fillKRect(this.width,0,this.scrollbarWidth,this.height,this.style);
+			var ctxElement = "bar_thumb";
+			if(ctxElement == null) {
+				ctxElement = "";
+			}
+			this.ctxElement = ctxElement;
+			this.loadStyle();
+			g.set_opacity(this.style.opacity);
+			g.fillKRect(this.width,scrollRatio * this.height,this.scrollbarWidth,this.scrollbarLengthRight,this.style);
+		}
+		if(this.scrollbarLengthBottom != -1) {
+			this.drawHeight = this.height + this.scrollbarWidth;
+			var scrollRatio = this.scrollX / this.contentWidth;
+			var ctxElement = "bar_track";
+			if(ctxElement == null) {
+				ctxElement = "";
+			}
+			this.ctxElement = ctxElement;
+			this.loadStyle();
+			if(this.clicked == 2) {
+				this.state = "click";
+				this.loadStyle();
+				var _g = 0;
+				var _g1 = this.children;
+				while(_g < _g1.length) {
+					var c = _g1[_g];
+					++_g;
+					var recursive = true;
+					if(recursive == null) {
+						recursive = true;
+					}
+					c.state = "click";
+					c.loadStyle();
+					if(recursive) {
+						var _g2 = 0;
+						var _g3 = c.children;
+						while(_g2 < _g3.length) {
+							var c1 = _g3[_g2];
+							++_g2;
+							c1.setContextState("click",true);
+						}
+					}
+				}
+			} else if(this.isHovered) {
+				this.state = "hover";
+				this.loadStyle();
+				var _g = 0;
+				var _g1 = this.children;
+				while(_g < _g1.length) {
+					var c = _g1[_g];
+					++_g;
+					var recursive = true;
+					if(recursive == null) {
+						recursive = true;
+					}
+					c.state = "hover";
+					c.loadStyle();
+					if(recursive) {
+						var _g2 = 0;
+						var _g3 = c.children;
+						while(_g2 < _g3.length) {
+							var c1 = _g3[_g2];
+							++_g2;
+							c1.setContextState("hover",true);
+						}
+					}
+				}
+			}
+			g.set_opacity(this.style.opacity);
+			g.fillKRect(0,this.height,this.width,this.scrollbarWidth,this.style);
+			var ctxElement = "bar_thumb";
+			if(ctxElement == null) {
+				ctxElement = "";
+			}
+			this.ctxElement = ctxElement;
+			this.loadStyle();
+			g.set_opacity(this.style.opacity);
+			g.fillKRect(scrollRatio * this.width,this.height,this.scrollbarLengthBottom,this.scrollbarWidth,this.style);
+		}
+		if(this.scrollbarLengthRight != -1 && this.scrollbarLengthBottom != -1) {
+			var ctxElement = "corner";
+			if(ctxElement == null) {
+				ctxElement = "";
+			}
+			this.state = "default";
+			this.ctxElement = ctxElement;
+			this.loadStyle();
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var c = _g1[_g];
+				++_g;
+				var ctxElement1 = ctxElement;
+				var recursive = true;
+				if(recursive == null) {
+					recursive = true;
+				}
+				if(ctxElement1 == null) {
+					ctxElement1 = "";
+				}
+				c.state = "default";
+				c.ctxElement = ctxElement1;
+				c.loadStyle();
+				if(recursive) {
+					var _g2 = 0;
+					var _g3 = c.children;
+					while(_g2 < _g3.length) {
+						var c1 = _g3[_g2];
+						++_g2;
+						c1.setContext("default",ctxElement1,true);
+					}
+				}
+			}
+			g.set_opacity(this.style.opacity);
+			g.fillKRect(this.width,this.height,this.scrollbarWidth,this.scrollbarWidth,this.style);
+		}
+	}
+	,getElementAtPosition: function(x,y) {
+		var posX = this.drawX;
+		var posY = this.drawY;
+		if(!(x >= posX && x <= posX + this.width && y >= posY && y <= posY + this.height)) {
+			if(this.scrollbarLengthRight != -1) {
+				var posX = this.drawX + this.width;
+				var posY = this.drawY;
+				if(x >= posX && x <= posX + this.scrollbarWidth && y >= posY && y <= posY + this.height) {
+					return this;
+				}
+			}
+			if(this.scrollbarLengthBottom != -1) {
+				var posX = this.drawX;
+				var posY = this.drawY + this.height;
+				if(x >= posX && x <= posX + this.width && y >= posY && y <= posY + this.scrollbarWidth) {
+					return this;
+				}
+			}
+			return null;
+		}
+		if(this.absorbEvents) {
+			return this;
+		}
+		x = x - this.drawX + this.scrollX | 0;
+		y = y - this.drawY + this.scrollY | 0;
+		var sorted_elements = this.elements.slice();
+		sorted_elements.reverse();
+		var _g = 0;
+		while(_g < sorted_elements.length) {
+			var element = sorted_elements[_g];
+			++_g;
+			if(!element.visible) {
+				continue;
+			}
+			var hit = element.getElementAtPosition(x,y);
+			if(hit != null) {
+				return hit;
+			}
+			var tmp;
+			if(!element.visible) {
+				tmp = false;
+			} else {
+				var posX = element.drawX;
+				var posY = element.drawY;
+				tmp = x >= posX && x <= posX + element.drawWidth && y >= posY && y <= posY + element.drawHeight;
+			}
+			if(tmp) {
+				return element;
+			}
+		}
+		return this;
+	}
+	,__class__: koui_elements_layouts_ScrollPane
+});
+var koui_events_Event = function(element,state) {
+	this.element = element;
+	this.state = state;
+};
+$hxClasses["koui.events.Event"] = koui_events_Event;
+koui_events_Event.__name__ = "koui.events.Event";
+koui_events_Event.getTypeUID = function(eventClass) {
+	return haxe_rtti_Meta.getType(eventClass).typeUID[0];
+};
+koui_events_Event.dispatch = function(event) {
+	var toElement = event.element;
+	if(toElement == null) {
+		return;
+	}
+	var typeUID = haxe_rtti_Meta.getType(js_Boot.getClass(event)).typeUID[0];
+	var listeners = toElement.eventListeners.h[typeUID];
+	if(listeners == null) {
+		return;
+	}
+	var _g = 0;
+	while(_g < listeners.length) {
+		var listener = listeners[_g];
+		++_g;
+		listener.callback(event);
+	}
+};
+koui_events_Event.prototype = {
+	element: null
+	,state: null
+	,getState: function() {
+		return 0;
+	}
+	,__class__: koui_events_Event
+};
+function koui_events_Event_flag(index) {
+	return 1 << index;
+}
+var koui_events_EventHandler = function() { };
+$hxClasses["koui.events.EventHandler"] = koui_events_EventHandler;
+koui_events_EventHandler.__name__ = "koui.events.EventHandler";
+koui_events_EventHandler.init = function() {
+	koui_events_EventHandler.mouse = kha_input_Mouse.get();
+	koui_events_EventHandler.mouse.notify(koui_events_EventHandler.onMouseDown,koui_events_EventHandler.onMouseUp,koui_events_EventHandler.onMouseMove,koui_events_EventHandler.onMouseScroll,koui_events_EventHandler.onMouseLeave);
+	koui_events_EventHandler.keyboard = kha_input_Keyboard.get();
+	koui_events_EventHandler.keyboard.notify(koui_events_EventHandler.onKeyboardDown,koui_events_EventHandler.onKeyboardUp,koui_events_EventHandler.onKeyboardPress);
+	kha_System.notifyOnApplicationState(koui_events_EventHandler.onForeground,koui_events_EventHandler.onResume,koui_events_EventHandler.onPause,koui_events_EventHandler.onBackground,koui_events_EventHandler.onShutdown);
+};
+koui_events_EventHandler.registerElement = function(element) {
+	var this1 = koui_events_EventHandler.events;
+	var v = [];
+	this1.set(element,v);
+};
+koui_events_EventHandler.addEvent = function(event) {
+	if(event.element == null) {
+		return;
+	}
+	koui_events_EventHandler.events.h[event.element.__id__].push(event);
+};
+koui_events_EventHandler.reset = function() {
+	var element = koui_events_EventHandler.events.keys();
+	while(element.hasNext()) {
+		var element1 = element.next();
+		var this1 = koui_events_EventHandler.events;
+		var v = [];
+		this1.set(element1,v);
+	}
+};
+koui_events_EventHandler.update = function() {
+	if(koui_events_EventHandler.inBackground) {
+		return;
+	}
+	if(koui_events_EventHandler.mouseMoved) {
+		koui_events_EventHandler.checkMouseHover();
+	}
+	koui_events_EventHandler.checkMousePressed();
+	koui_events_EventHandler.checkKeyCodePress();
+	var element = koui_events_EventHandler.events.keys();
+	while(element.hasNext()) {
+		var element1 = element.next();
+		if(koui_events_EventHandler.elemBlocking != null && element1 != koui_events_EventHandler.elemBlocking) {
+			continue;
+		}
+		if(element1.disabled) {
+			continue;
+		}
+		var _g = 0;
+		var _g1 = koui_events_EventHandler.events.h[element1.__id__];
+		while(_g < _g1.length) {
+			var event = _g1[_g];
+			++_g;
+			koui_events_Event.dispatch(event);
+		}
+	}
+	if(koui_events_EventHandler.markUnblock) {
+		koui_events_EventHandler.elemBlocking = null;
+		koui_events_EventHandler.checkMouseHover();
+		koui_events_EventHandler.markUnblock = false;
+	}
+	koui_events_EventHandler.mouseMoved = false;
+};
+koui_events_EventHandler.clearFocus = function() {
+	var event = new koui_events_FocusEvent(koui_events_EventHandler.elemFocused,2,0);
+	if(event.element != null) {
+		koui_events_EventHandler.events.h[event.element.__id__].push(event);
+	}
+	koui_events_EventHandler.elemFocused = null;
+};
+koui_events_EventHandler.block = function(actuator) {
+	if(koui_events_EventHandler.elemFocused != actuator) {
+		haxe_Log.trace("EventHandler warning: Cannot block, element " + Std.string(actuator) + " is not focused! Focused: " + Std.string(koui_events_EventHandler.elemFocused),{ fileName : "koui/events/EventHandler.hx", lineNumber : 177, className : "koui.events.EventHandler", methodName : "block"});
+		return;
+	}
+	koui_events_EventHandler.elemBlocking = actuator;
+};
+koui_events_EventHandler.unblock = function(forceNow) {
+	if(forceNow == null) {
+		forceNow = false;
+	}
+	if(forceNow) {
+		koui_events_EventHandler.elemBlocking = null;
+	} else {
+		koui_events_EventHandler.markUnblock = true;
+	}
+};
+koui_events_EventHandler.registerCutCopyPaste = function(onCut,onCopy,onPaste) {
+	kha_System.notifyOnCutCopyPaste(onCut,onCopy,onPaste);
+};
+koui_events_EventHandler.unregisterCutCopyPaste = function() {
+	kha_System.notifyOnCutCopyPaste(null,null,null);
+};
+koui_events_EventHandler.onForeground = function() {
+	koui_events_EventHandler.inBackground = false;
+};
+koui_events_EventHandler.onResume = function() {
+};
+koui_events_EventHandler.onPause = function() {
+};
+koui_events_EventHandler.onBackground = function() {
+	koui_events_EventHandler.inBackground = true;
+	koui_utils_Cursor.setCursor(kha_input_MouseCursor.Default);
+};
+koui_events_EventHandler.onShutdown = function() {
+};
+koui_events_EventHandler.onMouseDown = function(button,x,y) {
+	var event = new koui_events_MouseClickEvent(koui_events_EventHandler.elemHovered,1,button);
+	if(event.element != null) {
+		koui_events_EventHandler.events.h[event.element.__id__].push(event);
+	}
+	if(koui_events_EventHandler.elemFocused != koui_events_EventHandler.elemHovered) {
+		var event = new koui_events_FocusEvent(koui_events_EventHandler.elemFocused,2,button);
+		if(event.element != null) {
+			koui_events_EventHandler.events.h[event.element.__id__].push(event);
+		}
+		if(button == 0) {
+			if(koui_events_EventHandler.elemBlocking == null || koui_events_EventHandler.elemBlocking == koui_events_EventHandler.elemHovered) {
+				koui_events_EventHandler.elemFocused = koui_events_EventHandler.elemHovered;
+			} else {
+				koui_events_EventHandler.elemFocused = null;
+			}
+			var event = new koui_events_FocusEvent(koui_events_EventHandler.elemFocused,1,button);
+			if(event.element != null) {
+				koui_events_EventHandler.events.h[event.element.__id__].push(event);
+			}
+		} else {
+			koui_events_EventHandler.elemFocused = null;
+		}
+	}
+	koui_events_EventHandler.mousePressed[button] = true;
+};
+koui_events_EventHandler.onMouseUp = function(button,x,y) {
+	if(koui_events_EventHandler.elemFocused == koui_events_EventHandler.elemHovered) {
+		var event = new koui_events_MouseClickEvent(koui_events_EventHandler.elemFocused,2,button);
+		if(event.element != null) {
+			koui_events_EventHandler.events.h[event.element.__id__].push(event);
+		}
+	} else {
+		var event = new koui_events_MouseClickEvent(koui_events_EventHandler.elemFocused,8,button);
+		if(event.element != null) {
+			koui_events_EventHandler.events.h[event.element.__id__].push(event);
+		}
+	}
+	koui_events_EventHandler.mousePressed[button] = false;
+};
+koui_events_EventHandler.onMouseMove = function(x,y,deltaX,deltaY) {
+	koui_events_EventHandler.mouseX = x;
+	koui_events_EventHandler.mouseY = y;
+	koui_events_EventHandler.mouseDX = deltaX;
+	koui_events_EventHandler.mouseDY = deltaY;
+	koui_events_EventHandler.mouseMoved = true;
+	koui_utils_Cursor.setPosition(x,y);
+};
+koui_events_EventHandler.onMouseScroll = function(scrollDelta) {
+	var receivingElement = koui_events_EventHandler.getListeningParent(koui_events_EventHandler.elemHovered,koui_events_MouseScrollEvent);
+	var event = new koui_events_MouseScrollEvent(receivingElement,1,scrollDelta);
+	if(event.element != null) {
+		koui_events_EventHandler.events.h[event.element.__id__].push(event);
+	}
+};
+koui_events_EventHandler.onMouseLeave = function() {
+};
+koui_events_EventHandler.onKeyboardDown = function(key) {
+	var event = new koui_events_KeyCodeStatusEvent(koui_events_EventHandler.elemFocused,1,key);
+	if(event.element != null) {
+		koui_events_EventHandler.events.h[event.element.__id__].push(event);
+	}
+	koui_events_EventHandler.lastPressedKey = key;
+	koui_events_EventHandler.lastPressedTime = kha_Scheduler.time() + koui_Config.keyRepeatDelay;
+	koui_events_EventHandler.lastPressedKeyActive = true;
+	if(key == 17) {
+		koui_events_EventHandler.isCtrlDown = true;
+	}
+	if(key == 16) {
+		koui_events_EventHandler.isShiftDown = true;
+	}
+	if(key == 18) {
+		koui_events_EventHandler.isAltDown = true;
+	}
+};
+koui_events_EventHandler.onKeyboardUp = function(key) {
+	var event = new koui_events_KeyCodeStatusEvent(koui_events_EventHandler.elemFocused,2,key);
+	if(event.element != null) {
+		koui_events_EventHandler.events.h[event.element.__id__].push(event);
+	}
+	if(koui_events_EventHandler.lastPressedKey == key) {
+		koui_events_EventHandler.lastPressedKey = null;
+	}
+	if(key == 17) {
+		koui_events_EventHandler.isCtrlDown = false;
+	}
+	if(key == 16) {
+		koui_events_EventHandler.isShiftDown = false;
+	}
+	if(key == 18) {
+		koui_events_EventHandler.isAltDown = false;
+	}
+};
+koui_events_EventHandler.onKeyboardPress = function(char) {
+	var event = new koui_events_KeyCharPressEvent(koui_events_EventHandler.elemFocused,1,char);
+	if(event.element != null) {
+		koui_events_EventHandler.events.h[event.element.__id__].push(event);
+	}
+};
+koui_events_EventHandler.checkMouseHover = function() {
+	var newElemHovered = koui_events_EventHandler.getListeningParent(koui_Koui.getElementAtPosition(koui_events_EventHandler.mouseX,koui_events_EventHandler.mouseY),koui_events_MouseHoverEvent);
+	if(newElemHovered != koui_events_EventHandler.elemHovered || koui_events_EventHandler.markUnblock) {
+		var event = new koui_events_MouseHoverEvent(koui_events_EventHandler.elemHovered,2,true);
+		if(event.element != null) {
+			koui_events_EventHandler.events.h[event.element.__id__].push(event);
+		}
+		var event = new koui_events_MouseHoverEvent(newElemHovered,1,true);
+		if(event.element != null) {
+			koui_events_EventHandler.events.h[event.element.__id__].push(event);
+		}
+		if(koui_events_EventHandler.elemBlocking == null || koui_events_EventHandler.elemBlocking == newElemHovered) {
+			koui_events_EventHandler.elemHovered = newElemHovered;
+		} else {
+			koui_events_EventHandler.elemHovered = null;
+		}
+		if(koui_events_EventHandler.elemHovered != null) {
+			if(koui_events_EventHandler.elemHovered.disabled) {
+				koui_utils_Cursor.setCursor(koui_utils_Cursor.getCursorEnumValue(koui_theme_Style.styles.h[koui_events_EventHandler.elemHovered.tID + "_" + "default"].cursors.notallowed));
+			} else {
+				koui_utils_Cursor.setCursor(koui_utils_Cursor.getCursorEnumValue(koui_theme_Style.styles.h[koui_events_EventHandler.elemHovered.tID + "_" + "default"].cursors.defaultCursor));
+			}
+		} else if(koui_events_EventHandler.elemBlocking == null) {
+			koui_utils_Cursor.setCursor(kha_input_MouseCursor.Default);
+		}
+	} else {
+		var event = new koui_events_MouseHoverEvent(newElemHovered,4,koui_events_EventHandler.mouseMoved);
+		if(event.element != null) {
+			koui_events_EventHandler.events.h[event.element.__id__].push(event);
+		}
+	}
+};
+koui_events_EventHandler.checkMousePressed = function() {
+	var _g = 0;
+	var _g1 = koui_events_EventHandler.mousePressed.length;
+	while(_g < _g1) {
+		var button = _g++;
+		if(koui_events_EventHandler.mousePressed[button]) {
+			var event = new koui_events_MouseClickEvent(koui_events_EventHandler.elemFocused,4,button);
+			if(event.element != null) {
+				koui_events_EventHandler.events.h[event.element.__id__].push(event);
+			}
+		}
+	}
+};
+koui_events_EventHandler.checkKeyCodePress = function() {
+	if(koui_events_EventHandler.lastPressedKey == null) {
+		return;
+	}
+	if(koui_events_EventHandler.lastPressedKeyActive) {
+		var event = new koui_events_KeyCodePressEvent(koui_events_EventHandler.elemFocused,1,koui_events_EventHandler.lastPressedKey);
+		if(event.element != null) {
+			koui_events_EventHandler.events.h[event.element.__id__].push(event);
+		}
+		koui_events_EventHandler.lastPressedKeyActive = false;
+	} else if(kha_Scheduler.time() - koui_events_EventHandler.lastPressedTime > koui_Config.keyRepeatPeriod) {
+		var event = new koui_events_KeyCodePressEvent(koui_events_EventHandler.elemFocused,2,koui_events_EventHandler.lastPressedKey);
+		if(event.element != null) {
+			koui_events_EventHandler.events.h[event.element.__id__].push(event);
+		}
+		koui_events_EventHandler.lastPressedTime = kha_Scheduler.time();
+	}
+};
+koui_events_EventHandler.getListeningParent = function(element,eventClass) {
+	if(element == null) {
+		return null;
+	}
+	var currentElement = element;
+	var eventTypeUID = haxe_rtti_Meta.getType(eventClass).typeUID[0];
+	while(true) {
+		if(Object.prototype.hasOwnProperty.call(currentElement.eventListeners.h,eventTypeUID)) {
+			return currentElement;
+		}
+		if(currentElement.parent == null) {
+			break;
+		}
+		currentElement = currentElement.parent;
+		if(!(currentElement.parent != null)) {
+			break;
+		}
+	}
+	return null;
+};
+var koui_events_EventListener = function(callback) {
+	this.callback = callback;
+};
+$hxClasses["koui.events.EventListener"] = koui_events_EventListener;
+koui_events_EventListener.__name__ = "koui.events.EventListener";
+koui_events_EventListener.prototype = {
+	callback: null
+	,__class__: koui_events_EventListener
+};
+var koui_events_MouseEvent = function(element,state) {
+	koui_events_Event.call(this,element,state);
+};
+$hxClasses["koui.events.MouseEvent"] = koui_events_MouseEvent;
+koui_events_MouseEvent.__name__ = "koui.events.MouseEvent";
+koui_events_MouseEvent.__super__ = koui_events_Event;
+koui_events_MouseEvent.prototype = $extend(koui_events_Event.prototype,{
+	__class__: koui_events_MouseEvent
+});
+var koui_events_MouseButtonEvent = function(element,state,mouseButton) {
+	koui_events_MouseEvent.call(this,element,state);
+	this.mouseButton = mouseButton;
+};
+$hxClasses["koui.events.MouseButtonEvent"] = koui_events_MouseButtonEvent;
+koui_events_MouseButtonEvent.__name__ = "koui.events.MouseButtonEvent";
+koui_events_MouseButtonEvent.__super__ = koui_events_MouseEvent;
+koui_events_MouseButtonEvent.prototype = $extend(koui_events_MouseEvent.prototype,{
+	mouseButton: null
+	,__class__: koui_events_MouseButtonEvent
+});
+var koui_events_FocusEvent = function(element,state,mouseButton) {
+	koui_events_MouseButtonEvent.call(this,element,state,mouseButton);
+};
+$hxClasses["koui.events.FocusEvent"] = koui_events_FocusEvent;
+koui_events_FocusEvent.__name__ = "koui.events.FocusEvent";
+koui_events_FocusEvent.__super__ = koui_events_MouseButtonEvent;
+koui_events_FocusEvent.prototype = $extend(koui_events_MouseButtonEvent.prototype,{
+	getState: function() {
+		return this.state;
+	}
+	,__class__: koui_events_FocusEvent
+});
+var koui_events_KeyEvent = function(element,state) {
+	koui_events_Event.call(this,element,state);
+};
+$hxClasses["koui.events.KeyEvent"] = koui_events_KeyEvent;
+koui_events_KeyEvent.__name__ = "koui.events.KeyEvent";
+koui_events_KeyEvent.__super__ = koui_events_Event;
+koui_events_KeyEvent.prototype = $extend(koui_events_Event.prototype,{
+	__class__: koui_events_KeyEvent
+});
+var koui_events_KeyCodeEvent = function(element,state,keyCode) {
+	koui_events_KeyEvent.call(this,element,state);
+	this.keyCode = keyCode;
+};
+$hxClasses["koui.events.KeyCodeEvent"] = koui_events_KeyCodeEvent;
+koui_events_KeyCodeEvent.__name__ = "koui.events.KeyCodeEvent";
+koui_events_KeyCodeEvent.__super__ = koui_events_KeyEvent;
+koui_events_KeyCodeEvent.prototype = $extend(koui_events_KeyEvent.prototype,{
+	keyCode: null
+	,__class__: koui_events_KeyCodeEvent
+});
+var koui_events_KeyCodeStatusEvent = function(element,state,keyCode) {
+	koui_events_KeyCodeEvent.call(this,element,state,keyCode);
+};
+$hxClasses["koui.events.KeyCodeStatusEvent"] = koui_events_KeyCodeStatusEvent;
+koui_events_KeyCodeStatusEvent.__name__ = "koui.events.KeyCodeStatusEvent";
+koui_events_KeyCodeStatusEvent.__super__ = koui_events_KeyCodeEvent;
+koui_events_KeyCodeStatusEvent.prototype = $extend(koui_events_KeyCodeEvent.prototype,{
+	getState: function() {
+		return this.state;
+	}
+	,__class__: koui_events_KeyCodeStatusEvent
+});
+var koui_events_KeyCodePressEvent = function(element,state,keyCode) {
+	koui_events_KeyCodeEvent.call(this,element,state,keyCode);
+};
+$hxClasses["koui.events.KeyCodePressEvent"] = koui_events_KeyCodePressEvent;
+koui_events_KeyCodePressEvent.__name__ = "koui.events.KeyCodePressEvent";
+koui_events_KeyCodePressEvent.__super__ = koui_events_KeyCodeEvent;
+koui_events_KeyCodePressEvent.prototype = $extend(koui_events_KeyCodeEvent.prototype,{
+	getState: function() {
+		return this.state;
+	}
+	,__class__: koui_events_KeyCodePressEvent
+});
+var koui_events_KeyCharPressEvent = function(element,state,keyChar) {
+	koui_events_KeyEvent.call(this,element,state);
+	this.keyChar = keyChar;
+};
+$hxClasses["koui.events.KeyCharPressEvent"] = koui_events_KeyCharPressEvent;
+koui_events_KeyCharPressEvent.__name__ = "koui.events.KeyCharPressEvent";
+koui_events_KeyCharPressEvent.__super__ = koui_events_KeyEvent;
+koui_events_KeyCharPressEvent.prototype = $extend(koui_events_KeyEvent.prototype,{
+	keyChar: null
+	,getState: function() {
+		return this.state;
+	}
+	,__class__: koui_events_KeyCharPressEvent
+});
+var koui_events_MouseClickEvent = function(element,state,mouseButton) {
+	koui_events_MouseButtonEvent.call(this,element,state,mouseButton);
+};
+$hxClasses["koui.events.MouseClickEvent"] = koui_events_MouseClickEvent;
+koui_events_MouseClickEvent.__name__ = "koui.events.MouseClickEvent";
+koui_events_MouseClickEvent.__super__ = koui_events_MouseButtonEvent;
+koui_events_MouseClickEvent.prototype = $extend(koui_events_MouseButtonEvent.prototype,{
+	getState: function() {
+		return this.state;
+	}
+	,__class__: koui_events_MouseClickEvent
+});
+var koui_events_MouseHoverEvent = function(element,state,mouseMoved) {
+	koui_events_MouseEvent.call(this,element,state);
+	this.mouseMoved = mouseMoved;
+};
+$hxClasses["koui.events.MouseHoverEvent"] = koui_events_MouseHoverEvent;
+koui_events_MouseHoverEvent.__name__ = "koui.events.MouseHoverEvent";
+koui_events_MouseHoverEvent.__super__ = koui_events_MouseEvent;
+koui_events_MouseHoverEvent.prototype = $extend(koui_events_MouseEvent.prototype,{
+	mouseMoved: null
+	,getState: function() {
+		return this.state;
+	}
+	,__class__: koui_events_MouseHoverEvent
+});
+var koui_events_MouseScrollEvent = function(element,state,scrollDelta) {
+	koui_events_MouseEvent.call(this,element,state);
+	this.scrollDelta = scrollDelta;
+};
+$hxClasses["koui.events.MouseScrollEvent"] = koui_events_MouseScrollEvent;
+koui_events_MouseScrollEvent.__name__ = "koui.events.MouseScrollEvent";
+koui_events_MouseScrollEvent.__super__ = koui_events_MouseEvent;
+koui_events_MouseScrollEvent.prototype = $extend(koui_events_MouseEvent.prototype,{
+	scrollDelta: null
+	,getState: function() {
+		return this.state;
+	}
+	,__class__: koui_events_MouseScrollEvent
+});
+var koui_graphics_KPainter = function(g4,canvas,uniformNames,vert,frag) {
+	this.uniformNames = [];
+	this.bufferIndex = 0;
+	this.g4 = g4;
+	this.canvas = canvas;
+	this.uniformNames = uniformNames;
+	this.vert = vert;
+	this.frag = frag;
+};
+$hxClasses["koui.graphics.KPainter"] = koui_graphics_KPainter;
+koui_graphics_KPainter.__name__ = "koui.graphics.KPainter";
+koui_graphics_KPainter.prototype = {
+	g4: null
+	,pipelineCache: null
+	,canvas: null
+	,pipeline: null
+	,vert: null
+	,frag: null
+	,indexBuffer: null
+	,vertexBuffers: null
+	,structures: null
+	,structureLengths: null
+	,vCoords: null
+	,vColors: null
+	,bufferIndex: null
+	,uniformNames: null
+	,bindConstants: null
+	,uniformValues: null
+	,init: function() {
+		this.bufferIndex = 0;
+		this.uniformValues = new haxe_ds_StringMap();
+		var _g = 0;
+		var _g1 = this.uniformNames;
+		while(_g < _g1.length) {
+			var uniformName = _g1[_g];
+			++_g;
+			var this1 = this.uniformValues;
+			var v = kha_arrays_Float32Array._new(koui_graphics_KPainter.bufferSize * 4);
+			this1.h[uniformName] = v;
+		}
+		if(this.structures == null) {
+			this.initVertexStructures();
+		}
+		if(this.indexBuffer == null || this.vertexBuffers == null) {
+			this.initBuffers();
+		}
+		if(this.pipeline == null) {
+			this.initPipeline();
+		}
+	}
+	,initVertexStructures: function() {
+		this.structures = [];
+		var this1 = new Array(2);
+		this.structureLengths = this1;
+		this.structures[0] = new kha_graphics4_VertexStructure();
+		this.structures[0].add("pos",2);
+		this.structures[1] = new kha_graphics4_VertexStructure();
+		this.structures[1].add("col",3);
+		this.structureLengths[0] = 3;
+		this.structureLengths[1] = 4;
+	}
+	,initPipeline: function() {
+		this.pipeline = new kha_graphics4_PipelineState();
+		this.pipeline.inputLayout = this.structures;
+		this.pipeline.vertexShader = this.vert;
+		this.pipeline.fragmentShader = this.frag;
+		this.pipeline.blendSource = 3;
+		this.pipeline.blendDestination = 5;
+		this.pipeline.blendOperation = 0;
+		this.pipeline.alphaBlendOperation = 0;
+		this.pipeline.alphaBlendSource = 1;
+		this.pipeline.alphaBlendDestination = 5;
+		this.pipeline.cullMode = 2;
+		this.pipeline.compile();
+		this.pipelineCache = new kha_graphics4_SimplePipelineCache(this.pipeline,false);
+		this.bindConstants = new haxe_ds_StringMap();
+		var _g = 0;
+		var _g1 = this.uniformNames;
+		while(_g < _g1.length) {
+			var uniformName = _g1[_g];
+			++_g;
+			var this1 = this.bindConstants;
+			var v = this.pipeline.getConstantLocation(uniformName);
+			this1.h[uniformName] = v;
+		}
+	}
+	,initBuffers: function() {
+		this.vertexBuffers = [];
+		var maxNumVerts = koui_graphics_KPainter.bufferSize * 4;
+		this.vertexBuffers[0] = new kha_graphics4_VertexBuffer(maxNumVerts,this.structures[0],1);
+		this.vertexBuffers[1] = new kha_graphics4_VertexBuffer(maxNumVerts,this.structures[1],1);
+		this.vCoords = kha_arrays_Float32Array._new(maxNumVerts * this.structureLengths[0]);
+		this.vColors = kha_arrays_Float32Array._new(maxNumVerts * this.structureLengths[1]);
+		var indices = [0,1,2,1,2,3];
+		var indicesLength = indices.length;
+		this.indexBuffer = new kha_graphics4_IndexBuffer(koui_graphics_KPainter.bufferSize * indicesLength,0);
+		var ibuffer = this.indexBuffer.lock();
+		var _g = 0;
+		var _g1 = koui_graphics_KPainter.bufferSize;
+		while(_g < _g1) {
+			var i = _g++;
+			var _g2 = 0;
+			var _g3 = indicesLength;
+			while(_g2 < _g3) {
+				var j = _g2++;
+				var k = i * indicesLength + j;
+				ibuffer.setUint32(k * 4,i * 4 + indices[j],kha_arrays_ByteArray.LITTLE_ENDIAN);
+				var tmp = k * 4;
+			}
+		}
+		this.indexBuffer.unlock();
+	}
+	,setRectVertices: function(left,right,top,bottom) {
+		var quadIndex = this.bufferIndex * this.structureLengths[0] * 4;
+		this.vCoords.setFloat32(quadIndex * 4,left,true);
+		this.vCoords.setFloat32((quadIndex + 1) * 4,top,true);
+		var v = this.bufferIndex;
+		this.vCoords.setFloat32((quadIndex + 2) * 4,v,true);
+		this.vCoords.setFloat32((quadIndex + 3) * 4,left,true);
+		this.vCoords.setFloat32((quadIndex + 4) * 4,bottom,true);
+		var v = this.bufferIndex;
+		this.vCoords.setFloat32((quadIndex + 5) * 4,v,true);
+		this.vCoords.setFloat32((quadIndex + 6) * 4,right,true);
+		this.vCoords.setFloat32((quadIndex + 7) * 4,top,true);
+		var v = this.bufferIndex;
+		this.vCoords.setFloat32((quadIndex + 8) * 4,v,true);
+		this.vCoords.setFloat32((quadIndex + 9) * 4,right,true);
+		this.vCoords.setFloat32((quadIndex + 10) * 4,bottom,true);
+		var v = this.bufferIndex;
+		this.vCoords.setFloat32((quadIndex + 11) * 4,v,true);
+	}
+	,setRectColors: function(direction,colorTopLeft,colorBottomRight,opacity) {
+		var colorTL;
+		var colorTR;
+		var colorBL;
+		var colorBR;
+		if(direction) {
+			colorTL = colorTopLeft;
+			colorTR = colorTopLeft;
+			colorBL = colorBottomRight;
+			colorBR = colorBottomRight;
+		} else {
+			colorTL = colorTopLeft;
+			colorTR = colorBottomRight;
+			colorBL = colorTopLeft;
+			colorBR = colorBottomRight;
+		}
+		var quadIndex = this.bufferIndex * this.structureLengths[1] * 4;
+		var v = ((colorTL & 16711680) >>> 16) * 0.00392156862745098;
+		this.vColors.setFloat32(quadIndex * 4,v,true);
+		var v = ((colorTL & 65280) >>> 8) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 1) * 4,v,true);
+		var v = (colorTL & 255) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 2) * 4,v,true);
+		var v = (colorTL >>> 24) * 0.00392156862745098 * opacity;
+		this.vColors.setFloat32((quadIndex + 3) * 4,v,true);
+		var v = ((colorBL & 16711680) >>> 16) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 4) * 4,v,true);
+		var v = ((colorBL & 65280) >>> 8) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 5) * 4,v,true);
+		var v = (colorBL & 255) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 6) * 4,v,true);
+		var v = (colorBL >>> 24) * 0.00392156862745098 * opacity;
+		this.vColors.setFloat32((quadIndex + 7) * 4,v,true);
+		var v = ((colorTR & 16711680) >>> 16) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 8) * 4,v,true);
+		var v = ((colorTR & 65280) >>> 8) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 9) * 4,v,true);
+		var v = (colorTR & 255) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 10) * 4,v,true);
+		var v = (colorTR >>> 24) * 0.00392156862745098 * opacity;
+		this.vColors.setFloat32((quadIndex + 11) * 4,v,true);
+		var v = ((colorBR & 16711680) >>> 16) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 12) * 4,v,true);
+		var v = ((colorBR & 65280) >>> 8) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 13) * 4,v,true);
+		var v = (colorBR & 255) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 14) * 4,v,true);
+		var v = (colorBR >>> 24) * 0.00392156862745098 * opacity;
+		this.vColors.setFloat32((quadIndex + 15) * 4,v,true);
+	}
+	,drawBuffer: function() {
+		var vbCoords = this.vertexBuffers[0].lock();
+		var _g = 0;
+		var _g1 = this.vCoords.byteLength >> 2;
+		while(_g < _g1) {
+			var i = _g++;
+			var v = this.vCoords.getFloat32(i * 4,kha_arrays_ByteArray.LITTLE_ENDIAN);
+			vbCoords.setFloat32(i * 4,v,true);
+		}
+		this.vertexBuffers[0].unlock();
+		var vbColors = this.vertexBuffers[1].lock();
+		var _g = 0;
+		var _g1 = this.vColors.byteLength >> 2;
+		while(_g < _g1) {
+			var i = _g++;
+			var v = this.vColors.getFloat32(i * 4,kha_arrays_ByteArray.LITTLE_ENDIAN);
+			vbColors.setFloat32(i * 4,v,true);
+		}
+		this.vertexBuffers[1].unlock();
+		this.g4.setPipeline(this.pipeline);
+		this.g4.setIndexBuffer(this.indexBuffer);
+		this.g4.setVertexBuffers(this.vertexBuffers);
+		var _g = 0;
+		var _g1 = this.uniformNames;
+		while(_g < _g1.length) {
+			var uniformName = _g1[_g];
+			++_g;
+			this.g4.setFloats(this.bindConstants.h[uniformName],this.uniformValues.h[uniformName]);
+		}
+		this.g4.drawIndexedVertices(0,this.bufferIndex * 6);
+		this.bufferIndex = 0;
+	}
+	,end: function() {
+		if(this.bufferIndex > 0) {
+			this.drawBuffer();
+		}
+	}
+	,__class__: koui_graphics_KPainter
+};
+var koui_graphics_KCirclePainter = function(g4,canvas) {
+	koui_graphics_KPainter.call(this,g4,canvas,["circles","attributes","borderColor","shadowColors"],kha_Shaders.rect_vert,kha_Shaders.circle_frag);
+};
+$hxClasses["koui.graphics.KCirclePainter"] = koui_graphics_KCirclePainter;
+koui_graphics_KCirclePainter.__name__ = "koui.graphics.KCirclePainter";
+koui_graphics_KCirclePainter.__super__ = koui_graphics_KPainter;
+koui_graphics_KCirclePainter.prototype = $extend(koui_graphics_KPainter.prototype,{
+	fillKCircle: function(cx,cy,radius,style) {
+		if(this.bufferIndex + 1 >= koui_graphics_KPainter.bufferSize) {
+			this.drawBuffer();
+		}
+		var canvasW = this.canvas.get_width();
+		var canvasH = this.canvas.get_height();
+		var styleBorder = style.border;
+		var styleColor = style.color;
+		var styleShadow = style.dropShadow;
+		var shadowWidth = styleShadow.radius;
+		var posLeft = (cx - radius - shadowWidth) / canvasW;
+		var posRight = (cx + radius + shadowWidth) / canvasW;
+		var posTop = (cy - radius - shadowWidth) / canvasH;
+		var posBottom = (cy + radius + shadowWidth) / canvasH;
+		posLeft = posLeft * 2 - 1;
+		posRight = posRight * 2 - 1;
+		posTop = posTop * 2 - 1;
+		posBottom = posBottom * 2 - 1;
+		var colorTopLeft = styleColor.bg;
+		var colorBottomRight = styleColor.bg;
+		var direction = true;
+		if(styleColor.useGradient) {
+			colorTopLeft = styleColor.gradient.colorTopLeft;
+			colorBottomRight = styleColor.gradient.colorBottomRight;
+			direction = styleColor.gradient.direction;
+		}
+		var quadIndex = this.bufferIndex * this.structureLengths[0] * 4;
+		this.vCoords.setFloat32(quadIndex * 4,posLeft,true);
+		this.vCoords.setFloat32((quadIndex + 1) * 4,posTop,true);
+		var v = this.bufferIndex;
+		this.vCoords.setFloat32((quadIndex + 2) * 4,v,true);
+		this.vCoords.setFloat32((quadIndex + 3) * 4,posLeft,true);
+		this.vCoords.setFloat32((quadIndex + 4) * 4,posBottom,true);
+		var v = this.bufferIndex;
+		this.vCoords.setFloat32((quadIndex + 5) * 4,v,true);
+		this.vCoords.setFloat32((quadIndex + 6) * 4,posRight,true);
+		this.vCoords.setFloat32((quadIndex + 7) * 4,posTop,true);
+		var v = this.bufferIndex;
+		this.vCoords.setFloat32((quadIndex + 8) * 4,v,true);
+		this.vCoords.setFloat32((quadIndex + 9) * 4,posRight,true);
+		this.vCoords.setFloat32((quadIndex + 10) * 4,posBottom,true);
+		var v = this.bufferIndex;
+		this.vCoords.setFloat32((quadIndex + 11) * 4,v,true);
+		var opacity = style.opacity;
+		var colorTL;
+		var colorTR;
+		var colorBL;
+		var colorBR;
+		if(direction) {
+			colorTL = colorTopLeft;
+			colorTR = colorTopLeft;
+			colorBL = colorBottomRight;
+			colorBR = colorBottomRight;
+		} else {
+			colorTL = colorTopLeft;
+			colorTR = colorBottomRight;
+			colorBL = colorTopLeft;
+			colorBR = colorBottomRight;
+		}
+		var quadIndex = this.bufferIndex * this.structureLengths[1] * 4;
+		var v = ((colorTL & 16711680) >>> 16) * 0.00392156862745098;
+		this.vColors.setFloat32(quadIndex * 4,v,true);
+		var v = ((colorTL & 65280) >>> 8) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 1) * 4,v,true);
+		var v = (colorTL & 255) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 2) * 4,v,true);
+		var v = (colorTL >>> 24) * 0.00392156862745098 * opacity;
+		this.vColors.setFloat32((quadIndex + 3) * 4,v,true);
+		var v = ((colorBL & 16711680) >>> 16) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 4) * 4,v,true);
+		var v = ((colorBL & 65280) >>> 8) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 5) * 4,v,true);
+		var v = (colorBL & 255) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 6) * 4,v,true);
+		var v = (colorBL >>> 24) * 0.00392156862745098 * opacity;
+		this.vColors.setFloat32((quadIndex + 7) * 4,v,true);
+		var v = ((colorTR & 16711680) >>> 16) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 8) * 4,v,true);
+		var v = ((colorTR & 65280) >>> 8) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 9) * 4,v,true);
+		var v = (colorTR & 255) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 10) * 4,v,true);
+		var v = (colorTR >>> 24) * 0.00392156862745098 * opacity;
+		this.vColors.setFloat32((quadIndex + 11) * 4,v,true);
+		var v = ((colorBR & 16711680) >>> 16) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 12) * 4,v,true);
+		var v = ((colorBR & 65280) >>> 8) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 13) * 4,v,true);
+		var v = (colorBR & 255) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 14) * 4,v,true);
+		var v = (colorBR >>> 24) * 0.00392156862745098 * opacity;
+		this.vColors.setFloat32((quadIndex + 15) * 4,v,true);
+		this.uniformValues.h["circles"].setFloat32(this.bufferIndex * 4 * 4,cx,true);
+		this.uniformValues.h["circles"].setFloat32((this.bufferIndex * 4 + 1) * 4,cy,true);
+		this.uniformValues.h["circles"].setFloat32((this.bufferIndex * 4 + 2) * 4,radius,true);
+		this.uniformValues.h["circles"].setFloat32((this.bufferIndex * 4 + 3) * 4,0,true);
+		var borderColor = styleBorder.color;
+		var v = ((borderColor & 16711680) >>> 16) * 0.00392156862745098;
+		this.uniformValues.h["borderColor"].setFloat32(this.bufferIndex * 4 * 4,v,true);
+		var v = ((borderColor & 65280) >>> 8) * 0.00392156862745098;
+		this.uniformValues.h["borderColor"].setFloat32((this.bufferIndex * 4 + 1) * 4,v,true);
+		var v = (borderColor & 255) * 0.00392156862745098;
+		this.uniformValues.h["borderColor"].setFloat32((this.bufferIndex * 4 + 2) * 4,v,true);
+		var v = (borderColor >>> 24) * 0.00392156862745098 * style.opacity;
+		this.uniformValues.h["borderColor"].setFloat32((this.bufferIndex * 4 + 3) * 4,v,true);
+		var shadowColor = styleShadow.color;
+		if(styleShadow.radius == 0) {
+			shadowColor = 0;
+		}
+		var v = ((shadowColor & 16711680) >>> 16) * 0.00392156862745098;
+		this.uniformValues.h["shadowColors"].setFloat32(this.bufferIndex * 4 * 4,v,true);
+		var v = ((shadowColor & 65280) >>> 8) * 0.00392156862745098;
+		this.uniformValues.h["shadowColors"].setFloat32((this.bufferIndex * 4 + 1) * 4,v,true);
+		var v = (shadowColor & 255) * 0.00392156862745098;
+		this.uniformValues.h["shadowColors"].setFloat32((this.bufferIndex * 4 + 2) * 4,v,true);
+		var v = (shadowColor >>> 24) * 0.00392156862745098 * style.opacity;
+		this.uniformValues.h["shadowColors"].setFloat32((this.bufferIndex * 4 + 3) * 4,v,true);
+		var v = styleBorder.size;
+		this.uniformValues.h["attributes"].setFloat32(this.bufferIndex * 4 * 4,v,true);
+		var v = styleShadow.radius;
+		this.uniformValues.h["attributes"].setFloat32((this.bufferIndex * 4 + 1) * 4,v,true);
+		var v = styleShadow.falloff;
+		this.uniformValues.h["attributes"].setFloat32((this.bufferIndex * 4 + 2) * 4,v,true);
+		this.uniformValues.h["attributes"].setFloat32((this.bufferIndex * 4 + 3) * 4,0,true);
+		this.bufferIndex++;
+	}
+	,__class__: koui_graphics_KCirclePainter
+});
+var koui_graphics_KGraphics = function(canvas) {
+	kha_graphics4_Graphics2.call(this,canvas);
+	this.kRectPainter = new koui_graphics_KRectPainter(this.g,canvas);
+	this.kCirclePainter = new koui_graphics_KCirclePainter(this.g,canvas);
+	this.kRectPainter.init();
+	this.kCirclePainter.init();
+};
+$hxClasses["koui.graphics.KGraphics"] = koui_graphics_KGraphics;
+koui_graphics_KGraphics.__name__ = "koui.graphics.KGraphics";
+koui_graphics_KGraphics.initTextPipeline = function() {
+	var textVS = kha_graphics4_Graphics2.createTextVertexStructure();
+	koui_graphics_KGraphics.textPipeline = kha_graphics4_Graphics2.createTextPipeline(textVS);
+	koui_graphics_KGraphics.textPipeline.alphaBlendSource = 1;
+	koui_graphics_KGraphics.textPipeline.alphaBlendDestination = 5;
+	koui_graphics_KGraphics.textPipeline.blendSource = 3;
+	koui_graphics_KGraphics.textPipeline.blendDestination = 5;
+	koui_graphics_KGraphics.textPipeline.blendOperation = 0;
+	koui_graphics_KGraphics.textPipeline.compile();
+};
+koui_graphics_KGraphics.__super__ = kha_graphics4_Graphics2;
+koui_graphics_KGraphics.prototype = $extend(kha_graphics4_Graphics2.prototype,{
+	kRectPainter: null
+	,kCirclePainter: null
+	,fillKRect: function(x,y,width,height,style) {
+		if(style.border.nineSlice) {
+			var atl = style.atlas;
+			var innerRect = new koui_graphics_Rect(atl.x,atl.y,atl.w,atl.h);
+			var texture = kha_Assets.images.get(style.textureBg);
+			if(texture == null) {
+				return;
+			}
+			var slices = koui_graphics_NineSlice.createSlices(innerRect,texture.get_width(),texture.get_height(),width,height);
+			var imgSlices = slices[0];
+			var elemSlices = slices[1];
+			var _g = 0;
+			while(_g < 9) {
+				var i = _g++;
+				var imgSlice = imgSlices[i];
+				var elemSlice = elemSlices[i];
+				this.drawScaledSubImage(texture,imgSlice.left,imgSlice.top,imgSlice.width,imgSlice.height,x + elemSlice.left,y + elemSlice.top,elemSlice.width,elemSlice.height);
+			}
+		} else {
+			var _this = this.transformations[this.transformationIndex];
+			var x1 = x;
+			var y1 = y;
+			if(y1 == null) {
+				y1 = 0;
+			}
+			if(x1 == null) {
+				x1 = 0;
+			}
+			var value_x = x1;
+			var value_y = y1;
+			var w = _this._02 * value_x + _this._12 * value_y + _this._22;
+			var x = (_this._00 * value_x + _this._10 * value_y + _this._20) / w;
+			var y = (_this._01 * value_x + _this._11 * value_y + _this._21) / w;
+			var x1 = x;
+			var y1 = y;
+			if(y1 == null) {
+				y1 = 0;
+			}
+			if(x1 == null) {
+				x1 = 0;
+			}
+			var p_x = x1;
+			var p_y = y1;
+			var _this = this.coloredPainter;
+			if(kha_graphics4_ColoredShaderPainter.triangleBufferIndex > 0) {
+				_this.drawTriBuffer(false);
+			}
+			if(kha_graphics4_ColoredShaderPainter.bufferIndex > 0) {
+				_this.drawBuffer(false);
+			}
+			this.imagePainter.end();
+			this.textPainter.end();
+			this.kCirclePainter.end();
+			this.kRectPainter.fillKRect(p_x,p_y,width,height,style);
+		}
+	}
+	,fillKCircle: function(cx,cy,radius,style) {
+		var _this = this.transformations[this.transformationIndex];
+		var x = cx;
+		var y = cy;
+		if(y == null) {
+			y = 0;
+		}
+		if(x == null) {
+			x = 0;
+		}
+		var value_x = x;
+		var value_y = y;
+		var w = _this._02 * value_x + _this._12 * value_y + _this._22;
+		var x = (_this._00 * value_x + _this._10 * value_y + _this._20) / w;
+		var y = (_this._01 * value_x + _this._11 * value_y + _this._21) / w;
+		var x1 = x;
+		var y1 = y;
+		if(y1 == null) {
+			y1 = 0;
+		}
+		if(x1 == null) {
+			x1 = 0;
+		}
+		var p_x = x1;
+		var p_y = y1;
+		var _this = this.coloredPainter;
+		if(kha_graphics4_ColoredShaderPainter.triangleBufferIndex > 0) {
+			_this.drawTriBuffer(false);
+		}
+		if(kha_graphics4_ColoredShaderPainter.bufferIndex > 0) {
+			_this.drawBuffer(false);
+		}
+		this.imagePainter.end();
+		this.textPainter.end();
+		this.kRectPainter.end();
+		this.kCirclePainter.fillKCircle(p_x,p_y,radius,style);
+	}
+	,drawKAlignedString: function(text,x,y,horAlign,verAlign,style) {
+		this.set_pipeline(koui_graphics_KGraphics.textPipeline);
+		this.set_fontSize(style.font.size);
+		this.set_font(kha_Assets.fonts.get(style.font.family));
+		if(style.textShadow != null) {
+			this.set_color(style.textShadow.color);
+			kha_graphics2_GraphicsExtension.drawAlignedString(this,text,x + style.textShadow.offsetX,y + style.textShadow.offsetY,horAlign,verAlign);
+		}
+		this.set_color(style.color.text);
+		kha_graphics2_GraphicsExtension.drawAlignedString(this,text,x,y,horAlign,verAlign);
+		this.set_pipeline(null);
+		if(style.font.underlineThickness != 0) {
+			var width = this.get_font().width(this.get_fontSize(),text);
+			var height = this.get_font().height(this.get_fontSize());
+			var offsetX;
+			switch(horAlign) {
+			case 1:
+				offsetX = -width * 0.5;
+				break;
+			case 2:
+				offsetX = -width;
+				break;
+			default:
+				offsetX = 0.0;
+			}
+			var offsetY;
+			switch(verAlign) {
+			case 0:
+				offsetY = height;
+				break;
+			case 1:
+				offsetY = height * 0.5;
+				break;
+			default:
+				offsetY = 0.0;
+			}
+			this.fillRect(x + offsetX,y + offsetY,width,style.font.underlineThickness);
+		}
+	}
+	,flush: function() {
+		kha_graphics4_Graphics2.prototype.flush.call(this);
+		this.kRectPainter.end();
+		this.kCirclePainter.end();
+	}
+	,drawString: function(text,x,y) {
+		this.kRectPainter.end();
+		this.kCirclePainter.end();
+		kha_graphics4_Graphics2.prototype.drawString.call(this,text,x,y);
+	}
+	,drawCharacters: function(text,start,length,x,y) {
+		this.kRectPainter.end();
+		this.kCirclePainter.end();
+		kha_graphics4_Graphics2.prototype.drawCharacters.call(this,text,start,length,x,y);
+	}
+	,drawRect: function(x,y,width,height,strength) {
+		if(strength == null) {
+			strength = 1.0;
+		}
+		this.kRectPainter.end();
+		this.kCirclePainter.end();
+		kha_graphics4_Graphics2.prototype.drawRect.call(this,x,y,width,height,strength);
+	}
+	,fillRect: function(x,y,width,height) {
+		this.kRectPainter.end();
+		this.kCirclePainter.end();
+		kha_graphics4_Graphics2.prototype.fillRect.call(this,x,y,width,height);
+	}
+	,drawLine: function(x1,y1,x2,y2,strength) {
+		if(strength == null) {
+			strength = 1.0;
+		}
+		this.kRectPainter.end();
+		this.kCirclePainter.end();
+		kha_graphics4_Graphics2.prototype.drawLine.call(this,x1,y1,x2,y2,strength);
+	}
+	,fillTriangle: function(x1,y1,x2,y2,x3,y3) {
+		this.kRectPainter.end();
+		this.kCirclePainter.end();
+		kha_graphics4_Graphics2.prototype.fillTriangle.call(this,x1,y1,x2,y2,x3,y3);
+	}
+	,drawScaledSubImage: function(img,sx,sy,sw,sh,dx,dy,dw,dh) {
+		this.kRectPainter.end();
+		this.kCirclePainter.end();
+		kha_graphics4_Graphics2.prototype.drawScaledSubImage.call(this,img,sx,sy,sw,sh,dx,dy,dw,dh);
+	}
+	,setProjection: function() {
+		kha_graphics4_Graphics2.prototype.setProjection.call(this);
+	}
+	,setPipeline: function(pipeline) {
+		if(pipeline == this.lastPipeline) {
+			return;
+		}
+		this.lastPipeline = pipeline;
+		this.flush();
+		if(pipeline == null) {
+			this.imagePainter.set_pipeline(null);
+			this.coloredPainter.set_pipeline(null);
+			this.textPainter.set_pipeline(null);
+			this.kRectPainter.pipelineCache = null;
+			this.kCirclePainter.pipelineCache = null;
+		} else {
+			var cache = this.pipelineCache.h[pipeline.__id__];
+			if(cache == null) {
+				cache = new kha_graphics4_SimplePipelineCache(pipeline,true);
+				this.pipelineCache.set(pipeline,cache);
+			}
+			this.imagePainter.set_pipeline(cache);
+			this.coloredPainter.set_pipeline(cache);
+			this.textPainter.set_pipeline(cache);
+			this.kRectPainter.pipelineCache = cache;
+			this.kCirclePainter.pipelineCache = cache;
+		}
+	}
+	,__class__: koui_graphics_KGraphics
+});
+var koui_graphics_KRectPainter = function(g4,canvas) {
+	koui_graphics_KPainter.call(this,g4,canvas,["rects","attributes","borderColor","shadowColors"],kha_Shaders.rect_vert,kha_Shaders.rect_frag);
+};
+$hxClasses["koui.graphics.KRectPainter"] = koui_graphics_KRectPainter;
+koui_graphics_KRectPainter.__name__ = "koui.graphics.KRectPainter";
+koui_graphics_KRectPainter.__super__ = koui_graphics_KPainter;
+koui_graphics_KRectPainter.prototype = $extend(koui_graphics_KPainter.prototype,{
+	fillKRect: function(x,y,width,height,style) {
+		if(this.bufferIndex + 1 >= koui_graphics_KPainter.bufferSize) {
+			this.drawBuffer();
+		}
+		var canvasW = this.canvas.get_width();
+		var screenH = this.canvas.get_height();
+		var cornerRadius = style.cornerRadius;
+		var styleBorder = style.border;
+		var styleColor = style.color;
+		var styleShadow = style.dropShadow;
+		var shadowWidth = styleShadow.radius;
+		var posLeft = (x - shadowWidth) / canvasW;
+		var posRight = (x + width + shadowWidth) / canvasW;
+		var posTop = (y - shadowWidth) / screenH;
+		var posBottom = (y + height + shadowWidth) / screenH;
+		posLeft = posLeft * 2 - 1;
+		posRight = posRight * 2 - 1;
+		posTop = posTop * 2 - 1;
+		posBottom = posBottom * 2 - 1;
+		var colorTopLeft = styleColor.bg;
+		var colorBottomRight = styleColor.bg;
+		var direction = true;
+		if(styleColor.useGradient) {
+			colorTopLeft = styleColor.gradient.colorTopLeft;
+			colorBottomRight = styleColor.gradient.colorBottomRight;
+			direction = styleColor.gradient.direction;
+		}
+		var quadIndex = this.bufferIndex * this.structureLengths[0] * 4;
+		this.vCoords.setFloat32(quadIndex * 4,posLeft,true);
+		this.vCoords.setFloat32((quadIndex + 1) * 4,posTop,true);
+		var v = this.bufferIndex;
+		this.vCoords.setFloat32((quadIndex + 2) * 4,v,true);
+		this.vCoords.setFloat32((quadIndex + 3) * 4,posLeft,true);
+		this.vCoords.setFloat32((quadIndex + 4) * 4,posBottom,true);
+		var v = this.bufferIndex;
+		this.vCoords.setFloat32((quadIndex + 5) * 4,v,true);
+		this.vCoords.setFloat32((quadIndex + 6) * 4,posRight,true);
+		this.vCoords.setFloat32((quadIndex + 7) * 4,posTop,true);
+		var v = this.bufferIndex;
+		this.vCoords.setFloat32((quadIndex + 8) * 4,v,true);
+		this.vCoords.setFloat32((quadIndex + 9) * 4,posRight,true);
+		this.vCoords.setFloat32((quadIndex + 10) * 4,posBottom,true);
+		var v = this.bufferIndex;
+		this.vCoords.setFloat32((quadIndex + 11) * 4,v,true);
+		var opacity = style.opacity;
+		var colorTL;
+		var colorTR;
+		var colorBL;
+		var colorBR;
+		if(direction) {
+			colorTL = colorTopLeft;
+			colorTR = colorTopLeft;
+			colorBL = colorBottomRight;
+			colorBR = colorBottomRight;
+		} else {
+			colorTL = colorTopLeft;
+			colorTR = colorBottomRight;
+			colorBL = colorTopLeft;
+			colorBR = colorBottomRight;
+		}
+		var quadIndex = this.bufferIndex * this.structureLengths[1] * 4;
+		var v = ((colorTL & 16711680) >>> 16) * 0.00392156862745098;
+		this.vColors.setFloat32(quadIndex * 4,v,true);
+		var v = ((colorTL & 65280) >>> 8) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 1) * 4,v,true);
+		var v = (colorTL & 255) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 2) * 4,v,true);
+		var v = (colorTL >>> 24) * 0.00392156862745098 * opacity;
+		this.vColors.setFloat32((quadIndex + 3) * 4,v,true);
+		var v = ((colorBL & 16711680) >>> 16) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 4) * 4,v,true);
+		var v = ((colorBL & 65280) >>> 8) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 5) * 4,v,true);
+		var v = (colorBL & 255) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 6) * 4,v,true);
+		var v = (colorBL >>> 24) * 0.00392156862745098 * opacity;
+		this.vColors.setFloat32((quadIndex + 7) * 4,v,true);
+		var v = ((colorTR & 16711680) >>> 16) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 8) * 4,v,true);
+		var v = ((colorTR & 65280) >>> 8) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 9) * 4,v,true);
+		var v = (colorTR & 255) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 10) * 4,v,true);
+		var v = (colorTR >>> 24) * 0.00392156862745098 * opacity;
+		this.vColors.setFloat32((quadIndex + 11) * 4,v,true);
+		var v = ((colorBR & 16711680) >>> 16) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 12) * 4,v,true);
+		var v = ((colorBR & 65280) >>> 8) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 13) * 4,v,true);
+		var v = (colorBR & 255) * 0.00392156862745098;
+		this.vColors.setFloat32((quadIndex + 14) * 4,v,true);
+		var v = (colorBR >>> 24) * 0.00392156862745098 * opacity;
+		this.vColors.setFloat32((quadIndex + 15) * 4,v,true);
+		var v = x + cornerRadius;
+		this.uniformValues.h["rects"].setFloat32(this.bufferIndex * 4 * 4,v,true);
+		var v = x + width - cornerRadius;
+		this.uniformValues.h["rects"].setFloat32((this.bufferIndex * 4 + 1) * 4,v,true);
+		var v = y + height - cornerRadius;
+		this.uniformValues.h["rects"].setFloat32((this.bufferIndex * 4 + 2) * 4,v,true);
+		var v = y + cornerRadius;
+		this.uniformValues.h["rects"].setFloat32((this.bufferIndex * 4 + 3) * 4,v,true);
+		var borderColor = styleBorder.color;
+		var v = ((borderColor & 16711680) >>> 16) * 0.00392156862745098;
+		this.uniformValues.h["borderColor"].setFloat32(this.bufferIndex * 4 * 4,v,true);
+		var v = ((borderColor & 65280) >>> 8) * 0.00392156862745098;
+		this.uniformValues.h["borderColor"].setFloat32((this.bufferIndex * 4 + 1) * 4,v,true);
+		var v = (borderColor & 255) * 0.00392156862745098;
+		this.uniformValues.h["borderColor"].setFloat32((this.bufferIndex * 4 + 2) * 4,v,true);
+		var v = (borderColor >>> 24) * 0.00392156862745098 * style.opacity;
+		this.uniformValues.h["borderColor"].setFloat32((this.bufferIndex * 4 + 3) * 4,v,true);
+		var shadowColor = styleShadow.color;
+		if(styleShadow.radius == 0) {
+			shadowColor = 0;
+		}
+		var v = ((shadowColor & 16711680) >>> 16) * 0.00392156862745098;
+		this.uniformValues.h["shadowColors"].setFloat32(this.bufferIndex * 4 * 4,v,true);
+		var v = ((shadowColor & 65280) >>> 8) * 0.00392156862745098;
+		this.uniformValues.h["shadowColors"].setFloat32((this.bufferIndex * 4 + 1) * 4,v,true);
+		var v = (shadowColor & 255) * 0.00392156862745098;
+		this.uniformValues.h["shadowColors"].setFloat32((this.bufferIndex * 4 + 2) * 4,v,true);
+		var v = (shadowColor >>> 24) * 0.00392156862745098 * style.opacity;
+		this.uniformValues.h["shadowColors"].setFloat32((this.bufferIndex * 4 + 3) * 4,v,true);
+		var v = styleBorder.size;
+		this.uniformValues.h["attributes"].setFloat32(this.bufferIndex * 4 * 4,v,true);
+		this.uniformValues.h["attributes"].setFloat32((this.bufferIndex * 4 + 1) * 4,cornerRadius,true);
+		this.uniformValues.h["attributes"].setFloat32((this.bufferIndex * 4 + 2) * 4,shadowWidth,true);
+		var v = styleShadow.falloff;
+		this.uniformValues.h["attributes"].setFloat32((this.bufferIndex * 4 + 3) * 4,v,true);
+		this.bufferIndex++;
+	}
+	,__class__: koui_graphics_KRectPainter
+});
+var koui_graphics_NineSlice = function() { };
+$hxClasses["koui.graphics.NineSlice"] = koui_graphics_NineSlice;
+koui_graphics_NineSlice.__name__ = "koui.graphics.NineSlice";
+koui_graphics_NineSlice.createSlices = function(imgInnerSlice,imgWidth,imgHeight,elemWidth,elemHeight) {
+	var this1 = new Array(2);
+	var out = this1;
+	out[0] = koui_graphics_NineSlice._createImageSlices(imgInnerSlice,imgWidth,imgHeight);
+	out[1] = koui_graphics_NineSlice._createElemSlices(out[0],elemWidth,elemHeight);
+	return out;
+};
+koui_graphics_NineSlice._createImageSlices = function(innerSlice,targetWidth,targetHeight) {
+	var left = innerSlice.left;
+	var right = innerSlice.get_right();
+	var top = innerSlice.top;
+	var bottom = innerSlice.get_bottom();
+	var width = innerSlice.width;
+	var height = innerSlice.height;
+	return koui_graphics_NineSlice._createSlices(left,right,top,bottom,width,height,targetWidth,targetHeight);
+};
+koui_graphics_NineSlice._createElemSlices = function(imageSlices,targetWidth,targetHeight) {
+	var left = imageSlices[0].width;
+	var right = targetWidth - imageSlices[2].width;
+	var top = imageSlices[0].height;
+	var bottom = targetHeight - imageSlices[6].height;
+	var width = right - left;
+	var height = bottom - top;
+	return koui_graphics_NineSlice._createSlices(left,right,top,bottom,width,height,targetWidth,targetHeight);
+};
+koui_graphics_NineSlice._createSlices = function(left,right,top,bottom,width,height,targetWidth,targetHeight) {
+	var this1 = new Array(9);
+	var slices = this1;
+	slices[0] = new koui_graphics_Rect(0,0,left,top);
+	slices[1] = new koui_graphics_Rect(left,0,width,top);
+	slices[2] = new koui_graphics_Rect(right,0,targetWidth - right,top);
+	slices[3] = new koui_graphics_Rect(0,top,left,height);
+	slices[4] = new koui_graphics_Rect(left,top,width,height);
+	slices[5] = new koui_graphics_Rect(right,top,targetWidth - right,height);
+	slices[6] = new koui_graphics_Rect(0,bottom,left,targetHeight - bottom);
+	slices[7] = new koui_graphics_Rect(left,bottom,width,targetHeight - bottom);
+	slices[8] = new koui_graphics_Rect(right,bottom,targetWidth - right,targetHeight - bottom);
+	return slices;
+};
+var koui_graphics_Rect = function(left,top,width,height) {
+	this.left = left;
+	this.top = top;
+	this.width = width;
+	this.height = height;
+};
+$hxClasses["koui.graphics.Rect"] = koui_graphics_Rect;
+koui_graphics_Rect.__name__ = "koui.graphics.Rect";
+koui_graphics_Rect.prototype = {
+	left: null
+	,top: null
+	,width: null
+	,height: null
+	,get_right: function() {
+		return this.left + this.width;
+	}
+	,set_right: function(value) {
+		this.width = value - this.left;
+		return value;
+	}
+	,get_bottom: function() {
+		return this.top + this.height;
+	}
+	,set_bottom: function(value) {
+		this.height = value - this.top;
+		return value;
+	}
+	,__class__: koui_graphics_Rect
+	,__properties__: {set_bottom:"set_bottom",get_bottom:"get_bottom",set_right:"set_right",get_right:"get_right"}
+};
+var koui_theme_Style = function() {
+	this.cornerRadius = 0;
+	this.opacity = 0.;
+	this.orientation = "";
+	this.textureBg = "";
+};
+$hxClasses["koui.theme.Style"] = koui_theme_Style;
+koui_theme_Style.__name__ = "koui.theme.Style";
+koui_theme_Style.init = function() {
+	var style__textinput_invalid_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_textinput_invalid_hover"] = style__textinput_invalid_hover;
+	style__textinput_invalid_hover.textureBg = "";
+	style__textinput_invalid_hover.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__textinput_invalid_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__textinput_invalid_hover.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__textinput_invalid_hover.orientation = "left";
+	style__textinput_invalid_hover.opacity = 1.;
+	style__textinput_invalid_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__textinput_invalid_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__textinput_invalid_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__textinput_invalid_hover.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__textinput_invalid_hover.cornerRadius = 5;
+	style__textinput_invalid_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-8971236), colorBottomRight : kha_Color._new(-8242373)}, bg : kha_Color._new(-15132127)};
+	style__textinput_invalid_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__textinput_invalid_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__textinput_invalid_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_textinput_invalid_disabled"] = style__textinput_invalid_disabled;
+	style__textinput_invalid_disabled.textureBg = "";
+	style__textinput_invalid_disabled.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__textinput_invalid_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__textinput_invalid_disabled.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__textinput_invalid_disabled.orientation = "left";
+	style__textinput_invalid_disabled.opacity = 0.6;
+	style__textinput_invalid_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__textinput_invalid_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__textinput_invalid_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__textinput_invalid_disabled.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__textinput_invalid_disabled.cornerRadius = 5;
+	style__textinput_invalid_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-8971236), colorBottomRight : kha_Color._new(-8242373)}, bg : kha_Color._new(-15132127)};
+	style__textinput_invalid_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__textinput_invalid_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__textinput_invalid_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_textinput_invalid_default"] = style__textinput_invalid_default;
+	style__textinput_invalid_default.textureBg = "";
+	style__textinput_invalid_default.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__textinput_invalid_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__textinput_invalid_default.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__textinput_invalid_default.orientation = "left";
+	style__textinput_invalid_default.opacity = 1.;
+	style__textinput_invalid_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__textinput_invalid_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__textinput_invalid_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__textinput_invalid_default.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__textinput_invalid_default.cornerRadius = 5;
+	style__textinput_invalid_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-8971236), colorBottomRight : kha_Color._new(-8242373)}, bg : kha_Color._new(-15132127)};
+	style__textinput_invalid_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__textinput_invalid_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__textinput_invalid_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_textinput_invalid_click"] = style__textinput_invalid_click;
+	style__textinput_invalid_click.textureBg = "";
+	style__textinput_invalid_click.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__textinput_invalid_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__textinput_invalid_click.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__textinput_invalid_click.orientation = "left";
+	style__textinput_invalid_click.opacity = 1.;
+	style__textinput_invalid_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__textinput_invalid_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__textinput_invalid_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__textinput_invalid_click.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__textinput_invalid_click.cornerRadius = 5;
+	style__textinput_invalid_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-8971236), colorBottomRight : kha_Color._new(-8242373)}, bg : kha_Color._new(-15132127)};
+	style__textinput_invalid_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__textinput_invalid_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__textinput_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_textinput_hover"] = style__textinput_hover;
+	style__textinput_hover.textureBg = "";
+	style__textinput_hover.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__textinput_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__textinput_hover.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__textinput_hover.orientation = "left";
+	style__textinput_hover.opacity = 1.;
+	style__textinput_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__textinput_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__textinput_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__textinput_hover.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__textinput_hover.cornerRadius = 5;
+	style__textinput_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-13948109)}, bg : kha_Color._new(-15132127)};
+	style__textinput_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__textinput_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__textinput_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_textinput_disabled"] = style__textinput_disabled;
+	style__textinput_disabled.textureBg = "";
+	style__textinput_disabled.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__textinput_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__textinput_disabled.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__textinput_disabled.orientation = "left";
+	style__textinput_disabled.opacity = 0.6;
+	style__textinput_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__textinput_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__textinput_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__textinput_disabled.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__textinput_disabled.cornerRadius = 5;
+	style__textinput_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__textinput_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__textinput_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__textinput_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_textinput_default"] = style__textinput_default;
+	style__textinput_default.textureBg = "";
+	style__textinput_default.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__textinput_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__textinput_default.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__textinput_default.orientation = "left";
+	style__textinput_default.opacity = 1.;
+	style__textinput_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__textinput_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__textinput_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__textinput_default.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__textinput_default.cornerRadius = 5;
+	style__textinput_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__textinput_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__textinput_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__textinput_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_textinput_click"] = style__textinput_click;
+	style__textinput_click.textureBg = "";
+	style__textinput_click.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__textinput_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__textinput_click.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__textinput_click.orientation = "left";
+	style__textinput_click.opacity = 1.;
+	style__textinput_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__textinput_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__textinput_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__textinput_click.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__textinput_click.cornerRadius = 5;
+	style__textinput_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-13355194)}, bg : kha_Color._new(-15132127)};
+	style__textinput_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__textinput_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__slider_inner_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_slider_inner_hover"] = style__slider_inner_hover;
+	style__slider_inner_hover.textureBg = "";
+	style__slider_inner_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__slider_inner_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_inner_hover.orientation = "left";
+	style__slider_inner_hover.opacity = 1.;
+	style__slider_inner_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_inner_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__slider_inner_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__slider_inner_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__slider_inner_hover.cornerRadius = 5;
+	style__slider_inner_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-427729), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__slider_inner_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__slider_inner_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__slider_inner_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_slider_inner_disabled"] = style__slider_inner_disabled;
+	style__slider_inner_disabled.textureBg = "";
+	style__slider_inner_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__slider_inner_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_inner_disabled.orientation = "left";
+	style__slider_inner_disabled.opacity = 0.6;
+	style__slider_inner_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_inner_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__slider_inner_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__slider_inner_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__slider_inner_disabled.cornerRadius = 5;
+	style__slider_inner_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-427729), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__slider_inner_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__slider_inner_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__slider_inner_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_slider_inner_default"] = style__slider_inner_default;
+	style__slider_inner_default.textureBg = "";
+	style__slider_inner_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__slider_inner_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_inner_default.orientation = "left";
+	style__slider_inner_default.opacity = 1.;
+	style__slider_inner_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_inner_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__slider_inner_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__slider_inner_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__slider_inner_default.cornerRadius = 5;
+	style__slider_inner_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-427729), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__slider_inner_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__slider_inner_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__slider_inner_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_slider_inner_click"] = style__slider_inner_click;
+	style__slider_inner_click.textureBg = "";
+	style__slider_inner_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__slider_inner_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_inner_click.orientation = "left";
+	style__slider_inner_click.opacity = 1.;
+	style__slider_inner_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_inner_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__slider_inner_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__slider_inner_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__slider_inner_click.cornerRadius = 5;
+	style__slider_inner_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-427729), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__slider_inner_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__slider_inner_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__slider_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_slider_hover"] = style__slider_hover;
+	style__slider_hover.textureBg = "";
+	style__slider_hover.slider = { textOffsetY : 0, textOffsetX : 0, showValue : true, showRange : false, buttonWidth : 20};
+	style__slider_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__slider_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_hover.orientation = "left";
+	style__slider_hover.opacity = 1.;
+	style__slider_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__slider_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__slider_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__slider_hover.cornerRadius = 5;
+	style__slider_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__slider_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__slider_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__slider_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_slider_disabled"] = style__slider_disabled;
+	style__slider_disabled.textureBg = "";
+	style__slider_disabled.slider = { textOffsetY : 0, textOffsetX : 0, showValue : true, showRange : false, buttonWidth : 20};
+	style__slider_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__slider_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_disabled.orientation = "left";
+	style__slider_disabled.opacity = 0.6;
+	style__slider_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__slider_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__slider_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__slider_disabled.cornerRadius = 5;
+	style__slider_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__slider_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__slider_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__slider_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_slider_default"] = style__slider_default;
+	style__slider_default.textureBg = "";
+	style__slider_default.slider = { textOffsetY : 0, textOffsetX : 0, showValue : true, showRange : false, buttonWidth : 20};
+	style__slider_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__slider_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_default.orientation = "left";
+	style__slider_default.opacity = 1.;
+	style__slider_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__slider_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__slider_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__slider_default.cornerRadius = 5;
+	style__slider_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__slider_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__slider_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__slider_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_slider_click"] = style__slider_click;
+	style__slider_click.textureBg = "";
+	style__slider_click.slider = { textOffsetY : 0, textOffsetX : 0, showValue : true, showRange : false, buttonWidth : 20};
+	style__slider_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__slider_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_click.orientation = "left";
+	style__slider_click.opacity = 1.;
+	style__slider_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__slider_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__slider_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__slider_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__slider_click.cornerRadius = 5;
+	style__slider_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__slider_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__slider_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_corner_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_corner_hover"] = style__scrollpane_corner_hover;
+	style__scrollpane_corner_hover.textureBg = "";
+	style__scrollpane_corner_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_corner_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_corner_hover.orientation = "left";
+	style__scrollpane_corner_hover.opacity = 1.;
+	style__scrollpane_corner_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_corner_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_corner_hover.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_corner_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_corner_hover.cornerRadius = 0;
+	style__scrollpane_corner_hover.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-14276557)};
+	style__scrollpane_corner_hover.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__scrollpane_corner_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_corner_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_corner_disabled"] = style__scrollpane_corner_disabled;
+	style__scrollpane_corner_disabled.textureBg = "";
+	style__scrollpane_corner_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_corner_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_corner_disabled.orientation = "left";
+	style__scrollpane_corner_disabled.opacity = 0.6;
+	style__scrollpane_corner_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_corner_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_corner_disabled.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_corner_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_corner_disabled.cornerRadius = 0;
+	style__scrollpane_corner_disabled.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-14276557)};
+	style__scrollpane_corner_disabled.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__scrollpane_corner_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_corner_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_corner_default"] = style__scrollpane_corner_default;
+	style__scrollpane_corner_default.textureBg = "";
+	style__scrollpane_corner_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_corner_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_corner_default.orientation = "left";
+	style__scrollpane_corner_default.opacity = 1.;
+	style__scrollpane_corner_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_corner_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_corner_default.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_corner_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_corner_default.cornerRadius = 0;
+	style__scrollpane_corner_default.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-14276557)};
+	style__scrollpane_corner_default.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__scrollpane_corner_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_corner_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_corner_click"] = style__scrollpane_corner_click;
+	style__scrollpane_corner_click.textureBg = "";
+	style__scrollpane_corner_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_corner_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_corner_click.orientation = "left";
+	style__scrollpane_corner_click.opacity = 1.;
+	style__scrollpane_corner_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_corner_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_corner_click.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_corner_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_corner_click.cornerRadius = 0;
+	style__scrollpane_corner_click.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-14276557)};
+	style__scrollpane_corner_click.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-1)};
+	style__scrollpane_corner_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_bar_track_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_bar_track_hover"] = style__scrollpane_bar_track_hover;
+	style__scrollpane_bar_track_hover.textureBg = "";
+	style__scrollpane_bar_track_hover.slider = { textOffsetY : 0, textOffsetX : 0, showValue : true, showRange : false, buttonWidth : 20};
+	style__scrollpane_bar_track_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_bar_track_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_track_hover.orientation = "left";
+	style__scrollpane_bar_track_hover.opacity = 1.;
+	style__scrollpane_bar_track_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_track_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_bar_track_hover.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_bar_track_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_bar_track_hover.cornerRadius = 0;
+	style__scrollpane_bar_track_hover.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__scrollpane_bar_track_hover.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__scrollpane_bar_track_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_bar_track_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_bar_track_disabled"] = style__scrollpane_bar_track_disabled;
+	style__scrollpane_bar_track_disabled.textureBg = "";
+	style__scrollpane_bar_track_disabled.slider = { textOffsetY : 0, textOffsetX : 0, showValue : true, showRange : false, buttonWidth : 20};
+	style__scrollpane_bar_track_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_bar_track_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_track_disabled.orientation = "left";
+	style__scrollpane_bar_track_disabled.opacity = 0.6;
+	style__scrollpane_bar_track_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_track_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_bar_track_disabled.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_bar_track_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_bar_track_disabled.cornerRadius = 0;
+	style__scrollpane_bar_track_disabled.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__scrollpane_bar_track_disabled.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__scrollpane_bar_track_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_bar_track_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_bar_track_default"] = style__scrollpane_bar_track_default;
+	style__scrollpane_bar_track_default.textureBg = "";
+	style__scrollpane_bar_track_default.slider = { textOffsetY : 0, textOffsetX : 0, showValue : true, showRange : false, buttonWidth : 20};
+	style__scrollpane_bar_track_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_bar_track_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_track_default.orientation = "left";
+	style__scrollpane_bar_track_default.opacity = 1.;
+	style__scrollpane_bar_track_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_track_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_bar_track_default.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_bar_track_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_bar_track_default.cornerRadius = 0;
+	style__scrollpane_bar_track_default.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__scrollpane_bar_track_default.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__scrollpane_bar_track_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_bar_track_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_bar_track_click"] = style__scrollpane_bar_track_click;
+	style__scrollpane_bar_track_click.textureBg = "";
+	style__scrollpane_bar_track_click.slider = { textOffsetY : 0, textOffsetX : 0, showValue : true, showRange : false, buttonWidth : 20};
+	style__scrollpane_bar_track_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_bar_track_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_track_click.orientation = "left";
+	style__scrollpane_bar_track_click.opacity = 1.;
+	style__scrollpane_bar_track_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_track_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_bar_track_click.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_bar_track_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_bar_track_click.cornerRadius = 0;
+	style__scrollpane_bar_track_click.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__scrollpane_bar_track_click.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-1)};
+	style__scrollpane_bar_track_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_bar_thumb_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_bar_thumb_hover"] = style__scrollpane_bar_thumb_hover;
+	style__scrollpane_bar_thumb_hover.textureBg = "";
+	style__scrollpane_bar_thumb_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_bar_thumb_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_thumb_hover.orientation = "left";
+	style__scrollpane_bar_thumb_hover.opacity = 1.;
+	style__scrollpane_bar_thumb_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_thumb_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_bar_thumb_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_bar_thumb_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_bar_thumb_hover.cornerRadius = 5;
+	style__scrollpane_bar_thumb_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-427729), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__scrollpane_bar_thumb_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__scrollpane_bar_thumb_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_bar_thumb_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_bar_thumb_disabled"] = style__scrollpane_bar_thumb_disabled;
+	style__scrollpane_bar_thumb_disabled.textureBg = "";
+	style__scrollpane_bar_thumb_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_bar_thumb_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_thumb_disabled.orientation = "left";
+	style__scrollpane_bar_thumb_disabled.opacity = 0.6;
+	style__scrollpane_bar_thumb_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_thumb_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_bar_thumb_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_bar_thumb_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_bar_thumb_disabled.cornerRadius = 5;
+	style__scrollpane_bar_thumb_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-427729), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__scrollpane_bar_thumb_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__scrollpane_bar_thumb_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_bar_thumb_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_bar_thumb_default"] = style__scrollpane_bar_thumb_default;
+	style__scrollpane_bar_thumb_default.textureBg = "";
+	style__scrollpane_bar_thumb_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_bar_thumb_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_thumb_default.orientation = "left";
+	style__scrollpane_bar_thumb_default.opacity = 1.;
+	style__scrollpane_bar_thumb_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_thumb_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_bar_thumb_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_bar_thumb_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_bar_thumb_default.cornerRadius = 5;
+	style__scrollpane_bar_thumb_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-427729), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__scrollpane_bar_thumb_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__scrollpane_bar_thumb_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_bar_thumb_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_bar_thumb_click"] = style__scrollpane_bar_thumb_click;
+	style__scrollpane_bar_thumb_click.textureBg = "";
+	style__scrollpane_bar_thumb_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_bar_thumb_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_thumb_click.orientation = "left";
+	style__scrollpane_bar_thumb_click.opacity = 1.;
+	style__scrollpane_bar_thumb_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_bar_thumb_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_bar_thumb_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_bar_thumb_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_bar_thumb_click.cornerRadius = 5;
+	style__scrollpane_bar_thumb_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-427729), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__scrollpane_bar_thumb_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__scrollpane_bar_thumb_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_hover"] = style__scrollpane_hover;
+	style__scrollpane_hover.textureBg = "";
+	style__scrollpane_hover.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_hover.scrollbar = { width : 20, color : { frontHover : kha_Color._new(-13355194), frontClick : kha_Color._new(-1088493), front : kha_Color._new(-13948109), corner : kha_Color._new(-15198184), bg : kha_Color._new(-16184815)}};
+	style__scrollpane_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_hover.orientation = "left";
+	style__scrollpane_hover.opacity = 1.;
+	style__scrollpane_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_hover.cornerRadius = 5;
+	style__scrollpane_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(0)};
+	style__scrollpane_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__scrollpane_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_disabled"] = style__scrollpane_disabled;
+	style__scrollpane_disabled.textureBg = "";
+	style__scrollpane_disabled.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_disabled.scrollbar = { width : 20, color : { frontHover : kha_Color._new(-13355194), frontClick : kha_Color._new(-1088493), front : kha_Color._new(-13948109), corner : kha_Color._new(-15198184), bg : kha_Color._new(-16184815)}};
+	style__scrollpane_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_disabled.orientation = "left";
+	style__scrollpane_disabled.opacity = 0.6;
+	style__scrollpane_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_disabled.cornerRadius = 5;
+	style__scrollpane_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(0)};
+	style__scrollpane_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__scrollpane_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_default"] = style__scrollpane_default;
+	style__scrollpane_default.textureBg = "";
+	style__scrollpane_default.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_default.scrollbar = { width : 20, color : { frontHover : kha_Color._new(-13355194), frontClick : kha_Color._new(-1088493), front : kha_Color._new(-13948109), corner : kha_Color._new(-15198184), bg : kha_Color._new(-16184815)}};
+	style__scrollpane_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_default.orientation = "left";
+	style__scrollpane_default.opacity = 1.;
+	style__scrollpane_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_default.cornerRadius = 5;
+	style__scrollpane_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(0)};
+	style__scrollpane_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__scrollpane_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__scrollpane_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_scrollpane_click"] = style__scrollpane_click;
+	style__scrollpane_click.textureBg = "";
+	style__scrollpane_click.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__scrollpane_click.scrollbar = { width : 20, color : { frontHover : kha_Color._new(-13355194), frontClick : kha_Color._new(-1088493), front : kha_Color._new(-13948109), corner : kha_Color._new(-15198184), bg : kha_Color._new(-16184815)}};
+	style__scrollpane_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_click.orientation = "left";
+	style__scrollpane_click.opacity = 1.;
+	style__scrollpane_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__scrollpane_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__scrollpane_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__scrollpane_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__scrollpane_click.cornerRadius = 5;
+	style__scrollpane_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(0)};
+	style__scrollpane_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__scrollpane_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__rowlayout_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_rowlayout_hover"] = style__rowlayout_hover;
+	style__rowlayout_hover.textureBg = "";
+	style__rowlayout_hover.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__rowlayout_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__rowlayout_hover.orientation = "left";
+	style__rowlayout_hover.opacity = 1.;
+	style__rowlayout_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__rowlayout_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__rowlayout_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__rowlayout_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__rowlayout_hover.cornerRadius = 5;
+	style__rowlayout_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__rowlayout_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__rowlayout_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__rowlayout_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_rowlayout_disabled"] = style__rowlayout_disabled;
+	style__rowlayout_disabled.textureBg = "";
+	style__rowlayout_disabled.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__rowlayout_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__rowlayout_disabled.orientation = "left";
+	style__rowlayout_disabled.opacity = 0.6;
+	style__rowlayout_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__rowlayout_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__rowlayout_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__rowlayout_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__rowlayout_disabled.cornerRadius = 5;
+	style__rowlayout_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__rowlayout_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__rowlayout_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__rowlayout_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_rowlayout_default"] = style__rowlayout_default;
+	style__rowlayout_default.textureBg = "";
+	style__rowlayout_default.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__rowlayout_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__rowlayout_default.orientation = "left";
+	style__rowlayout_default.opacity = 1.;
+	style__rowlayout_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__rowlayout_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__rowlayout_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__rowlayout_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__rowlayout_default.cornerRadius = 5;
+	style__rowlayout_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__rowlayout_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__rowlayout_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__rowlayout_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_rowlayout_click"] = style__rowlayout_click;
+	style__rowlayout_click.textureBg = "";
+	style__rowlayout_click.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__rowlayout_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__rowlayout_click.orientation = "left";
+	style__rowlayout_click.opacity = 1.;
+	style__rowlayout_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__rowlayout_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__rowlayout_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__rowlayout_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__rowlayout_click.cornerRadius = 5;
+	style__rowlayout_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__rowlayout_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__rowlayout_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__root_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_root_hover"] = style__root_hover;
+	style__root_hover.textureBg = "";
+	style__root_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__root_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__root_hover.orientation = "left";
+	style__root_hover.opacity = 1.;
+	style__root_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__root_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__root_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__root_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__root_hover.cornerRadius = 5;
+	style__root_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__root_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__root_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__root_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_root_disabled"] = style__root_disabled;
+	style__root_disabled.textureBg = "";
+	style__root_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__root_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__root_disabled.orientation = "left";
+	style__root_disabled.opacity = 0.6;
+	style__root_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__root_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__root_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__root_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__root_disabled.cornerRadius = 5;
+	style__root_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__root_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__root_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__root_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_root_default"] = style__root_default;
+	style__root_default.textureBg = "";
+	style__root_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__root_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__root_default.orientation = "left";
+	style__root_default.opacity = 1.;
+	style__root_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__root_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__root_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__root_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__root_default.cornerRadius = 5;
+	style__root_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__root_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__root_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__root_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_root_click"] = style__root_click;
+	style__root_click.textureBg = "";
+	style__root_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__root_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__root_click.orientation = "left";
+	style__root_click.opacity = 1.;
+	style__root_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__root_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__root_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__root_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__root_click.cornerRadius = 5;
+	style__root_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__root_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__root_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__radiobutton_inner_checked_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_radiobutton_inner_checked_hover"] = style__radiobutton_inner_checked_hover;
+	style__radiobutton_inner_checked_hover.textureBg = "";
+	style__radiobutton_inner_checked_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__radiobutton_inner_checked_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_checked_hover.orientation = "left";
+	style__radiobutton_inner_checked_hover.opacity = 1.;
+	style__radiobutton_inner_checked_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_checked_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__radiobutton_inner_checked_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__radiobutton_inner_checked_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__radiobutton_inner_checked_hover.cornerRadius = 9;
+	style__radiobutton_inner_checked_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-749997), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__radiobutton_inner_checked_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__radiobutton_inner_checked_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__radiobutton_inner_checked_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_radiobutton_inner_checked_disabled"] = style__radiobutton_inner_checked_disabled;
+	style__radiobutton_inner_checked_disabled.textureBg = "";
+	style__radiobutton_inner_checked_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__radiobutton_inner_checked_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_checked_disabled.orientation = "left";
+	style__radiobutton_inner_checked_disabled.opacity = 0.6;
+	style__radiobutton_inner_checked_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_checked_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__radiobutton_inner_checked_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__radiobutton_inner_checked_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__radiobutton_inner_checked_disabled.cornerRadius = 9;
+	style__radiobutton_inner_checked_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-749997), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__radiobutton_inner_checked_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__radiobutton_inner_checked_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__radiobutton_inner_checked_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_radiobutton_inner_checked_default"] = style__radiobutton_inner_checked_default;
+	style__radiobutton_inner_checked_default.textureBg = "";
+	style__radiobutton_inner_checked_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__radiobutton_inner_checked_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_checked_default.orientation = "left";
+	style__radiobutton_inner_checked_default.opacity = 1.;
+	style__radiobutton_inner_checked_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_checked_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__radiobutton_inner_checked_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__radiobutton_inner_checked_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__radiobutton_inner_checked_default.cornerRadius = 9;
+	style__radiobutton_inner_checked_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-749997), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__radiobutton_inner_checked_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__radiobutton_inner_checked_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__radiobutton_inner_checked_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_radiobutton_inner_checked_click"] = style__radiobutton_inner_checked_click;
+	style__radiobutton_inner_checked_click.textureBg = "";
+	style__radiobutton_inner_checked_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__radiobutton_inner_checked_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_checked_click.orientation = "left";
+	style__radiobutton_inner_checked_click.opacity = 1.;
+	style__radiobutton_inner_checked_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_checked_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__radiobutton_inner_checked_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__radiobutton_inner_checked_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__radiobutton_inner_checked_click.cornerRadius = 9;
+	style__radiobutton_inner_checked_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-749997), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__radiobutton_inner_checked_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__radiobutton_inner_checked_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__radiobutton_inner_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_radiobutton_inner_hover"] = style__radiobutton_inner_hover;
+	style__radiobutton_inner_hover.textureBg = "";
+	style__radiobutton_inner_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 18};
+	style__radiobutton_inner_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_hover.orientation = "left";
+	style__radiobutton_inner_hover.opacity = 1.;
+	style__radiobutton_inner_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__radiobutton_inner_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__radiobutton_inner_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__radiobutton_inner_hover.cornerRadius = 9;
+	style__radiobutton_inner_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__radiobutton_inner_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__radiobutton_inner_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__radiobutton_inner_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_radiobutton_inner_disabled"] = style__radiobutton_inner_disabled;
+	style__radiobutton_inner_disabled.textureBg = "";
+	style__radiobutton_inner_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 18};
+	style__radiobutton_inner_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_disabled.orientation = "left";
+	style__radiobutton_inner_disabled.opacity = 0.6;
+	style__radiobutton_inner_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__radiobutton_inner_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__radiobutton_inner_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__radiobutton_inner_disabled.cornerRadius = 9;
+	style__radiobutton_inner_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__radiobutton_inner_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__radiobutton_inner_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__radiobutton_inner_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_radiobutton_inner_default"] = style__radiobutton_inner_default;
+	style__radiobutton_inner_default.textureBg = "";
+	style__radiobutton_inner_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 18};
+	style__radiobutton_inner_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_default.orientation = "left";
+	style__radiobutton_inner_default.opacity = 1.;
+	style__radiobutton_inner_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__radiobutton_inner_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__radiobutton_inner_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__radiobutton_inner_default.cornerRadius = 9;
+	style__radiobutton_inner_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__radiobutton_inner_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__radiobutton_inner_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__radiobutton_inner_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_radiobutton_inner_click"] = style__radiobutton_inner_click;
+	style__radiobutton_inner_click.textureBg = "";
+	style__radiobutton_inner_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 18};
+	style__radiobutton_inner_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_click.orientation = "left";
+	style__radiobutton_inner_click.opacity = 1.;
+	style__radiobutton_inner_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_inner_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__radiobutton_inner_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__radiobutton_inner_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__radiobutton_inner_click.cornerRadius = 9;
+	style__radiobutton_inner_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__radiobutton_inner_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__radiobutton_inner_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__radiobutton_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_radiobutton_hover"] = style__radiobutton_hover;
+	style__radiobutton_hover.textureBg = "";
+	style__radiobutton_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__radiobutton_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_hover.orientation = "left";
+	style__radiobutton_hover.opacity = 1.;
+	style__radiobutton_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__radiobutton_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__radiobutton_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__radiobutton_hover.cornerRadius = 5;
+	style__radiobutton_hover.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(0)};
+	style__radiobutton_hover.checkbox = { useAutoPadding : true};
+	style__radiobutton_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1723184566)};
+	style__radiobutton_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__radiobutton_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_radiobutton_disabled"] = style__radiobutton_disabled;
+	style__radiobutton_disabled.textureBg = "";
+	style__radiobutton_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__radiobutton_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_disabled.orientation = "left";
+	style__radiobutton_disabled.opacity = 0.6;
+	style__radiobutton_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__radiobutton_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__radiobutton_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__radiobutton_disabled.cornerRadius = 5;
+	style__radiobutton_disabled.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(0)};
+	style__radiobutton_disabled.checkbox = { useAutoPadding : true};
+	style__radiobutton_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1723184566)};
+	style__radiobutton_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__radiobutton_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_radiobutton_default"] = style__radiobutton_default;
+	style__radiobutton_default.textureBg = "";
+	style__radiobutton_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__radiobutton_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_default.orientation = "left";
+	style__radiobutton_default.opacity = 1.;
+	style__radiobutton_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__radiobutton_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__radiobutton_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__radiobutton_default.cornerRadius = 5;
+	style__radiobutton_default.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(0)};
+	style__radiobutton_default.checkbox = { useAutoPadding : true};
+	style__radiobutton_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1723184566)};
+	style__radiobutton_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__radiobutton_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_radiobutton_click"] = style__radiobutton_click;
+	style__radiobutton_click.textureBg = "";
+	style__radiobutton_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__radiobutton_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_click.orientation = "left";
+	style__radiobutton_click.opacity = 1.;
+	style__radiobutton_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__radiobutton_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__radiobutton_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__radiobutton_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__radiobutton_click.cornerRadius = 5;
+	style__radiobutton_click.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(0)};
+	style__radiobutton_click.checkbox = { useAutoPadding : true};
+	style__radiobutton_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1723184566)};
+	style__radiobutton_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__progressbar_inner_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_progressbar_inner_hover"] = style__progressbar_inner_hover;
+	style__progressbar_inner_hover.textureBg = "";
+	style__progressbar_inner_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__progressbar_inner_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_inner_hover.orientation = "right";
+	style__progressbar_inner_hover.opacity = 1.;
+	style__progressbar_inner_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_inner_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__progressbar_inner_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__progressbar_inner_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__progressbar_inner_hover.cornerRadius = 5;
+	style__progressbar_inner_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-749997), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__progressbar_inner_hover.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__progressbar_inner_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__progressbar_inner_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_progressbar_inner_disabled"] = style__progressbar_inner_disabled;
+	style__progressbar_inner_disabled.textureBg = "";
+	style__progressbar_inner_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__progressbar_inner_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_inner_disabled.orientation = "right";
+	style__progressbar_inner_disabled.opacity = 0.6;
+	style__progressbar_inner_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_inner_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__progressbar_inner_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__progressbar_inner_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__progressbar_inner_disabled.cornerRadius = 5;
+	style__progressbar_inner_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-749997), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__progressbar_inner_disabled.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__progressbar_inner_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__progressbar_inner_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_progressbar_inner_default"] = style__progressbar_inner_default;
+	style__progressbar_inner_default.textureBg = "";
+	style__progressbar_inner_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__progressbar_inner_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_inner_default.orientation = "right";
+	style__progressbar_inner_default.opacity = 1.;
+	style__progressbar_inner_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_inner_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__progressbar_inner_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__progressbar_inner_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__progressbar_inner_default.cornerRadius = 5;
+	style__progressbar_inner_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-749997), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__progressbar_inner_default.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__progressbar_inner_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__progressbar_inner_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_progressbar_inner_click"] = style__progressbar_inner_click;
+	style__progressbar_inner_click.textureBg = "";
+	style__progressbar_inner_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__progressbar_inner_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_inner_click.orientation = "right";
+	style__progressbar_inner_click.opacity = 1.;
+	style__progressbar_inner_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_inner_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__progressbar_inner_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__progressbar_inner_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__progressbar_inner_click.cornerRadius = 5;
+	style__progressbar_inner_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-749997), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__progressbar_inner_click.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-1)};
+	style__progressbar_inner_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__progressbar_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_progressbar_hover"] = style__progressbar_hover;
+	style__progressbar_hover.textureBg = "";
+	style__progressbar_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__progressbar_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_hover.orientation = "right";
+	style__progressbar_hover.opacity = 1.;
+	style__progressbar_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__progressbar_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__progressbar_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__progressbar_hover.cornerRadius = 5;
+	style__progressbar_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__progressbar_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__progressbar_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__progressbar_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_progressbar_disabled"] = style__progressbar_disabled;
+	style__progressbar_disabled.textureBg = "";
+	style__progressbar_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__progressbar_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_disabled.orientation = "right";
+	style__progressbar_disabled.opacity = 0.6;
+	style__progressbar_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__progressbar_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__progressbar_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__progressbar_disabled.cornerRadius = 5;
+	style__progressbar_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__progressbar_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__progressbar_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__progressbar_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_progressbar_default"] = style__progressbar_default;
+	style__progressbar_default.textureBg = "";
+	style__progressbar_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__progressbar_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_default.orientation = "right";
+	style__progressbar_default.opacity = 1.;
+	style__progressbar_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__progressbar_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__progressbar_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__progressbar_default.cornerRadius = 5;
+	style__progressbar_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__progressbar_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__progressbar_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__progressbar_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_progressbar_click"] = style__progressbar_click;
+	style__progressbar_click.textureBg = "";
+	style__progressbar_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__progressbar_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_click.orientation = "right";
+	style__progressbar_click.opacity = 1.;
+	style__progressbar_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__progressbar_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__progressbar_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__progressbar_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__progressbar_click.cornerRadius = 5;
+	style__progressbar_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__progressbar_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__progressbar_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__panel_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_panel_hover"] = style__panel_hover;
+	style__panel_hover.textureBg = "";
+	style__panel_hover.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__panel_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__panel_hover.orientation = "left";
+	style__panel_hover.opacity = 1.;
+	style__panel_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__panel_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__panel_hover.dropShadow = { radius : 30, falloff : 3., color : kha_Color._new(1996488704)};
+	style__panel_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__panel_hover.cornerRadius = 10;
+	style__panel_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13421512), colorBottomRight : kha_Color._new(-13421512)}, bg : kha_Color._new(-15132127)};
+	style__panel_hover.border = { style : "inset", size : 2, nineSlice : false, color : kha_Color._new(-1157627904)};
+	style__panel_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__panel_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_panel_disabled"] = style__panel_disabled;
+	style__panel_disabled.textureBg = "";
+	style__panel_disabled.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__panel_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__panel_disabled.orientation = "left";
+	style__panel_disabled.opacity = 0.6;
+	style__panel_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__panel_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__panel_disabled.dropShadow = { radius : 30, falloff : 3., color : kha_Color._new(1996488704)};
+	style__panel_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__panel_disabled.cornerRadius = 10;
+	style__panel_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13421512), colorBottomRight : kha_Color._new(-13421512)}, bg : kha_Color._new(-15132127)};
+	style__panel_disabled.border = { style : "inset", size : 2, nineSlice : false, color : kha_Color._new(-1157627904)};
+	style__panel_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__panel_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_panel_default"] = style__panel_default;
+	style__panel_default.textureBg = "";
+	style__panel_default.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__panel_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__panel_default.orientation = "left";
+	style__panel_default.opacity = 1.;
+	style__panel_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__panel_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__panel_default.dropShadow = { radius : 30, falloff : 3., color : kha_Color._new(1996488704)};
+	style__panel_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__panel_default.cornerRadius = 10;
+	style__panel_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13421512), colorBottomRight : kha_Color._new(-13421512)}, bg : kha_Color._new(-15132127)};
+	style__panel_default.border = { style : "inset", size : 2, nineSlice : false, color : kha_Color._new(-1157627904)};
+	style__panel_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__panel_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_panel_click"] = style__panel_click;
+	style__panel_click.textureBg = "";
+	style__panel_click.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__panel_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__panel_click.orientation = "left";
+	style__panel_click.opacity = 1.;
+	style__panel_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__panel_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__panel_click.dropShadow = { radius : 30, falloff : 3., color : kha_Color._new(1996488704)};
+	style__panel_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__panel_click.cornerRadius = 10;
+	style__panel_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13421512), colorBottomRight : kha_Color._new(-13421512)}, bg : kha_Color._new(-15132127)};
+	style__panel_click.border = { style : "inset", size : 2, nineSlice : false, color : kha_Color._new(-1157627904)};
+	style__panel_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__numberinput_invalid_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_numberinput_invalid_hover"] = style__numberinput_invalid_hover;
+	style__numberinput_invalid_hover.textureBg = "";
+	style__numberinput_invalid_hover.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__numberinput_invalid_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__numberinput_invalid_hover.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__numberinput_invalid_hover.orientation = "left";
+	style__numberinput_invalid_hover.opacity = 1.;
+	style__numberinput_invalid_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__numberinput_invalid_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__numberinput_invalid_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__numberinput_invalid_hover.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__numberinput_invalid_hover.cornerRadius = 5;
+	style__numberinput_invalid_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-8971236), colorBottomRight : kha_Color._new(-8242373)}, bg : kha_Color._new(-15132127)};
+	style__numberinput_invalid_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__numberinput_invalid_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__numberinput_invalid_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_numberinput_invalid_disabled"] = style__numberinput_invalid_disabled;
+	style__numberinput_invalid_disabled.textureBg = "";
+	style__numberinput_invalid_disabled.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__numberinput_invalid_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__numberinput_invalid_disabled.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__numberinput_invalid_disabled.orientation = "left";
+	style__numberinput_invalid_disabled.opacity = 0.6;
+	style__numberinput_invalid_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__numberinput_invalid_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__numberinput_invalid_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__numberinput_invalid_disabled.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__numberinput_invalid_disabled.cornerRadius = 5;
+	style__numberinput_invalid_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-8971236), colorBottomRight : kha_Color._new(-8242373)}, bg : kha_Color._new(-15132127)};
+	style__numberinput_invalid_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__numberinput_invalid_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__numberinput_invalid_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_numberinput_invalid_default"] = style__numberinput_invalid_default;
+	style__numberinput_invalid_default.textureBg = "";
+	style__numberinput_invalid_default.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__numberinput_invalid_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__numberinput_invalid_default.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__numberinput_invalid_default.orientation = "left";
+	style__numberinput_invalid_default.opacity = 1.;
+	style__numberinput_invalid_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__numberinput_invalid_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__numberinput_invalid_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__numberinput_invalid_default.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__numberinput_invalid_default.cornerRadius = 5;
+	style__numberinput_invalid_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-8971236), colorBottomRight : kha_Color._new(-8242373)}, bg : kha_Color._new(-15132127)};
+	style__numberinput_invalid_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__numberinput_invalid_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__numberinput_invalid_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_numberinput_invalid_click"] = style__numberinput_invalid_click;
+	style__numberinput_invalid_click.textureBg = "";
+	style__numberinput_invalid_click.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__numberinput_invalid_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__numberinput_invalid_click.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__numberinput_invalid_click.orientation = "left";
+	style__numberinput_invalid_click.opacity = 1.;
+	style__numberinput_invalid_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__numberinput_invalid_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__numberinput_invalid_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__numberinput_invalid_click.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__numberinput_invalid_click.cornerRadius = 5;
+	style__numberinput_invalid_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-8971236), colorBottomRight : kha_Color._new(-8242373)}, bg : kha_Color._new(-15132127)};
+	style__numberinput_invalid_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__numberinput_invalid_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__numberinput_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_numberinput_hover"] = style__numberinput_hover;
+	style__numberinput_hover.textureBg = "";
+	style__numberinput_hover.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__numberinput_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__numberinput_hover.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__numberinput_hover.orientation = "left";
+	style__numberinput_hover.opacity = 1.;
+	style__numberinput_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__numberinput_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__numberinput_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__numberinput_hover.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__numberinput_hover.cornerRadius = 5;
+	style__numberinput_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-13948109)}, bg : kha_Color._new(-15132127)};
+	style__numberinput_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__numberinput_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__numberinput_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_numberinput_disabled"] = style__numberinput_disabled;
+	style__numberinput_disabled.textureBg = "";
+	style__numberinput_disabled.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__numberinput_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__numberinput_disabled.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__numberinput_disabled.orientation = "left";
+	style__numberinput_disabled.opacity = 0.6;
+	style__numberinput_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__numberinput_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__numberinput_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__numberinput_disabled.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__numberinput_disabled.cornerRadius = 5;
+	style__numberinput_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__numberinput_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__numberinput_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__numberinput_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_numberinput_default"] = style__numberinput_default;
+	style__numberinput_default.textureBg = "";
+	style__numberinput_default.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__numberinput_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__numberinput_default.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__numberinput_default.orientation = "left";
+	style__numberinput_default.opacity = 1.;
+	style__numberinput_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__numberinput_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__numberinput_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__numberinput_default.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__numberinput_default.cornerRadius = 5;
+	style__numberinput_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-15132127), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__numberinput_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__numberinput_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__numberinput_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_numberinput_click"] = style__numberinput_click;
+	style__numberinput_click.textureBg = "";
+	style__numberinput_click.textinput = { colorSelection : kha_Color._new(1998694898), colorLabel : kha_Color._new(-5592406), colorCursor : kha_Color._new(-1), blinkInterval : 30};
+	style__numberinput_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__numberinput_click.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__numberinput_click.orientation = "left";
+	style__numberinput_click.opacity = 1.;
+	style__numberinput_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__numberinput_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__numberinput_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__numberinput_click.cursors = { notallowed : "notallowed", defaultCursor : "text"};
+	style__numberinput_click.cornerRadius = 5;
+	style__numberinput_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-13355194)}, bg : kha_Color._new(-15132127)};
+	style__numberinput_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__numberinput_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__layout_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_layout_hover"] = style__layout_hover;
+	style__layout_hover.textureBg = "";
+	style__layout_hover.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__layout_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__layout_hover.orientation = "left";
+	style__layout_hover.opacity = 1.;
+	style__layout_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__layout_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__layout_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__layout_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__layout_hover.cornerRadius = 5;
+	style__layout_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__layout_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__layout_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__layout_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_layout_disabled"] = style__layout_disabled;
+	style__layout_disabled.textureBg = "";
+	style__layout_disabled.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__layout_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__layout_disabled.orientation = "left";
+	style__layout_disabled.opacity = 0.6;
+	style__layout_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__layout_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__layout_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__layout_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__layout_disabled.cornerRadius = 5;
+	style__layout_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__layout_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__layout_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__layout_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_layout_default"] = style__layout_default;
+	style__layout_default.textureBg = "";
+	style__layout_default.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__layout_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__layout_default.orientation = "left";
+	style__layout_default.opacity = 1.;
+	style__layout_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__layout_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__layout_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__layout_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__layout_default.cornerRadius = 5;
+	style__layout_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__layout_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__layout_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__layout_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_layout_click"] = style__layout_click;
+	style__layout_click.textureBg = "";
+	style__layout_click.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__layout_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__layout_click.orientation = "left";
+	style__layout_click.opacity = 1.;
+	style__layout_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__layout_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__layout_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__layout_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__layout_click.cornerRadius = 5;
+	style__layout_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__layout_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__layout_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__label_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_label_hover"] = style__label_hover;
+	style__label_hover.textureBg = "";
+	style__label_hover.textShadow = { offsetY : 2, offsetX : 2, color : kha_Color._new(-16777216)};
+	style__label_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__label_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__label_hover.orientation = "left";
+	style__label_hover.opacity = 1.;
+	style__label_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__label_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__label_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__label_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__label_hover.cornerRadius = 5;
+	style__label_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__label_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__label_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__label_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_label_disabled"] = style__label_disabled;
+	style__label_disabled.textureBg = "";
+	style__label_disabled.textShadow = { offsetY : 2, offsetX : 2, color : kha_Color._new(-16777216)};
+	style__label_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__label_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__label_disabled.orientation = "left";
+	style__label_disabled.opacity = 0.6;
+	style__label_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__label_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__label_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__label_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__label_disabled.cornerRadius = 5;
+	style__label_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__label_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__label_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__label_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_label_default"] = style__label_default;
+	style__label_default.textureBg = "";
+	style__label_default.textShadow = { offsetY : 2, offsetX : 2, color : kha_Color._new(-16777216)};
+	style__label_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__label_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__label_default.orientation = "left";
+	style__label_default.opacity = 1.;
+	style__label_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__label_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__label_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__label_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__label_default.cornerRadius = 5;
+	style__label_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__label_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__label_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__label_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_label_click"] = style__label_click;
+	style__label_click.textureBg = "";
+	style__label_click.textShadow = { offsetY : 2, offsetX : 2, color : kha_Color._new(-16777216)};
+	style__label_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__label_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__label_click.orientation = "left";
+	style__label_click.opacity = 1.;
+	style__label_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__label_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__label_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__label_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__label_click.cornerRadius = 5;
+	style__label_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__label_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__label_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__imagepanel_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_imagepanel_hover"] = style__imagepanel_hover;
+	style__imagepanel_hover.textureBg = "";
+	style__imagepanel_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__imagepanel_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__imagepanel_hover.orientation = "left";
+	style__imagepanel_hover.opacity = 1.;
+	style__imagepanel_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__imagepanel_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__imagepanel_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__imagepanel_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__imagepanel_hover.cornerRadius = 5;
+	style__imagepanel_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__imagepanel_hover.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__imagepanel_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__imagepanel_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_imagepanel_disabled"] = style__imagepanel_disabled;
+	style__imagepanel_disabled.textureBg = "";
+	style__imagepanel_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__imagepanel_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__imagepanel_disabled.orientation = "left";
+	style__imagepanel_disabled.opacity = 0.6;
+	style__imagepanel_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__imagepanel_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__imagepanel_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__imagepanel_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__imagepanel_disabled.cornerRadius = 5;
+	style__imagepanel_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__imagepanel_disabled.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__imagepanel_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__imagepanel_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_imagepanel_default"] = style__imagepanel_default;
+	style__imagepanel_default.textureBg = "";
+	style__imagepanel_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__imagepanel_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__imagepanel_default.orientation = "left";
+	style__imagepanel_default.opacity = 1.;
+	style__imagepanel_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__imagepanel_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__imagepanel_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__imagepanel_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__imagepanel_default.cornerRadius = 5;
+	style__imagepanel_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__imagepanel_default.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__imagepanel_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__imagepanel_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_imagepanel_click"] = style__imagepanel_click;
+	style__imagepanel_click.textureBg = "";
+	style__imagepanel_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__imagepanel_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__imagepanel_click.orientation = "left";
+	style__imagepanel_click.opacity = 1.;
+	style__imagepanel_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__imagepanel_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__imagepanel_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__imagepanel_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__imagepanel_click.cornerRadius = 5;
+	style__imagepanel_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__imagepanel_click.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-1)};
+	style__imagepanel_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__gridlayout_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_gridlayout_hover"] = style__gridlayout_hover;
+	style__gridlayout_hover.textureBg = "";
+	style__gridlayout_hover.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__gridlayout_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__gridlayout_hover.orientation = "left";
+	style__gridlayout_hover.opacity = 1.;
+	style__gridlayout_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__gridlayout_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__gridlayout_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__gridlayout_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__gridlayout_hover.cornerRadius = 5;
+	style__gridlayout_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__gridlayout_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__gridlayout_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__gridlayout_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_gridlayout_disabled"] = style__gridlayout_disabled;
+	style__gridlayout_disabled.textureBg = "";
+	style__gridlayout_disabled.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__gridlayout_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__gridlayout_disabled.orientation = "left";
+	style__gridlayout_disabled.opacity = 0.6;
+	style__gridlayout_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__gridlayout_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__gridlayout_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__gridlayout_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__gridlayout_disabled.cornerRadius = 5;
+	style__gridlayout_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__gridlayout_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__gridlayout_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__gridlayout_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_gridlayout_default"] = style__gridlayout_default;
+	style__gridlayout_default.textureBg = "";
+	style__gridlayout_default.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__gridlayout_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__gridlayout_default.orientation = "left";
+	style__gridlayout_default.opacity = 1.;
+	style__gridlayout_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__gridlayout_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__gridlayout_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__gridlayout_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__gridlayout_default.cornerRadius = 5;
+	style__gridlayout_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__gridlayout_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__gridlayout_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__gridlayout_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_gridlayout_click"] = style__gridlayout_click;
+	style__gridlayout_click.textureBg = "";
+	style__gridlayout_click.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__gridlayout_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__gridlayout_click.orientation = "left";
+	style__gridlayout_click.opacity = 1.;
+	style__gridlayout_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__gridlayout_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__gridlayout_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__gridlayout_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__gridlayout_click.cornerRadius = 5;
+	style__gridlayout_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__gridlayout_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__gridlayout_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__expander_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_expander_hover"] = style__expander_hover;
+	style__expander_hover.textureBg = "";
+	style__expander_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__expander_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__expander_hover.orientation = "left";
+	style__expander_hover.opacity = 1.;
+	style__expander_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__expander_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__expander_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__expander_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__expander_hover.cornerRadius = 5;
+	style__expander_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__expander_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__expander_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__expander_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_expander_disabled"] = style__expander_disabled;
+	style__expander_disabled.textureBg = "";
+	style__expander_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__expander_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__expander_disabled.orientation = "left";
+	style__expander_disabled.opacity = 0.6;
+	style__expander_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__expander_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__expander_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__expander_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__expander_disabled.cornerRadius = 5;
+	style__expander_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__expander_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__expander_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__expander_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_expander_default"] = style__expander_default;
+	style__expander_default.textureBg = "";
+	style__expander_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__expander_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__expander_default.orientation = "left";
+	style__expander_default.opacity = 1.;
+	style__expander_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__expander_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__expander_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__expander_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__expander_default.cornerRadius = 5;
+	style__expander_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__expander_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__expander_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__expander_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_expander_click"] = style__expander_click;
+	style__expander_click.textureBg = "";
+	style__expander_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__expander_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__expander_click.orientation = "left";
+	style__expander_click.opacity = 1.;
+	style__expander_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__expander_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__expander_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__expander_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__expander_click.cornerRadius = 5;
+	style__expander_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__expander_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__expander_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_overlay_bg_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_overlay_bg_hover"] = style__dropdown_overlay_bg_hover;
+	style__dropdown_overlay_bg_hover.textureBg = "";
+	style__dropdown_overlay_bg_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_overlay_bg_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_overlay_bg_hover.orientation = "left";
+	style__dropdown_overlay_bg_hover.opacity = 1.;
+	style__dropdown_overlay_bg_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_overlay_bg_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_overlay_bg_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_overlay_bg_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_overlay_bg_hover.cornerRadius = 5;
+	style__dropdown_overlay_bg_hover.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-14276557)};
+	style__dropdown_overlay_bg_hover.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__dropdown_overlay_bg_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_overlay_bg_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_overlay_bg_disabled"] = style__dropdown_overlay_bg_disabled;
+	style__dropdown_overlay_bg_disabled.textureBg = "";
+	style__dropdown_overlay_bg_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_overlay_bg_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_overlay_bg_disabled.orientation = "left";
+	style__dropdown_overlay_bg_disabled.opacity = 0.6;
+	style__dropdown_overlay_bg_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_overlay_bg_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_overlay_bg_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_overlay_bg_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_overlay_bg_disabled.cornerRadius = 5;
+	style__dropdown_overlay_bg_disabled.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-14276557)};
+	style__dropdown_overlay_bg_disabled.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__dropdown_overlay_bg_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_overlay_bg_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_overlay_bg_default"] = style__dropdown_overlay_bg_default;
+	style__dropdown_overlay_bg_default.textureBg = "";
+	style__dropdown_overlay_bg_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_overlay_bg_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_overlay_bg_default.orientation = "left";
+	style__dropdown_overlay_bg_default.opacity = 1.;
+	style__dropdown_overlay_bg_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_overlay_bg_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_overlay_bg_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_overlay_bg_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_overlay_bg_default.cornerRadius = 5;
+	style__dropdown_overlay_bg_default.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-14276557)};
+	style__dropdown_overlay_bg_default.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__dropdown_overlay_bg_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_overlay_bg_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_overlay_bg_click"] = style__dropdown_overlay_bg_click;
+	style__dropdown_overlay_bg_click.textureBg = "";
+	style__dropdown_overlay_bg_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_overlay_bg_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_overlay_bg_click.orientation = "left";
+	style__dropdown_overlay_bg_click.opacity = 1.;
+	style__dropdown_overlay_bg_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_overlay_bg_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_overlay_bg_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_overlay_bg_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_overlay_bg_click.cornerRadius = 5;
+	style__dropdown_overlay_bg_click.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-14276557)};
+	style__dropdown_overlay_bg_click.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-1)};
+	style__dropdown_overlay_bg_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_option_selected_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_option_selected_hover"] = style__dropdown_option_selected_hover;
+	style__dropdown_option_selected_hover.textureBg = "";
+	style__dropdown_option_selected_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_option_selected_hover.padding = { top : 0, right : 0, left : 8, bottom : 0};
+	style__dropdown_option_selected_hover.orientation = "left";
+	style__dropdown_option_selected_hover.opacity = 1.;
+	style__dropdown_option_selected_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_option_selected_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_option_selected_hover.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_option_selected_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_option_selected_hover.cornerRadius = 5;
+	style__dropdown_option_selected_hover.color = { useGradient : false, text : kha_Color._new(-1088493), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(0)};
+	style__dropdown_option_selected_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__dropdown_option_selected_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_option_selected_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_option_selected_disabled"] = style__dropdown_option_selected_disabled;
+	style__dropdown_option_selected_disabled.textureBg = "";
+	style__dropdown_option_selected_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_option_selected_disabled.padding = { top : 0, right : 0, left : 8, bottom : 0};
+	style__dropdown_option_selected_disabled.orientation = "left";
+	style__dropdown_option_selected_disabled.opacity = 0.6;
+	style__dropdown_option_selected_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_option_selected_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_option_selected_disabled.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_option_selected_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_option_selected_disabled.cornerRadius = 5;
+	style__dropdown_option_selected_disabled.color = { useGradient : false, text : kha_Color._new(-1088493), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(0)};
+	style__dropdown_option_selected_disabled.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__dropdown_option_selected_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_option_selected_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_option_selected_default"] = style__dropdown_option_selected_default;
+	style__dropdown_option_selected_default.textureBg = "";
+	style__dropdown_option_selected_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_option_selected_default.padding = { top : 0, right : 0, left : 8, bottom : 0};
+	style__dropdown_option_selected_default.orientation = "left";
+	style__dropdown_option_selected_default.opacity = 1.;
+	style__dropdown_option_selected_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_option_selected_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_option_selected_default.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_option_selected_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_option_selected_default.cornerRadius = 5;
+	style__dropdown_option_selected_default.color = { useGradient : false, text : kha_Color._new(-1088493), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(0)};
+	style__dropdown_option_selected_default.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__dropdown_option_selected_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_option_selected_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_option_selected_click"] = style__dropdown_option_selected_click;
+	style__dropdown_option_selected_click.textureBg = "";
+	style__dropdown_option_selected_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_option_selected_click.padding = { top : 0, right : 0, left : 8, bottom : 0};
+	style__dropdown_option_selected_click.orientation = "left";
+	style__dropdown_option_selected_click.opacity = 1.;
+	style__dropdown_option_selected_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_option_selected_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_option_selected_click.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_option_selected_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_option_selected_click.cornerRadius = 5;
+	style__dropdown_option_selected_click.color = { useGradient : false, text : kha_Color._new(-1088493), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(0)};
+	style__dropdown_option_selected_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__dropdown_option_selected_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_option_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_option_hover"] = style__dropdown_option_hover;
+	style__dropdown_option_hover.textureBg = "";
+	style__dropdown_option_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_option_hover.padding = { top : 0, right : 0, left : 8, bottom : 0};
+	style__dropdown_option_hover.orientation = "left";
+	style__dropdown_option_hover.opacity = 1.;
+	style__dropdown_option_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_option_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_option_hover.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_option_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_option_hover.cornerRadius = 5;
+	style__dropdown_option_hover.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(0)};
+	style__dropdown_option_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__dropdown_option_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_option_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_option_disabled"] = style__dropdown_option_disabled;
+	style__dropdown_option_disabled.textureBg = "";
+	style__dropdown_option_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_option_disabled.padding = { top : 0, right : 0, left : 8, bottom : 0};
+	style__dropdown_option_disabled.orientation = "left";
+	style__dropdown_option_disabled.opacity = 0.6;
+	style__dropdown_option_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_option_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_option_disabled.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_option_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_option_disabled.cornerRadius = 5;
+	style__dropdown_option_disabled.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(0)};
+	style__dropdown_option_disabled.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__dropdown_option_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_option_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_option_default"] = style__dropdown_option_default;
+	style__dropdown_option_default.textureBg = "";
+	style__dropdown_option_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_option_default.padding = { top : 0, right : 0, left : 8, bottom : 0};
+	style__dropdown_option_default.orientation = "left";
+	style__dropdown_option_default.opacity = 1.;
+	style__dropdown_option_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_option_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_option_default.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_option_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_option_default.cornerRadius = 5;
+	style__dropdown_option_default.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(0)};
+	style__dropdown_option_default.border = { style : "middle", size : 0, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__dropdown_option_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_option_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_option_click"] = style__dropdown_option_click;
+	style__dropdown_option_click.textureBg = "";
+	style__dropdown_option_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_option_click.padding = { top : 0, right : 0, left : 8, bottom : 0};
+	style__dropdown_option_click.orientation = "left";
+	style__dropdown_option_click.opacity = 1.;
+	style__dropdown_option_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_option_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_option_click.dropShadow = { radius : 0, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_option_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_option_click.cornerRadius = 5;
+	style__dropdown_option_click.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(0)};
+	style__dropdown_option_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__dropdown_option_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_hover"] = style__dropdown_hover;
+	style__dropdown_hover.textureBg = "";
+	style__dropdown_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_hover.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__dropdown_hover.orientation = "left";
+	style__dropdown_hover.opacity = 1.;
+	style__dropdown_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_hover.dropdown = { separatorSize : 0, separatorColor : kha_Color._new(-16777216), arrowSize : 6, arrowRight : true, arrowColor : kha_Color._new(-2236963)};
+	style__dropdown_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_hover.cornerRadius = 5;
+	style__dropdown_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__dropdown_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__dropdown_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_disabled"] = style__dropdown_disabled;
+	style__dropdown_disabled.textureBg = "";
+	style__dropdown_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_disabled.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__dropdown_disabled.orientation = "left";
+	style__dropdown_disabled.opacity = 0.6;
+	style__dropdown_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_disabled.dropdown = { separatorSize : 0, separatorColor : kha_Color._new(-16777216), arrowSize : 6, arrowRight : true, arrowColor : kha_Color._new(-2236963)};
+	style__dropdown_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_disabled.cornerRadius = 5;
+	style__dropdown_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__dropdown_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__dropdown_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_default"] = style__dropdown_default;
+	style__dropdown_default.textureBg = "";
+	style__dropdown_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_default.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__dropdown_default.orientation = "left";
+	style__dropdown_default.opacity = 1.;
+	style__dropdown_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_default.dropdown = { separatorSize : 0, separatorColor : kha_Color._new(-16777216), arrowSize : 6, arrowRight : true, arrowColor : kha_Color._new(-2236963)};
+	style__dropdown_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_default.cornerRadius = 5;
+	style__dropdown_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__dropdown_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__dropdown_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__dropdown_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_dropdown_click"] = style__dropdown_click;
+	style__dropdown_click.textureBg = "";
+	style__dropdown_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__dropdown_click.padding = { top : 0, right : 8, left : 8, bottom : 0};
+	style__dropdown_click.orientation = "left";
+	style__dropdown_click.opacity = 1.;
+	style__dropdown_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__dropdown_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__dropdown_click.dropdown = { separatorSize : 0, separatorColor : kha_Color._new(-16777216), arrowSize : 6, arrowRight : true, arrowColor : kha_Color._new(-2236963)};
+	style__dropdown_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__dropdown_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__dropdown_click.cornerRadius = 5;
+	style__dropdown_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__dropdown_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__dropdown_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__collayout_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_collayout_hover"] = style__collayout_hover;
+	style__collayout_hover.textureBg = "";
+	style__collayout_hover.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__collayout_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__collayout_hover.orientation = "left";
+	style__collayout_hover.opacity = 1.;
+	style__collayout_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__collayout_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__collayout_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__collayout_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__collayout_hover.cornerRadius = 5;
+	style__collayout_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__collayout_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__collayout_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__collayout_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_collayout_disabled"] = style__collayout_disabled;
+	style__collayout_disabled.textureBg = "";
+	style__collayout_disabled.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__collayout_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__collayout_disabled.orientation = "left";
+	style__collayout_disabled.opacity = 0.6;
+	style__collayout_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__collayout_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__collayout_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__collayout_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__collayout_disabled.cornerRadius = 5;
+	style__collayout_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__collayout_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__collayout_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__collayout_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_collayout_default"] = style__collayout_default;
+	style__collayout_default.textureBg = "";
+	style__collayout_default.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__collayout_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__collayout_default.orientation = "left";
+	style__collayout_default.opacity = 1.;
+	style__collayout_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__collayout_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__collayout_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__collayout_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__collayout_default.cornerRadius = 5;
+	style__collayout_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__collayout_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__collayout_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__collayout_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_collayout_click"] = style__collayout_click;
+	style__collayout_click.textureBg = "";
+	style__collayout_click.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__collayout_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__collayout_click.orientation = "left";
+	style__collayout_click.opacity = 1.;
+	style__collayout_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__collayout_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__collayout_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__collayout_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__collayout_click.cornerRadius = 5;
+	style__collayout_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__collayout_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__collayout_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__checkbox_inner_checked_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_checkbox_inner_checked_hover"] = style__checkbox_inner_checked_hover;
+	style__checkbox_inner_checked_hover.textureBg = "";
+	style__checkbox_inner_checked_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__checkbox_inner_checked_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_checked_hover.orientation = "left";
+	style__checkbox_inner_checked_hover.opacity = 1.;
+	style__checkbox_inner_checked_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_checked_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__checkbox_inner_checked_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__checkbox_inner_checked_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__checkbox_inner_checked_hover.cornerRadius = 5;
+	style__checkbox_inner_checked_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-749997), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__checkbox_inner_checked_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__checkbox_inner_checked_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__checkbox_inner_checked_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_checkbox_inner_checked_disabled"] = style__checkbox_inner_checked_disabled;
+	style__checkbox_inner_checked_disabled.textureBg = "";
+	style__checkbox_inner_checked_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__checkbox_inner_checked_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_checked_disabled.orientation = "left";
+	style__checkbox_inner_checked_disabled.opacity = 0.6;
+	style__checkbox_inner_checked_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_checked_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__checkbox_inner_checked_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__checkbox_inner_checked_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__checkbox_inner_checked_disabled.cornerRadius = 5;
+	style__checkbox_inner_checked_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-749997), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__checkbox_inner_checked_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__checkbox_inner_checked_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__checkbox_inner_checked_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_checkbox_inner_checked_default"] = style__checkbox_inner_checked_default;
+	style__checkbox_inner_checked_default.textureBg = "";
+	style__checkbox_inner_checked_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__checkbox_inner_checked_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_checked_default.orientation = "left";
+	style__checkbox_inner_checked_default.opacity = 1.;
+	style__checkbox_inner_checked_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_checked_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__checkbox_inner_checked_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__checkbox_inner_checked_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__checkbox_inner_checked_default.cornerRadius = 5;
+	style__checkbox_inner_checked_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-749997), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__checkbox_inner_checked_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__checkbox_inner_checked_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__checkbox_inner_checked_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_checkbox_inner_checked_click"] = style__checkbox_inner_checked_click;
+	style__checkbox_inner_checked_click.textureBg = "";
+	style__checkbox_inner_checked_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__checkbox_inner_checked_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_checked_click.orientation = "left";
+	style__checkbox_inner_checked_click.opacity = 1.;
+	style__checkbox_inner_checked_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_checked_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__checkbox_inner_checked_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__checkbox_inner_checked_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__checkbox_inner_checked_click.cornerRadius = 5;
+	style__checkbox_inner_checked_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-749997), colorBottomRight : kha_Color._new(-1088493)}, bg : kha_Color._new(-15132127)};
+	style__checkbox_inner_checked_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__checkbox_inner_checked_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__checkbox_inner_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_checkbox_inner_hover"] = style__checkbox_inner_hover;
+	style__checkbox_inner_hover.textureBg = "";
+	style__checkbox_inner_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 18};
+	style__checkbox_inner_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_hover.orientation = "left";
+	style__checkbox_inner_hover.opacity = 1.;
+	style__checkbox_inner_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__checkbox_inner_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__checkbox_inner_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__checkbox_inner_hover.cornerRadius = 5;
+	style__checkbox_inner_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__checkbox_inner_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__checkbox_inner_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__checkbox_inner_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_checkbox_inner_disabled"] = style__checkbox_inner_disabled;
+	style__checkbox_inner_disabled.textureBg = "";
+	style__checkbox_inner_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 18};
+	style__checkbox_inner_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_disabled.orientation = "left";
+	style__checkbox_inner_disabled.opacity = 0.6;
+	style__checkbox_inner_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__checkbox_inner_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__checkbox_inner_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__checkbox_inner_disabled.cornerRadius = 5;
+	style__checkbox_inner_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__checkbox_inner_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__checkbox_inner_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__checkbox_inner_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_checkbox_inner_default"] = style__checkbox_inner_default;
+	style__checkbox_inner_default.textureBg = "";
+	style__checkbox_inner_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 18};
+	style__checkbox_inner_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_default.orientation = "left";
+	style__checkbox_inner_default.opacity = 1.;
+	style__checkbox_inner_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__checkbox_inner_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__checkbox_inner_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__checkbox_inner_default.cornerRadius = 5;
+	style__checkbox_inner_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__checkbox_inner_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__checkbox_inner_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__checkbox_inner_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_checkbox_inner_click"] = style__checkbox_inner_click;
+	style__checkbox_inner_click.textureBg = "";
+	style__checkbox_inner_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 18};
+	style__checkbox_inner_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_click.orientation = "left";
+	style__checkbox_inner_click.opacity = 1.;
+	style__checkbox_inner_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_inner_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__checkbox_inner_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__checkbox_inner_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__checkbox_inner_click.cornerRadius = 5;
+	style__checkbox_inner_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__checkbox_inner_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__checkbox_inner_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__checkbox_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_checkbox_hover"] = style__checkbox_hover;
+	style__checkbox_hover.textureBg = "";
+	style__checkbox_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__checkbox_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_hover.orientation = "left";
+	style__checkbox_hover.opacity = 1.;
+	style__checkbox_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__checkbox_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__checkbox_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__checkbox_hover.cornerRadius = 5;
+	style__checkbox_hover.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(0)};
+	style__checkbox_hover.checkbox = { useAutoPadding : true};
+	style__checkbox_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1723184566)};
+	style__checkbox_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__checkbox_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_checkbox_disabled"] = style__checkbox_disabled;
+	style__checkbox_disabled.textureBg = "";
+	style__checkbox_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__checkbox_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_disabled.orientation = "left";
+	style__checkbox_disabled.opacity = 0.6;
+	style__checkbox_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__checkbox_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__checkbox_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__checkbox_disabled.cornerRadius = 5;
+	style__checkbox_disabled.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(0)};
+	style__checkbox_disabled.checkbox = { useAutoPadding : true};
+	style__checkbox_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1723184566)};
+	style__checkbox_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__checkbox_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_checkbox_default"] = style__checkbox_default;
+	style__checkbox_default.textureBg = "";
+	style__checkbox_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__checkbox_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_default.orientation = "left";
+	style__checkbox_default.opacity = 1.;
+	style__checkbox_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__checkbox_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__checkbox_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__checkbox_default.cornerRadius = 5;
+	style__checkbox_default.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(0)};
+	style__checkbox_default.checkbox = { useAutoPadding : true};
+	style__checkbox_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1723184566)};
+	style__checkbox_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__checkbox_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_checkbox_click"] = style__checkbox_click;
+	style__checkbox_click.textureBg = "";
+	style__checkbox_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__checkbox_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_click.orientation = "left";
+	style__checkbox_click.opacity = 1.;
+	style__checkbox_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__checkbox_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__checkbox_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__checkbox_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__checkbox_click.cornerRadius = 5;
+	style__checkbox_click.color = { useGradient : false, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(0)};
+	style__checkbox_click.checkbox = { useAutoPadding : true};
+	style__checkbox_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1723184566)};
+	style__checkbox_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__button_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_button_hover"] = style__button_hover;
+	style__button_hover.textureBg = "";
+	style__button_hover.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__button_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__button_hover.orientation = "left";
+	style__button_hover.opacity = 1.;
+	style__button_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__button_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__button_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__button_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__button_hover.cornerRadius = 5;
+	style__button_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__button_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__button_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__button_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_button_disabled"] = style__button_disabled;
+	style__button_disabled.textureBg = "";
+	style__button_disabled.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__button_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__button_disabled.orientation = "left";
+	style__button_disabled.opacity = 0.6;
+	style__button_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__button_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__button_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__button_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__button_disabled.cornerRadius = 5;
+	style__button_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__button_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__button_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__button_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_button_default"] = style__button_default;
+	style__button_default.textureBg = "";
+	style__button_default.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__button_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__button_default.orientation = "left";
+	style__button_default.opacity = 1.;
+	style__button_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__button_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__button_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__button_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__button_default.cornerRadius = 5;
+	style__button_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__button_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__button_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__button_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_button_click"] = style__button_click;
+	style__button_click.textureBg = "";
+	style__button_click.size = { width : 200, minWidth : 0, minHeight : 0, maxWidth : 0, maxHeight : 0, height : 40};
+	style__button_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__button_click.orientation = "left";
+	style__button_click.opacity = 1.;
+	style__button_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__button_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__button_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__button_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__button_click.cornerRadius = 5;
+	style__button_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__button_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__button_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__anchorpane_hover = new koui_theme_Style();
+	koui_theme_Style.styles.h["_anchorpane_hover"] = style__anchorpane_hover;
+	style__anchorpane_hover.textureBg = "";
+	style__anchorpane_hover.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__anchorpane_hover.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__anchorpane_hover.orientation = "left";
+	style__anchorpane_hover.opacity = 1.;
+	style__anchorpane_hover.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__anchorpane_hover.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__anchorpane_hover.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__anchorpane_hover.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__anchorpane_hover.cornerRadius = 5;
+	style__anchorpane_hover.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13948109), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__anchorpane_hover.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1088493)};
+	style__anchorpane_hover.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__anchorpane_disabled = new koui_theme_Style();
+	koui_theme_Style.styles.h["_anchorpane_disabled"] = style__anchorpane_disabled;
+	style__anchorpane_disabled.textureBg = "";
+	style__anchorpane_disabled.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__anchorpane_disabled.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__anchorpane_disabled.orientation = "left";
+	style__anchorpane_disabled.opacity = 0.6;
+	style__anchorpane_disabled.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__anchorpane_disabled.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__anchorpane_disabled.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__anchorpane_disabled.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__anchorpane_disabled.cornerRadius = 5;
+	style__anchorpane_disabled.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__anchorpane_disabled.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__anchorpane_disabled.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__anchorpane_default = new koui_theme_Style();
+	koui_theme_Style.styles.h["_anchorpane_default"] = style__anchorpane_default;
+	style__anchorpane_default.textureBg = "";
+	style__anchorpane_default.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__anchorpane_default.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__anchorpane_default.orientation = "left";
+	style__anchorpane_default.opacity = 1.;
+	style__anchorpane_default.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__anchorpane_default.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__anchorpane_default.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__anchorpane_default.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__anchorpane_default.cornerRadius = 5;
+	style__anchorpane_default.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-14276557), colorBottomRight : kha_Color._new(-15132127)}, bg : kha_Color._new(-15132127)};
+	style__anchorpane_default.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-14737368)};
+	style__anchorpane_default.atlas = { y : 0, x : 0, w : 10, h : 10};
+	var style__anchorpane_click = new koui_theme_Style();
+	koui_theme_Style.styles.h["_anchorpane_click"] = style__anchorpane_click;
+	style__anchorpane_click.textureBg = "";
+	style__anchorpane_click.size = { width : 200, minWidth : 20, minHeight : 20, maxWidth : 0, maxHeight : 0, height : 40};
+	style__anchorpane_click.padding = { top : 0, right : 0, left : 0, bottom : 0};
+	style__anchorpane_click.orientation = "left";
+	style__anchorpane_click.opacity = 1.;
+	style__anchorpane_click.margin = { top : 0, right : 0, left : 0, bottom : 0};
+	style__anchorpane_click.font = { underlineThickness : 0, size : 16, family : "Montserrat_Regular"};
+	style__anchorpane_click.dropShadow = { radius : 5, falloff : 3.5, color : kha_Color._new(1996488704)};
+	style__anchorpane_click.cursors = { notallowed : "notallowed", defaultCursor : "default"};
+	style__anchorpane_click.cornerRadius = 5;
+	style__anchorpane_click.color = { useGradient : true, text : kha_Color._new(-2236963), gradient : { direction : true, colorTopLeft : kha_Color._new(-13355194), colorBottomRight : kha_Color._new(-14276557)}, bg : kha_Color._new(-15132127)};
+	style__anchorpane_click.border = { style : "middle", size : 2, nineSlice : false, color : kha_Color._new(-1)};
+	style__anchorpane_click.atlas = { y : 0, x : 0, w : 10, h : 10};
+	koui_theme_Style.requiredAssets = ["Montserrat_Regular",""];
+};
+koui_theme_Style.makeOverride = function(styleGroup,overrideProp,newValue) {
+	var oldValue = Reflect.field(styleGroup,overrideProp);
+	styleGroup[overrideProp] = newValue;
+	return oldValue;
+};
+koui_theme_Style.withOverride = function(styleGroup,overrideProp,newValue,action) {
+	var oldValue = Reflect.field(styleGroup,overrideProp);
+	styleGroup[overrideProp] = newValue;
+	var oldPropVal = oldValue;
+	action();
+	var oldValue = Reflect.field(styleGroup,overrideProp);
+	styleGroup[overrideProp] = oldPropVal;
+};
+koui_theme_Style.getStyle = function(tID,state) {
+	if(state == null) {
+		state = "default";
+	}
+	return koui_theme_Style.styles.h[tID + "_" + state];
+};
+koui_theme_Style.prototype = {
+	textureBg: null
+	,textinput: null
+	,textShadow: null
+	,slider: null
+	,size: null
+	,scrollbar: null
+	,padding: null
+	,orientation: null
+	,opacity: null
+	,margin: null
+	,font: null
+	,dropdown: null
+	,dropShadow: null
+	,cursors: null
+	,cornerRadius: null
+	,color: null
+	,checkbox: null
+	,border: null
+	,atlas: null
+	,__class__: koui_theme_Style
+};
+var koui_theme_ThemeUtil = function() { };
+$hxClasses["koui.theme.ThemeUtil"] = koui_theme_ThemeUtil;
+koui_theme_ThemeUtil.__name__ = "koui.theme.ThemeUtil";
+var koui_theme_parser_ThemeParser = function() { };
+$hxClasses["koui.theme.parser.ThemeParser"] = koui_theme_parser_ThemeParser;
+koui_theme_parser_ThemeParser.__name__ = "koui.theme.parser.ThemeParser";
+koui_theme_parser_ThemeParser.initParser = function(consecutiveRun) {
+	koui_theme_parser_ThemeParser.parserState = { currentLine : 0, foundRules : false, visitingGlobals : false, visitingRules : false, indentStack : new haxe_ds_GenericStack(), outputStack : new haxe_ds_GenericStack(), pathStack : new haxe_ds_GenericStack(), lastLineType : 3, consecutiveRun : consecutiveRun};
+	var _this = koui_theme_parser_ThemeParser.parserState.indentStack;
+	_this.head = new haxe_ds_GenericCell(0,_this.head);
+	if(!consecutiveRun) {
+		koui_theme_parser_ThemeParser.out = { rules : new haxe_ds_StringMap(), props : new haxe_ds_StringMap(), selectors : new haxe_ds_StringMap(), references : [], selectorStates : new haxe_ds_StringMap(), assetNames : new koui_utils_Set_$String()};
+	}
+};
+koui_theme_parser_ThemeParser.parseLine = function(line) {
+	if(!koui_theme_parser_ThemeParser.parserState.foundRules) {
+		if(koui_theme_parser_ThemeParser.rulesReg.match(line)) {
+			koui_theme_parser_ThemeParser.parserState.foundRules = true;
+			koui_theme_parser_ThemeParser.parserState.visitingRules = true;
+			var tRulesGroup = { path : "", optional : false, map : koui_theme_parser_ThemeParser.out.rules};
+			var _this = koui_theme_parser_ThemeParser.parserState.outputStack;
+			_this.head = new haxe_ds_GenericCell(koui_theme_parser_Node.EGroup(tRulesGroup),_this.head);
+			return;
+		} else if(!koui_theme_parser_ThemeParser.parserState.consecutiveRun) {
+			throw haxe_Exception.thrown("File must start with @rules definitions!");
+		}
+	}
+	if(!koui_theme_parser_ThemeParser.regIndent.match(line)) {
+		throw haxe_Exception.thrown("Syntax error: could not match indentation!");
+	}
+	line = koui_theme_parser_ThemeParser.regIndent.matched(2);
+	if(StringTools.ltrim(line) != line) {
+		throw haxe_Exception.thrown("Syntax error: tabs must be used for indentation!");
+	}
+	var indentLevel = koui_theme_parser_ThemeParser.regIndent.matched(1).length;
+	var _this = koui_theme_parser_ThemeParser.parserState.indentStack;
+	var lastIndentLevel = _this.head == null ? null : _this.head.elt;
+	koui_theme_parser_ThemeParser.calculateIndentation(indentLevel);
+	if(koui_theme_parser_ThemeParser.parserState.visitingRules && indentLevel == 0) {
+		koui_theme_parser_ThemeParser.parserState.visitingRules = false;
+	}
+	if(koui_theme_parser_ThemeParser.parserState.visitingGlobals && indentLevel == 0) {
+		koui_theme_parser_ThemeParser.parserState.visitingGlobals = false;
+	}
+	if(koui_theme_parser_ThemeParser.parserState.visitingRules && koui_theme_parser_ThemeParser.ruleReg.match(line)) {
+		koui_theme_parser_ThemeParser.parseRule(koui_theme_parser_ThemeParser.ruleReg,indentLevel,lastIndentLevel);
+	} else if(!koui_theme_parser_ThemeParser.parserState.visitingRules) {
+		if(koui_theme_parser_ThemeParser.globalsReg.match(line)) {
+			koui_theme_parser_ThemeParser.parserState.visitingGlobals = true;
+			koui_theme_parser_ThemeParser.parseProperty(koui_theme_parser_ThemeParser.globalsReg,indentLevel,lastIndentLevel,true);
+		} else if(koui_theme_parser_ThemeParser.lineReg.match(line)) {
+			koui_theme_parser_ThemeParser.parseProperty(koui_theme_parser_ThemeParser.lineReg,indentLevel,lastIndentLevel);
+		} else {
+			throw haxe_Exception.thrown("Syntax error!");
+		}
+	} else {
+		throw haxe_Exception.thrown("Syntax error!");
+	}
+};
+koui_theme_parser_ThemeParser.parseRule = function(matchedReg,indentLevel,lastIndentLevel) {
+	var matchedOptional = matchedReg.matched(1);
+	var matchedGroup = matchedReg.matched(2);
+	var matchedType = matchedReg.matched(3);
+	koui_theme_parser_ThemeParser.validateNoKeyword(matchedGroup);
+	if(matchedType == "") {
+		var tGroup = koui_theme_parser_ThemeParser.parseGroup(matchedGroup,indentLevel,lastIndentLevel);
+		if(matchedOptional == "?") {
+			tGroup.optional = true;
+		}
+	} else {
+		koui_theme_parser_ThemeParser.unindent(indentLevel,lastIndentLevel);
+		var _this = koui_theme_parser_ThemeParser.parserState.pathStack;
+		_this.head = new haxe_ds_GenericCell(matchedGroup,_this.head);
+		if(!Lambda.has(koui_theme_parser_ThemeParser.validTypes,matchedType)) {
+			throw haxe_Exception.thrown("The type of rule \"" + koui_theme_parser_ThemeParser.pathToString() + "\" is not supported! Type: \"" + matchedType + "\"");
+		}
+		var _this = koui_theme_parser_ThemeParser.parserState.outputStack;
+		var _g = _this.head == null ? null : _this.head.elt;
+		if(_g == null) {
+			throw haxe_Exception.thrown("Internal error!");
+		} else if(_g._hx_index == 1) {
+			var tGroup = _g.tGroup;
+			tGroup.map.h[matchedGroup] = koui_theme_parser_Node.EType(matchedType);
+		} else {
+			throw haxe_Exception.thrown("Internal error!");
+		}
+		koui_theme_parser_ThemeParser.parserState.lastLineType = 2;
+	}
+};
+koui_theme_parser_ThemeParser.parseProperty = function(matchedReg,indentLevel,lastIndentLevel,globalSelector) {
+	if(globalSelector == null) {
+		globalSelector = false;
+	}
+	var matchedGroup = matchedReg.matched(1);
+	var matchedState = matchedReg.matched(2);
+	var matchedExtends = null;
+	var matchedValue = "";
+	if(!globalSelector) {
+		matchedExtends = matchedReg.matched(4);
+		matchedValue = matchedReg.matched(5);
+	}
+	koui_theme_parser_ThemeParser.validateNoKeyword(matchedGroup);
+	if(indentLevel == 0) {
+		koui_theme_parser_ThemeParser.parseSelector(matchedGroup,matchedState,matchedExtends,matchedValue);
+		return;
+	}
+	if(matchedValue == "") {
+		if(koui_theme_parser_ThemeParser.parserState.visitingGlobals) {
+			throw haxe_Exception.thrown("Groups are not allowed in @globals section!");
+		} else {
+			var tGroup = koui_theme_parser_ThemeParser.parseGroup(matchedGroup,indentLevel,lastIndentLevel);
+			var path = koui_theme_parser_ThemeParser.getCurrentPath();
+			path.shift();
+			var _g = koui_theme_parser_ThemeParser.traverseByPath(koui_theme_parser_ThemeParser.out.rules,path);
+			if(_g._hx_index == 1) {
+				var tRuleGroup = _g.tGroup;
+				tGroup.optional = tRuleGroup.optional;
+			} else {
+				throw haxe_Exception.thrown("Internal error!");
+			}
+		}
+	} else {
+		koui_theme_parser_ThemeParser.unindent(indentLevel,lastIndentLevel);
+		var _this = koui_theme_parser_ThemeParser.parserState.pathStack;
+		_this.head = new haxe_ds_GenericCell(matchedGroup,_this.head);
+		var _this = koui_theme_parser_ThemeParser.parserState.outputStack;
+		var _g = _this.head == null ? null : _this.head.elt;
+		if(_g == null) {
+			throw haxe_Exception.thrown("Internal error!");
+		} else {
+			switch(_g._hx_index) {
+			case 1:
+				var tGroup = _g.tGroup;
+				var this1 = tGroup.map;
+				var value = koui_theme_parser_Node.EValue(koui_theme_parser_ThemeParser.parseValue(matchedValue));
+				this1.h[matchedGroup] = value;
+				break;
+			case 2:
+				var tSelector = _g.tSelector;
+				var this1 = tSelector.map;
+				var value = koui_theme_parser_Node.EValue(koui_theme_parser_ThemeParser.parseValue(matchedValue));
+				this1.h[matchedGroup] = value;
+				break;
+			default:
+				throw haxe_Exception.thrown("Internal error!");
+			}
+		}
+		koui_theme_parser_ThemeParser.parserState.lastLineType = 2;
+	}
+	if(indentLevel != 0 && matchedExtends != null) {
+		throw haxe_Exception.thrown("Extension not supported for non-selectors: " + koui_theme_parser_ThemeParser.pathToString());
+	}
+};
+koui_theme_parser_ThemeParser.parseSelector = function(selectorName,state,extending,value) {
+	koui_theme_parser_ThemeParser.parserState.pathStack = new haxe_ds_GenericStack();
+	var _this = koui_theme_parser_ThemeParser.parserState.pathStack;
+	_this.head = new haxe_ds_GenericCell(selectorName,_this.head);
+	if(selectorName == "_root" || selectorName == "@globals") {
+		if(extending != null) {
+			throw haxe_Exception.thrown("Selector " + selectorName + " is not allowed to extend another selector!");
+		}
+	} else if(state == null && extending == null) {
+		throw haxe_Exception.thrown("Default state selector must extend _root or extension of _root! Path: " + koui_theme_parser_ThemeParser.pathToString());
+	}
+	if(selectorName == extending) {
+		throw haxe_Exception.thrown("Selectors are not allowed to extend themselves! Path: " + koui_theme_parser_ThemeParser.pathToString());
+	}
+	if(extending != null && state != null && state != "!default") {
+		throw haxe_Exception.thrown("Extending selector must not have a state other than \"default\"! Path: " + koui_theme_parser_ThemeParser.pathToString());
+	}
+	if(value != "") {
+		throw haxe_Exception.thrown("Selector must not have a value! Path: " + koui_theme_parser_ThemeParser.pathToString());
+	}
+	if(state == null) {
+		state = "!default";
+	}
+	if(Object.prototype.hasOwnProperty.call(koui_theme_parser_ThemeParser.out.selectorStates.h,selectorName)) {
+		koui_theme_parser_ThemeParser.out.selectorStates.h[selectorName].push(state);
+	} else {
+		var v = [state];
+		koui_theme_parser_ThemeParser.out.selectorStates.h[selectorName] = v;
+	}
+	var tSelector;
+	if(Object.prototype.hasOwnProperty.call(koui_theme_parser_ThemeParser.out.selectors.h,selectorName + state)) {
+		tSelector = koui_theme_parser_ThemeParser.out.selectors.h[selectorName + state];
+	} else {
+		var selectorMap = new haxe_ds_StringMap();
+		tSelector = { name : selectorName + state, map : selectorMap, resolvedExtensions : extending == null && state == "!default", hasAllStates : extending == null, pureName : selectorName, state : state, extending : extending == null ? null : extending + "!default"};
+		koui_theme_parser_ThemeParser.out.selectors.h[tSelector.name] = tSelector;
+	}
+	koui_theme_parser_ThemeParser.parserState.outputStack = new haxe_ds_GenericStack();
+	var _this = koui_theme_parser_ThemeParser.parserState.outputStack;
+	_this.head = new haxe_ds_GenericCell(koui_theme_parser_Node.ESelector(tSelector),_this.head);
+	koui_theme_parser_ThemeParser.out.props.h[tSelector.name] = tSelector.map;
+	koui_theme_parser_ThemeParser.parserState.lastLineType = 0;
+};
+koui_theme_parser_ThemeParser.parseGroup = function(groupName,indentLevel,lastIndentLevel) {
+	koui_theme_parser_ThemeParser.unindent(indentLevel,lastIndentLevel);
+	var _this = koui_theme_parser_ThemeParser.parserState.pathStack;
+	_this.head = new haxe_ds_GenericCell(groupName,_this.head);
+	var nodeGroup = null;
+	var tGroup;
+	var _this = koui_theme_parser_ThemeParser.parserState.outputStack;
+	var _g = _this.head == null ? null : _this.head.elt;
+	if(_g == null) {
+		throw haxe_Exception.thrown("Internal error!");
+	} else {
+		switch(_g._hx_index) {
+		case 1:
+			var tG = _g.tGroup;
+			nodeGroup = tG.map.h[groupName];
+			break;
+		case 2:
+			var tSelector = _g.tSelector;
+			nodeGroup = tSelector.map.h[groupName];
+			break;
+		default:
+			throw haxe_Exception.thrown("Internal error!");
+		}
+	}
+	if(nodeGroup != null) {
+		if(nodeGroup._hx_index == 1) {
+			var tG = nodeGroup.tGroup;
+			tGroup = tG;
+		} else {
+			throw haxe_Exception.thrown("Internal error!");
+		}
+	} else {
+		var subMap = new haxe_ds_StringMap();
+		tGroup = { path : koui_theme_parser_ThemeParser.pathToString(), optional : false, map : subMap};
+		nodeGroup = koui_theme_parser_Node.EGroup(tGroup);
+		var _this = koui_theme_parser_ThemeParser.parserState.outputStack;
+		var _g = _this.head == null ? null : _this.head.elt;
+		if(_g == null) {
+			throw haxe_Exception.thrown("Internal error!");
+		} else {
+			switch(_g._hx_index) {
+			case 1:
+				var tG = _g.tGroup;
+				tG.map.h[groupName] = nodeGroup;
+				break;
+			case 2:
+				var tSelector = _g.tSelector;
+				tSelector.map.h[groupName] = nodeGroup;
+				break;
+			default:
+				throw haxe_Exception.thrown("Internal error!");
+			}
+		}
+	}
+	if(nodeGroup == null) {
+		throw haxe_Exception.thrown("Internal error!");
+	}
+	var _this = koui_theme_parser_ThemeParser.parserState.outputStack;
+	_this.head = new haxe_ds_GenericCell(nodeGroup,_this.head);
+	koui_theme_parser_ThemeParser.parserState.lastLineType = 1;
+	return tGroup;
+};
+koui_theme_parser_ThemeParser.parseValue = function(valueStr) {
+	var path = koui_theme_parser_ThemeParser.getCurrentPath();
+	path.shift();
+	if(koui_theme_parser_ThemeParser.parserState.visitingGlobals) {
+		return { path : koui_theme_parser_ThemeParser.pathToString(), type : "", valueStr : valueStr, inherited : false};
+	}
+	var typeNode = koui_theme_parser_ThemeParser.traverseByPath(koui_theme_parser_ThemeParser.out.rules,path);
+	var tValue = { path : koui_theme_parser_ThemeParser.pathToString(), type : "", valueStr : valueStr, inherited : false};
+	if(typeNode._hx_index == 3) {
+		var typeStr = typeNode.type;
+		tValue.type = typeStr;
+	} else {
+		throw haxe_Exception.thrown("Internal error!");
+	}
+	if(StringTools.startsWith(valueStr,"$")) {
+		tValue.reference = HxOverrides.substr(valueStr,1,null);
+		koui_theme_parser_ThemeParser.out.references.push(tValue);
+		return tValue;
+	}
+	koui_theme_parser_ThemeParser.parseType(tValue);
+	return tValue;
+};
+koui_theme_parser_ThemeParser.parseType = function(tValue) {
+	var tmp;
+	switch(tValue.type) {
+	case "Bool":
+		tmp = koui_theme_parser_ThemeParser.parseBool(tValue.valueStr);
+		break;
+	case "Color":
+		tmp = koui_theme_parser_ThemeParser.parseColor(tValue.valueStr);
+		break;
+	case "Float":
+		tmp = koui_theme_parser_ThemeParser.parseFloat(tValue.valueStr);
+		break;
+	case "Int":
+		tmp = koui_theme_parser_ThemeParser.parseInt(tValue.valueStr);
+		break;
+	case "Asset":case "String":
+		tmp = koui_theme_parser_ThemeParser.parseString(tValue.valueStr);
+		break;
+	default:
+		throw haxe_Exception.thrown("Internal Error!");
+	}
+	tValue.value = tmp;
+	if(tValue.type == "Asset") {
+		koui_theme_parser_ThemeParser.out.assetNames.map.set(tValue.value,true);
+		tValue.type = "String";
+	}
+};
+koui_theme_parser_ThemeParser.parseBool = function(valueStr) {
+	if(valueStr.toLowerCase() == "true") {
+		return true;
+	} else if(valueStr.toLowerCase() == "false") {
+		return false;
+	} else {
+		throw haxe_Exception.thrown("Invalid value for type Bool: \"" + valueStr + "\"!");
+	}
+};
+koui_theme_parser_ThemeParser.parseColor = function(valueStr) {
+	if(koui_theme_parser_ThemeParser.regColor.match(valueStr)) {
+		var r = Std.parseInt("0x" + koui_theme_parser_ThemeParser.regColor.matched(1));
+		var g = Std.parseInt("0x" + koui_theme_parser_ThemeParser.regColor.matched(2));
+		var b = Std.parseInt("0x" + koui_theme_parser_ThemeParser.regColor.matched(3));
+		var a = 255;
+		if(koui_theme_parser_ThemeParser.regColor.matched(4) != "") {
+			a = Std.parseInt("0x" + koui_theme_parser_ThemeParser.regColor.matched(4));
+		}
+		return kha_Color.fromBytes(r,g,b,a);
+	} else {
+		throw haxe_Exception.thrown("Invalid value for type Color: \"" + valueStr + "\"!");
+	}
+};
+koui_theme_parser_ThemeParser.parseFloat = function(valueStr) {
+	var value = parseFloat(valueStr);
+	if(isNaN(value)) {
+		throw haxe_Exception.thrown("Invalid value for type Float: \"" + valueStr + "\"!");
+	}
+	return value;
+};
+koui_theme_parser_ThemeParser.parseInt = function(valueStr) {
+	var value = Std.parseInt(valueStr);
+	if(value == null) {
+		throw haxe_Exception.thrown("Invalid value for type Int: \"" + valueStr + "\"!");
+	}
+	return value;
+};
+koui_theme_parser_ThemeParser.parseString = function(valueStr) {
+	if(!StringTools.startsWith(valueStr,"\"") || !StringTools.endsWith(valueStr,"\"")) {
+		throw haxe_Exception.thrown("String must have double quotes around them! String: " + valueStr);
+	}
+	valueStr = HxOverrides.substr(valueStr,1,valueStr.length - 2);
+	valueStr = koui_utils_StringUtil.unescape(valueStr);
+	return valueStr;
+};
+koui_theme_parser_ThemeParser.resolveExtensions = function(selector) {
+	if(selector.resolvedExtensions) {
+		return;
+	}
+	if(selector.extending == null) {
+		koui_theme_parser_ThemeParser.resolveStates(selector);
+		return;
+	}
+	var extending = koui_theme_parser_ThemeParser.out.selectors.h[selector.extending];
+	if(extending == null) {
+		throw haxe_Exception.thrown("Selector " + selector.name + " extends " + selector.extending + " but extension does not exist!");
+	}
+	selector.map = koui_theme_parser_ThemeParser.mergeSelectorsResolved(selector,extending);
+};
+koui_theme_parser_ThemeParser.createRequiredStates = function(selector) {
+	if(selector.extending == null || selector.state != "!default" || selector.hasAllStates) {
+		return;
+	}
+	var extending = koui_theme_parser_ThemeParser.out.selectors.h[selector.extending];
+	if(!extending.hasAllStates) {
+		koui_theme_parser_ThemeParser.createRequiredStates(extending);
+	}
+	var _g = 0;
+	var _g1 = koui_theme_parser_ThemeParser.out.selectorStates.h[extending.pureName];
+	while(_g < _g1.length) {
+		var state = _g1[_g];
+		++_g;
+		if(!Lambda.has(koui_theme_parser_ThemeParser.out.selectorStates.h[selector.pureName],state)) {
+			koui_theme_parser_ThemeParser.out.selectorStates.h[selector.pureName].push(state);
+			var tSelector = { name : selector.pureName + state, map : new haxe_ds_StringMap(), resolvedExtensions : false, hasAllStates : true, pureName : selector.pureName, state : state, extending : extending.pureName + state};
+			koui_theme_parser_ThemeParser.out.selectors.h[tSelector.name] = tSelector;
+		} else {
+			koui_theme_parser_ThemeParser.out.selectors.h[selector.pureName + state].hasAllStates = true;
+		}
+	}
+};
+koui_theme_parser_ThemeParser.resolveStates = function(selector) {
+	if(selector.resolvedExtensions || selector.state == "!default") {
+		return;
+	}
+	var pureName = selector.pureName;
+	var defaultSelector = koui_theme_parser_ThemeParser.out.selectors.h[pureName + "!default"];
+	if(defaultSelector == null) {
+		throw haxe_Exception.thrown("Selector " + selector.name + " is missing a default state!");
+	}
+	var extendingMap = null;
+	if(defaultSelector.extending != null) {
+		var stateName = HxOverrides.substr(selector.state,1,null);
+		var extendingSameStateName = defaultSelector.extending.split("!")[0] + "!" + stateName;
+		var extendingSameState = koui_theme_parser_ThemeParser.out.selectors.h[extendingSameStateName];
+		if(extendingSameState != null) {
+			if(!defaultSelector.resolvedExtensions) {
+				koui_theme_parser_ThemeParser.resolveExtensions(defaultSelector);
+				koui_theme_parser_ThemeParser.resolveStates(defaultSelector);
+			}
+			extendingMap = koui_theme_parser_ThemeParser.mergeSelectorsResolved(defaultSelector,extendingSameState);
+		}
+	}
+	if(extendingMap == null) {
+		if(!defaultSelector.resolvedExtensions) {
+			koui_theme_parser_ThemeParser.resolveExtensions(defaultSelector);
+			koui_theme_parser_ThemeParser.resolveStates(defaultSelector);
+		}
+		selector.map = koui_theme_parser_ThemeParser.mergeMaps(defaultSelector.map,selector.map);
+	} else {
+		selector.map = koui_theme_parser_ThemeParser.mergeMaps(extendingMap,selector.map);
+	}
+	selector.resolvedExtensions = true;
+};
+koui_theme_parser_ThemeParser.resolveReferences = function(tValue) {
+	var path = tValue.reference.split(".");
+	var referencedSelector = koui_theme_parser_ThemeParser.out.selectors.h[path[0]];
+	if(referencedSelector == null) {
+		referencedSelector = koui_theme_parser_ThemeParser.out.selectors.h[path[0] + "!default"];
+	}
+	if(referencedSelector == null) {
+		throw haxe_Exception.thrown("Referenced selector \"" + (path[0] + "!default") + "\" does not exist!");
+	}
+	path.shift();
+	var referencedNode = koui_theme_parser_ThemeParser.traverseByPath(referencedSelector.map,path);
+	switch(referencedNode._hx_index) {
+	case 0:
+		var tReferencedValue = referencedNode.tValue;
+		if(tReferencedValue.reference != null) {
+			koui_theme_parser_ThemeParser.resolveReferences(tReferencedValue);
+		}
+		tValue.valueStr = tReferencedValue.valueStr;
+		break;
+	case 1:
+		var _g = referencedNode.tGroup;
+		throw haxe_Exception.thrown("Reference to group currently not allowed!");
+	default:
+		throw haxe_Exception.thrown("Internal error! referencedNode: " + Std.string(referencedNode));
+	}
+	tValue.reference = null;
+	koui_theme_parser_ThemeParser.parseType(tValue);
+};
+koui_theme_parser_ThemeParser.mergeSelectorsResolved = function(base,extending) {
+	if(!extending.resolvedExtensions) {
+		koui_theme_parser_ThemeParser.resolveExtensions(extending);
+		koui_theme_parser_ThemeParser.resolveStates(extending);
+	}
+	return koui_theme_parser_ThemeParser.mergeMaps(extending.map,base.map);
+};
+koui_theme_parser_ThemeParser.cloneMap = function(map,setInherited) {
+	var copiedMap = new haxe_ds_StringMap();
+	var h = map.h;
+	var _g_h = h;
+	var _g_keys = Object.keys(h);
+	var _g_length = _g_keys.length;
+	var _g_current = 0;
+	while(_g_current < _g_length) {
+		var key = _g_keys[_g_current++];
+		var _g1_key = key;
+		var _g1_value = _g_h[key];
+		var key1 = _g1_key;
+		var node = _g1_value;
+		switch(node._hx_index) {
+		case 0:
+			var tValue = node.tValue;
+			var copiedValue = Reflect.copy(tValue);
+			if(setInherited) {
+				copiedValue.inherited = true;
+			}
+			node = koui_theme_parser_Node.EValue(copiedValue);
+			break;
+		case 1:
+			var tGroup = node.tGroup;
+			var newTGroup = Reflect.copy(tGroup);
+			newTGroup.map = koui_theme_parser_ThemeParser.cloneMap(newTGroup.map,setInherited);
+			node = koui_theme_parser_Node.EGroup(newTGroup);
+			break;
+		case 2:
+			var tSelector = node.tSelector;
+			var newTSelector = Reflect.copy(tSelector);
+			newTSelector.map = koui_theme_parser_ThemeParser.cloneMap(newTSelector.map,setInherited);
+			node = koui_theme_parser_Node.ESelector(newTSelector);
+			break;
+		case 3:
+			var type = node.type;
+			node = koui_theme_parser_Node.EType(type);
+			break;
+		}
+		copiedMap.h[key1] = node;
+	}
+	return copiedMap;
+};
+koui_theme_parser_ThemeParser.mergeMaps = function(mapBase,mapAdd) {
+	mapBase = koui_theme_parser_ThemeParser.cloneMap(mapBase,true);
+	var h = mapAdd.h;
+	var _g_h = h;
+	var _g_keys = Object.keys(h);
+	var _g_length = _g_keys.length;
+	var _g_current = 0;
+	while(_g_current < _g_length) {
+		var key = _g_keys[_g_current++];
+		var _g1_key = key;
+		var _g1_value = _g_h[key];
+		var key1 = _g1_key;
+		var valueAdd = _g1_value;
+		var valueBase = mapBase.h[key1];
+		switch(valueAdd._hx_index) {
+		case 0:
+			var tValue = valueAdd.tValue;
+			if(tValue.inherited) {
+				continue;
+			}
+			if(valueBase == null) {
+				throw haxe_Exception.thrown("Could not find property \"" + key1 + "\" in extension or sub-extensions!");
+			}
+			var copiedValue = Reflect.copy(tValue);
+			copiedValue.inherited = false;
+			mapBase.h[key1] = koui_theme_parser_Node.EValue(copiedValue);
+			break;
+		case 1:
+			var tGroup = valueAdd.tGroup;
+			if(valueBase == null) {
+				if(tGroup.optional) {
+					mapBase.h[key1] = koui_theme_parser_Node.EGroup(tGroup);
+					continue;
+				} else {
+					throw haxe_Exception.thrown("Could not find group \"" + key1 + "\" in extension or sub-extensions!");
+				}
+			}
+			if(valueBase != null) {
+				if(valueBase._hx_index == 1) {
+					var tBaseGroup = valueBase.tGroup;
+					tBaseGroup.map = koui_theme_parser_ThemeParser.mergeMaps(tBaseGroup.map,tGroup.map);
+				}
+			}
+			break;
+		default:
+		}
+	}
+	return mapBase;
+};
+koui_theme_parser_ThemeParser.getCurrentPath = function() {
+	var path = [];
+	var entry = koui_theme_parser_ThemeParser.parserState.pathStack.iterator();
+	while(entry.hasNext()) {
+		var entry1 = entry.next();
+		path.splice(0,0,entry1);
+	}
+	return path;
+};
+koui_theme_parser_ThemeParser.pathToString = function(path) {
+	if(path == null) {
+		path = koui_theme_parser_ThemeParser.getCurrentPath();
+	}
+	var buffer_b = "";
+	var first = true;
+	var _g = 0;
+	while(_g < path.length) {
+		var entry = path[_g];
+		++_g;
+		if(!first) {
+			buffer_b += String.fromCodePoint(46);
+		} else {
+			first = false;
+		}
+		buffer_b += entry == null ? "null" : "" + entry;
+	}
+	return buffer_b;
+};
+koui_theme_parser_ThemeParser.calculateIndentation = function(indentation) {
+	var _this = koui_theme_parser_ThemeParser.parserState.indentStack;
+	var lastIndentLevel = _this.head == null ? null : _this.head.elt;
+	if(indentation > lastIndentLevel + 1 || indentation > lastIndentLevel && koui_theme_parser_ThemeParser.parserState.lastLineType == 2) {
+		throw haxe_Exception.thrown("Syntax error: wrong indentation!");
+	}
+	if(indentation > lastIndentLevel) {
+		var _this = koui_theme_parser_ThemeParser.parserState.indentStack;
+		_this.head = new haxe_ds_GenericCell(indentation,_this.head);
+	} else {
+		while(true) {
+			var _this = koui_theme_parser_ThemeParser.parserState.indentStack;
+			if(!(indentation < (_this.head == null ? null : _this.head.elt))) {
+				break;
+			}
+			var _this1 = koui_theme_parser_ThemeParser.parserState.indentStack;
+			var k = _this1.head;
+			if(k != null) {
+				_this1.head = k.next;
+			}
+		}
+	}
+};
+koui_theme_parser_ThemeParser.unindent = function(indentLevel,lastIndentLevel) {
+	while(indentLevel <= lastIndentLevel) {
+		if(indentLevel != lastIndentLevel) {
+			var _this = koui_theme_parser_ThemeParser.parserState.outputStack;
+			var k = _this.head;
+			if(k != null) {
+				_this.head = k.next;
+			}
+		}
+		var _this1 = koui_theme_parser_ThemeParser.parserState.pathStack;
+		var k1 = _this1.head;
+		if(k1 != null) {
+			_this1.head = k1.next;
+		}
+		++indentLevel;
+	}
+};
+koui_theme_parser_ThemeParser.traverseByPath = function(map,path) {
+	var currentNode = map.h[path[0]];
+	if(currentNode == null) {
+		throw haxe_Exception.thrown("Referenced group \"" + path[0] + "\" does not exist!");
+	}
+	path.shift();
+	var _g = 0;
+	while(_g < path.length) {
+		var entry = path[_g];
+		++_g;
+		if(currentNode != null) {
+			if(currentNode._hx_index == 1) {
+				var tGroup = currentNode.tGroup;
+				currentNode = tGroup.map.h[entry];
+			}
+		}
+		if(currentNode == null) {
+			throw haxe_Exception.thrown("Referenced group \"" + entry + "\" does not exist!");
+		}
+	}
+	return currentNode;
+};
+koui_theme_parser_ThemeParser.validateNoKeyword = function(name) {
+	if(Lambda.has(koui_theme_parser_ThemeParser.reservedKeywords,name)) {
+		throw haxe_Exception.thrown("\"" + name + "\" is a reserved Haxe keyword!");
+	}
+};
+koui_theme_parser_ThemeParser.registerSelectorState = function(pureSelectorName,state) {
+	if(Object.prototype.hasOwnProperty.call(koui_theme_parser_ThemeParser.out.selectorStates.h,pureSelectorName)) {
+		koui_theme_parser_ThemeParser.out.selectorStates.h[pureSelectorName].push(state);
+	} else {
+		var v = [state];
+		koui_theme_parser_ThemeParser.out.selectorStates.h[pureSelectorName] = v;
+	}
+};
+var koui_theme_parser_Node = $hxEnums["koui.theme.parser.Node"] = { __ename__:true,__constructs__:null
+	,EValue: ($_=function(tValue) { return {_hx_index:0,tValue:tValue,__enum__:"koui.theme.parser.Node",toString:$estr}; },$_._hx_name="EValue",$_.__params__ = ["tValue"],$_)
+	,EGroup: ($_=function(tGroup) { return {_hx_index:1,tGroup:tGroup,__enum__:"koui.theme.parser.Node",toString:$estr}; },$_._hx_name="EGroup",$_.__params__ = ["tGroup"],$_)
+	,ESelector: ($_=function(tSelector) { return {_hx_index:2,tSelector:tSelector,__enum__:"koui.theme.parser.Node",toString:$estr}; },$_._hx_name="ESelector",$_.__params__ = ["tSelector"],$_)
+	,EType: ($_=function(type) { return {_hx_index:3,type:type,__enum__:"koui.theme.parser.Node",toString:$estr}; },$_._hx_name="EType",$_.__params__ = ["type"],$_)
+};
+koui_theme_parser_Node.__constructs__ = [koui_theme_parser_Node.EValue,koui_theme_parser_Node.EGroup,koui_theme_parser_Node.ESelector,koui_theme_parser_Node.EType];
+var koui_utils_Cursor = function() { };
+$hxClasses["koui.utils.Cursor"] = koui_utils_Cursor;
+koui_utils_Cursor.__name__ = "koui.utils.Cursor";
+koui_utils_Cursor.init = function() {
+	koui_utils_Cursor.mouse = kha_input_Mouse.get();
+};
+koui_utils_Cursor.setPosition = function(x,y) {
+	koui_utils_Cursor.mouseX = x;
+	koui_utils_Cursor.mouseY = y;
+};
+koui_utils_Cursor.setCursor = function(cursorType) {
+	koui_utils_Cursor.mouse.setSystemCursor(cursorType);
+};
+koui_utils_Cursor.getCursorEnumValue = function(name) {
+	if(name == null) {
+		return kha_input_MouseCursor.Default;
+	}
+	switch(name.toLowerCase()) {
+	case "default":
+		return kha_input_MouseCursor.Default;
+	case "notallowed":
+		return kha_input_MouseCursor.NotAllowed;
+	case "pointer":
+		return kha_input_MouseCursor.Pointer;
+	case "text":
+		return kha_input_MouseCursor.Text;
+	case "wait":
+		return kha_input_MouseCursor.Wait;
+	default:
+		return kha_input_MouseCursor.Default;
+	}
+};
+koui_utils_Cursor.draw = function(g) {
+};
+var koui_utils_ElementMatchBehaviour = function() { };
+$hxClasses["koui.utils.ElementMatchBehaviour"] = koui_utils_ElementMatchBehaviour;
+koui_utils_ElementMatchBehaviour.__name__ = "koui.utils.ElementMatchBehaviour";
+koui_utils_ElementMatchBehaviour.__isInterface__ = true;
+koui_utils_ElementMatchBehaviour.prototype = {
+	match: null
+	,__class__: koui_utils_ElementMatchBehaviour
+};
+var koui_utils_TypeMatchBehaviour = function(type) {
+	this.type = type;
+};
+$hxClasses["koui.utils.TypeMatchBehaviour"] = koui_utils_TypeMatchBehaviour;
+koui_utils_TypeMatchBehaviour.__name__ = "koui.utils.TypeMatchBehaviour";
+koui_utils_TypeMatchBehaviour.__interfaces__ = [koui_utils_ElementMatchBehaviour];
+koui_utils_TypeMatchBehaviour.prototype = {
+	type: null
+	,match: function(element) {
+		return js_Boot.__instanceof(element,this.type);
+	}
+	,__class__: koui_utils_TypeMatchBehaviour
+};
+var koui_utils_TIDMatchBehaviour = function(tID) {
+	this.tID = tID;
+};
+$hxClasses["koui.utils.TIDMatchBehaviour"] = koui_utils_TIDMatchBehaviour;
+koui_utils_TIDMatchBehaviour.__name__ = "koui.utils.TIDMatchBehaviour";
+koui_utils_TIDMatchBehaviour.__interfaces__ = [koui_utils_ElementMatchBehaviour];
+koui_utils_TIDMatchBehaviour.prototype = {
+	tID: null
+	,match: function(element) {
+		return element.tID == this.tID;
+	}
+	,__class__: koui_utils_TIDMatchBehaviour
+};
+var koui_utils_Set_$Int = function() {
+	this.map = new haxe_ds_IntMap();
+};
+$hxClasses["koui.utils.Set_Int"] = koui_utils_Set_$Int;
+koui_utils_Set_$Int.__name__ = "koui.utils.Set_Int";
+koui_utils_Set_$Int.prototype = {
+	map: null
+	,add: function(val) {
+		this.map.set(val,true);
+	}
+	,remove: function(val) {
+		this.map.remove(val);
+	}
+	,has: function(val) {
+		return this.map.exists(val);
+	}
+	,clear: function() {
+		this.map.clear();
+	}
+	,toArray: function() {
+		var out = [];
+		var key = this.map.keys();
+		while(key.hasNext()) {
+			var key1 = key.next();
+			out.push(key1);
+		}
+		return out;
+	}
+	,iterator: function() {
+		return this.map.keys();
+	}
+	,__class__: koui_utils_Set_$Int
+};
+var koui_utils_Set_$String = function() {
+	this.map = new haxe_ds_StringMap();
+};
+$hxClasses["koui.utils.Set_String"] = koui_utils_Set_$String;
+koui_utils_Set_$String.__name__ = "koui.utils.Set_String";
+koui_utils_Set_$String.prototype = {
+	map: null
+	,add: function(val) {
+		this.map.set(val,true);
+	}
+	,remove: function(val) {
+		this.map.remove(val);
+	}
+	,has: function(val) {
+		return this.map.exists(val);
+	}
+	,clear: function() {
+		this.map.clear();
+	}
+	,toArray: function() {
+		var out = [];
+		var key = this.map.keys();
+		while(key.hasNext()) {
+			var key1 = key.next();
+			out.push(key1);
+		}
+		return out;
+	}
+	,iterator: function() {
+		return this.map.keys();
+	}
+	,__class__: koui_utils_Set_$String
+};
+var koui_utils_FontUtil = function() { };
+$hxClasses["koui.utils.FontUtil"] = koui_utils_FontUtil;
+koui_utils_FontUtil.__name__ = "koui.utils.FontUtil";
+koui_utils_FontUtil.loadGlyphsFromLocale = function(locale) {
+	if(!Object.prototype.hasOwnProperty.call(koui_utils_FontUtil.localeDefaultGlyphs.h,locale)) {
+		haxe_Log.trace("[Koui Warning] " + ("No default glyphs for locale " + locale + " found!"),{ fileName : "koui/utils/Log.hx", lineNumber : 20, className : "koui.utils.Log", methodName : "warn"});
+		return;
+	}
+	koui_utils_FontUtil.additionalLocales.map.set(locale,true);
+	koui_utils_FontUtil.setKhaGlyphs();
+};
+koui_utils_FontUtil.loadGlyphsFromCodepoints = function(codepoints) {
+	var _g = 0;
+	while(_g < codepoints.length) {
+		var codepoint = codepoints[_g];
+		++_g;
+		koui_utils_FontUtil.additionalGlyphs.map.set(codepoint,true);
+	}
+	koui_utils_FontUtil.setKhaGlyphs();
+};
+koui_utils_FontUtil.loadGlyphsFromString = function(string) {
+	var _g = 0;
+	var _g1 = string.length;
+	while(_g < _g1) {
+		var i = _g++;
+		var _this = koui_utils_FontUtil.additionalGlyphs;
+		var val = string.charCodeAt(i);
+		_this.map.set(val,true);
+	}
+	koui_utils_FontUtil.setKhaGlyphs();
+};
+koui_utils_FontUtil.loadGlyphsFromStringOptional = function(string) {
+	var _g = 0;
+	var _g1 = string.length;
+	while(_g < _g1) {
+		var i = _g++;
+		var _this = koui_utils_FontUtil.additionalGlyphs;
+		var val = string.charCodeAt(i);
+		_this.map.set(val,true);
+	}
+	koui_utils_FontUtil.setKhaGlyphs();
+};
+koui_utils_FontUtil.unloadGlyphsFromLocale = function(locale) {
+	koui_utils_FontUtil.additionalLocales.map.remove(locale);
+	koui_utils_FontUtil.setKhaGlyphs();
+};
+koui_utils_FontUtil.unloadGlyphsFromCodepoints = function(codepoints) {
+	var _g = 0;
+	while(_g < codepoints.length) {
+		var codepoint = codepoints[_g];
+		++_g;
+		koui_utils_FontUtil.additionalGlyphs.map.remove(codepoint);
+	}
+	koui_utils_FontUtil.setKhaGlyphs();
+};
+koui_utils_FontUtil.unloadGlyphsFromString = function(string) {
+	var _g = 0;
+	var _g1 = string.length;
+	while(_g < _g1) {
+		var i = _g++;
+		var _this = koui_utils_FontUtil.additionalGlyphs;
+		var val = string.charCodeAt(i);
+		_this.map.remove(val);
+	}
+	koui_utils_FontUtil.setKhaGlyphs();
+};
+koui_utils_FontUtil.getAdditionalLocales = function() {
+	return koui_utils_FontUtil.additionalLocales.toArray();
+};
+koui_utils_FontUtil.removeDuplicatesFromSortedIArray = function(array) {
+	if(array.length == 0 || array.length == 1) {
+		return array;
+	}
+	var outArray = [];
+	var lastEntry = null;
+	var _g = 0;
+	var _g1 = array.length;
+	while(_g < _g1) {
+		var i = _g++;
+		if(i != 0 && array[i] == lastEntry) {
+			continue;
+		}
+		lastEntry = array[i];
+		outArray.push(lastEntry);
+	}
+	return outArray;
+};
+koui_utils_FontUtil.setKhaGlyphs = function() {
+	var allGlyphs = koui_utils_FontUtil.BASE_GLYPHS.slice();
+	var locale = koui_utils_FontUtil.additionalLocales.map.keys();
+	while(locale.hasNext()) {
+		var locale1 = locale.next();
+		allGlyphs = allGlyphs.concat(koui_utils_FontUtil.localeDefaultGlyphs.h[locale1]);
+	}
+	allGlyphs = allGlyphs.concat(koui_utils_FontUtil.additionalGlyphs.toArray());
+	allGlyphs.sort(Reflect.compare);
+	kha_graphics2_Graphics.fontGlyphs = koui_utils_FontUtil.removeDuplicatesFromSortedIArray(allGlyphs);
+};
+var koui_utils_Log = function() { };
+$hxClasses["koui.utils.Log"] = koui_utils_Log;
+koui_utils_Log.__name__ = "koui.utils.Log";
+koui_utils_Log.error = function(message) {
+	throw new haxe_Exception("[Koui Error] " + message);
+};
+koui_utils_Log.warn = function(message) {
+	haxe_Log.trace("[Koui Warning] " + message,{ fileName : "koui/utils/Log.hx", lineNumber : 20, className : "koui.utils.Log", methodName : "warn"});
+};
+var koui_utils_MathUtil = function() { };
+$hxClasses["koui.utils.MathUtil"] = koui_utils_MathUtil;
+koui_utils_MathUtil.__name__ = "koui.utils.MathUtil";
+koui_utils_MathUtil.hitbox = function(pointX,pointY,posX,posY,sizeX,sizeY) {
+	if(pointX >= posX && pointX <= posX + sizeX && pointY >= posY) {
+		return pointY <= posY + sizeY;
+	} else {
+		return false;
+	}
+};
+koui_utils_MathUtil.mapToRange = function(value,fromLeft,fromRight,toLeft,toRight) {
+	return (value - fromLeft) * (toRight - toLeft) / (fromRight - fromLeft) + toLeft;
+};
+koui_utils_MathUtil.clamp = function(value,minValue,maxValue) {
+	return Math.max(minValue,Math.min(maxValue,value));
+};
+koui_utils_MathUtil.clampI = function(value,minValue,maxValue) {
+	return Math.max(minValue,Math.min(maxValue,value)) | 0;
+};
+koui_utils_MathUtil.roundPrecision = function(value,precision) {
+	if(precision == null) {
+		precision = 0;
+	}
+	value *= Math.pow(10,precision);
+	value = value | 0;
+	value /= Math.pow(10,precision);
+	return value;
+};
+koui_utils_MathUtil.arraySumF = function(array) {
+	var res = 0.0;
+	var _g = 0;
+	while(_g < array.length) {
+		var elem = array[_g];
+		++_g;
+		res += elem;
+	}
+	return res;
+};
+koui_utils_MathUtil.arraySumI = function(array) {
+	var res = 0;
+	var _g = 0;
+	while(_g < array.length) {
+		var elem = array[_g];
+		++_g;
+		res += elem;
+	}
+	return res;
+};
+koui_utils_MathUtil.arrayAvgF = function(array) {
+	if(array.length != 0) {
+		return koui_utils_MathUtil.arraySumF(array) / array.length;
+	} else {
+		return 0.0;
+	}
+};
+koui_utils_MathUtil.arrayAvgI = function(array) {
+	if(array.length != 0) {
+		return koui_utils_MathUtil.arraySumI(array) / array.length;
+	} else {
+		return 0.0;
+	}
+};
+var koui_utils_SceneManager = function() { };
+$hxClasses["koui.utils.SceneManager"] = koui_utils_SceneManager;
+koui_utils_SceneManager.__name__ = "koui.utils.SceneManager";
+koui_utils_SceneManager.addScene = function(name,onSetup) {
+	var scenePane = new koui_elements_layouts_AnchorPane(0,0,kha_Window.get(0).get_width(),kha_Window.get(0).get_height());
+	koui_utils_SceneManager.scenes.h[name] = scenePane;
+	if(koui_utils_SceneManager.activeScene == null) {
+		koui_utils_SceneManager.activeScene = scenePane;
+	} else {
+		scenePane.visible = false;
+	}
+	koui_Koui.anchorPane.add(scenePane,0);
+	onSetup(scenePane);
+};
+koui_utils_SceneManager.setScene = function(name) {
+	var newScene = koui_utils_SceneManager.scenes.h[name];
+	if(newScene != null) {
+		if(koui_utils_SceneManager.activeScene != null) {
+			koui_utils_SceneManager.activeScene.visible = false;
+		}
+		koui_utils_SceneManager.activeScene = newScene;
+		koui_utils_SceneManager.activeScene.visible = true;
+		koui_events_EventHandler.checkMouseHover();
+	} else {
+		haxe_Log.trace("Warning: Scene " + name + " does not exist!",{ fileName : "koui/utils/SceneManager.hx", lineNumber : 69, className : "koui.utils.SceneManager", methodName : "setScene"});
+	}
+};
+var koui_utils_Set = function() {
+	this.map = new haxe_ds_IntMap();
+};
+$hxClasses["koui.utils.Set"] = koui_utils_Set;
+koui_utils_Set.__name__ = "koui.utils.Set";
+koui_utils_Set.prototype = {
+	map: null
+	,add: function(val) {
+		this.map.h[val] = true;
+	}
+	,remove: function(val) {
+		this.map.remove(val);
+	}
+	,has: function(val) {
+		return this.map.h.hasOwnProperty(val);
+	}
+	,clear: function() {
+		this.map.h = { };
+	}
+	,toArray: function() {
+		var out = [];
+		var key = this.map.keys();
+		while(key.hasNext()) {
+			var key1 = key.next();
+			out.push(key1);
+		}
+		return out;
+	}
+	,iterator: function() {
+		return this.map.keys();
+	}
+	,__class__: koui_utils_Set
+};
+var koui_utils_StringUtil = function() { };
+$hxClasses["koui.utils.StringUtil"] = koui_utils_StringUtil;
+koui_utils_StringUtil.__name__ = "koui.utils.StringUtil";
+koui_utils_StringUtil.reverse = function(s) {
+	var sBuf_b = "";
+	var _g = -s.length + 1;
+	var _g1 = 1;
+	while(_g < _g1) {
+		var i = _g++;
+		var c = s.charCodeAt(-i);
+		sBuf_b += String.fromCodePoint(c);
+	}
+	return sBuf_b;
+};
+koui_utils_StringUtil.toTitleCase = function(s) {
+	if(s == "") {
+		return s;
+	}
+	return s.charAt(0).toUpperCase() + HxOverrides.substr(s,1,null);
+};
+koui_utils_StringUtil.unescape = function(s) {
+	var sBuf_b = "";
+	var foundBackslash = false;
+	var _g = 0;
+	var _g1 = s.length;
+	while(_g < _g1) {
+		var i = _g++;
+		if(foundBackslash) {
+			var charCode = s.charCodeAt(i);
+			var c;
+			switch(charCode) {
+			case 92:
+				c = 92;
+				break;
+			case 110:
+				c = 10;
+				break;
+			case 114:
+				c = 13;
+				break;
+			case 116:
+				c = 9;
+				break;
+			default:
+				throw haxe_Exception.thrown("Wrong escape code: \"\\" + String.fromCodePoint(charCode) + "\"");
+			}
+			sBuf_b += String.fromCodePoint(c);
+			foundBackslash = false;
+		} else if(s.charCodeAt(i) == 92) {
+			foundBackslash = true;
+		} else {
+			var c1 = s.charCodeAt(i);
+			sBuf_b += String.fromCodePoint(c1);
+		}
+	}
+	return sBuf_b;
+};
+koui_utils_StringUtil.canPrintChar = function(char,newLineAllowed) {
+	if(newLineAllowed == null) {
+		newLineAllowed = false;
+	}
+	return !(char == "\n" && !newLineAllowed || char == "\r" && !newLineAllowed || char == "\x00" || char == "\x01" || char == "\x02" || char == "\x03" || char == "\x04" || char == "\x05" || char == "\x06" || char == "\x07" || char == "\x08" || char == "\t" || char == "\n" || char == "\x0B" || char == "\x0C" || char == "\r" || char == "\x0E" || char == "\x0F" || char == "\x10" || char == "\x11" || char == "\x12" || char == "\x13" || char == "\x14" || char == "\x15" || char == "\x16" || char == "\x17" || char == "\x18" || char == "\x19" || char == "\x1A" || char == "\x1B" || char == "\x1C" || char == "\x1D" || char == "\x1E" || char == "\x1F" || char == "");
+};
+var koui_utils_TextureAtlas = function() { };
+$hxClasses["koui.utils.TextureAtlas"] = koui_utils_TextureAtlas;
+koui_utils_TextureAtlas.__name__ = "koui.utils.TextureAtlas";
+koui_utils_TextureAtlas.drawFromAtlas = function(g,element,divisionsX,divisionsY,offsetX,offsetY,drawX,drawY) {
+	if(offsetY == null) {
+		offsetY = 0;
+	}
+	if(offsetX == null) {
+		offsetX = 0;
+	}
+	if(divisionsY == null) {
+		divisionsY = 1;
+	}
+	if(divisionsX == null) {
+		divisionsX = 1;
+	}
+	if(element.style.textureBg == "") {
+		return false;
+	}
+	var texture = kha_Assets.images.get(element.style.textureBg);
+	if(texture == null) {
+		return false;
+	}
+	if(drawX == null) {
+		drawX = element.drawX;
+	}
+	if(drawY == null) {
+		drawY = element.drawY;
+	}
+	var atlasX = 0;
+	var atlasY = 0;
+	var atlasW;
+	var atlasH;
+	if(element.style.atlas != null) {
+		atlasX = element.style.atlas.x;
+		atlasY = element.style.atlas.y;
+		atlasW = element.style.atlas.w;
+		atlasH = element.style.atlas.h;
+	} else {
+		atlasW = texture.get_width() / divisionsX | 0;
+		atlasH = texture.get_height() / divisionsY | 0;
+	}
+	atlasX += atlasW * offsetX;
+	atlasY += atlasH * offsetY;
+	g.set_color(-1);
+	g.drawSubImage(texture,drawX,drawY,atlasX,atlasY,atlasW,atlasH);
+	return true;
 };
 var noisetile_NoiseTile = function(x,y,hw) {
 	if(hw == null) {
@@ -36167,7 +46267,7 @@ var noisetile_NoiseTile = function(x,y,hw) {
 	this.t = new noisetile_Tiles(x,y,hw);
 };
 $hxClasses["noisetile.NoiseTile"] = noisetile_NoiseTile;
-noisetile_NoiseTile.__name__ = true;
+noisetile_NoiseTile.__name__ = "noisetile.NoiseTile";
 noisetile_NoiseTile.getHeight = function(x,y) {
 	return noisetile_Tiles.getHeight(x,y);
 };
@@ -36195,7 +46295,7 @@ var noisetile_SimplexNoise = function() {
 	noisetile_SimplexNoise.p = null;
 };
 $hxClasses["noisetile.SimplexNoise"] = noisetile_SimplexNoise;
-noisetile_SimplexNoise.__name__ = true;
+noisetile_SimplexNoise.__name__ = "noisetile.SimplexNoise";
 noisetile_SimplexNoise.prototype = {
 	perm: null
 	,floor: function(n) {
@@ -36378,7 +46478,7 @@ var noisetile_Tiles = $hx_exports["noisetile"]["Tiles"] = function(x,y,hw) {
 	}
 };
 $hxClasses["noisetile.Tiles"] = noisetile_Tiles;
-noisetile_Tiles.__name__ = true;
+noisetile_Tiles.__name__ = "noisetile.Tiles";
 noisetile_Tiles.getNormal = function(x,z) {
 	var u = noisetile_Tiles.getHeight(x,z - 1);
 	var r = noisetile_Tiles.getHeight(x + 1,z);
@@ -36736,12 +46836,556 @@ noisetile_Tiles.prototype = {
 	}
 	,__class__: noisetile_Tiles
 };
+var org_msgpack_DecodeOption = $hxEnums["org.msgpack.DecodeOption"] = { __ename__:true,__constructs__:null
+	,AsMap: {_hx_name:"AsMap",_hx_index:0,__enum__:"org.msgpack.DecodeOption",toString:$estr}
+	,AsObject: {_hx_name:"AsObject",_hx_index:1,__enum__:"org.msgpack.DecodeOption",toString:$estr}
+};
+org_msgpack_DecodeOption.__constructs__ = [org_msgpack_DecodeOption.AsMap,org_msgpack_DecodeOption.AsObject];
+var org_msgpack__$Decoder_Pair = function(k,v) {
+	this.k = k;
+	this.v = v;
+};
+$hxClasses["org.msgpack._Decoder.Pair"] = org_msgpack__$Decoder_Pair;
+org_msgpack__$Decoder_Pair.__name__ = "org.msgpack._Decoder.Pair";
+org_msgpack__$Decoder_Pair.prototype = {
+	k: null
+	,v: null
+	,__class__: org_msgpack__$Decoder_Pair
+};
+var org_msgpack_Decoder = function(b,option) {
+	var i = new haxe_io_BytesInput(b);
+	i.set_bigEndian(true);
+	this.o = this.decode(i,option);
+};
+$hxClasses["org.msgpack.Decoder"] = org_msgpack_Decoder;
+org_msgpack_Decoder.__name__ = "org.msgpack.Decoder";
+org_msgpack_Decoder.prototype = {
+	o: null
+	,decode: function(i,option) {
+		try {
+			var b = i.readByte();
+			switch(b) {
+			case 192:
+				return null;
+			case 194:
+				return false;
+			case 195:
+				return true;
+			case 196:
+				return i.read(i.readByte());
+			case 197:
+				return i.read(i.readUInt16());
+			case 198:
+				return i.read(i.readInt32());
+			case 202:
+				return i.readFloat();
+			case 203:
+				return i.readDouble();
+			case 204:
+				return i.readByte();
+			case 205:
+				return i.readUInt16();
+			case 206:
+				return i.readInt32();
+			case 207:
+				return this.readUInt64(i);
+			case 208:
+				return i.readInt8();
+			case 209:
+				return i.readInt16();
+			case 210:
+				return i.readInt32();
+			case 211:
+				return this.readInt64(i);
+			case 212:
+				var type = i.readByte();
+				if(type == 0) {
+					i.readByte();
+					return null;
+				}
+				throw haxe_Exception.thrown("MsgPack - unsupported extension type: " + type);
+			case 215:
+				var type = i.readByte();
+				if(type == 0) {
+					var high = i.readInt32() * Math.pow(2,32);
+					var low = i.readInt32();
+					return new Date(UInt.toFloat(low) + high);
+				}
+				throw haxe_Exception.thrown("MsgPack - unsupported extension type: " + type);
+			case 217:
+				return i.readString(i.readByte());
+			case 218:
+				return i.readString(i.readUInt16());
+			case 219:
+				return i.readString(i.readInt32());
+			case 220:
+				return this.readArray(i,i.readUInt16(),option);
+			case 221:
+				return this.readArray(i,i.readInt32(),option);
+			case 222:
+				return this.readMap(i,i.readUInt16(),option);
+			case 223:
+				return this.readMap(i,i.readInt32(),option);
+			default:
+				if(b < 128) {
+					return b;
+				} else if(b < 144) {
+					return this.readMap(i,15 & b,option);
+				} else if(b < 160) {
+					return this.readArray(i,15 & b,option);
+				} else if(b < 192) {
+					return i.readString(31 & b);
+				} else if(b > 223) {
+					return -256 | b;
+				}
+			}
+		} catch( _g ) {
+			if(!((haxe_Exception.caught(_g).unwrap()) instanceof haxe_io_Eof)) {
+				throw _g;
+			}
+		}
+		return null;
+	}
+	,readInt64: function(i) {
+		var high = i.readInt32();
+		var low = i.readInt32();
+		var this1 = new haxe__$Int64__$_$_$Int64(high,low);
+		return this1;
+	}
+	,readUInt64: function(i) {
+		var high = i.readInt32() * Math.pow(2,32);
+		var low = i.readInt32();
+		return high + low;
+	}
+	,readArray: function(i,length,option) {
+		var a = [];
+		var _g = 0;
+		var _g1 = length;
+		while(_g < _g1) {
+			var x = _g++;
+			a.push(this.decode(i,option));
+		}
+		return a;
+	}
+	,readMap: function(i,length,option) {
+		switch(option._hx_index) {
+		case 0:
+			var pairs = [];
+			var _g = 0;
+			var _g1 = length;
+			while(_g < _g1) {
+				var n = _g++;
+				var k = this.decode(i,option);
+				var v = this.decode(i,option);
+				pairs.push(new org_msgpack__$Decoder_Pair(k,v));
+			}
+			if(pairs.length == 0) {
+				return new haxe_ds_StringMap();
+			}
+			var _g = Type.typeof(pairs[0].k);
+			switch(_g._hx_index) {
+			case 1:
+				var out = new haxe_ds_IntMap();
+				var _g1 = 0;
+				while(_g1 < pairs.length) {
+					var p = pairs[_g1];
+					++_g1;
+					if(Type.typeof(p.k)._hx_index != 1) {
+						throw haxe_Exception.thrown("Error: Mixed key type when decoding IntMap");
+					}
+					if(out.h.hasOwnProperty(p.k)) {
+						throw haxe_Exception.thrown("Error: Duplicate keys found => " + Std.string(p.k));
+					}
+					out.h[p.k] = p.v;
+				}
+				return out;
+			case 6:
+				var c = _g.c;
+				if(c.__name__ == "String") {
+					var out = new haxe_ds_StringMap();
+					var _g = 0;
+					while(_g < pairs.length) {
+						var p = pairs[_g];
+						++_g;
+						var _g1 = Type.typeof(p.k);
+						if(_g1._hx_index == 6) {
+							var c = _g1.c;
+							if(c.__name__ != "String") {
+								throw haxe_Exception.thrown("Error: Mixed key type when decoding StringMap");
+							}
+						} else {
+							throw haxe_Exception.thrown("Error: Mixed key type when decoding StringMap");
+						}
+						if(Object.prototype.hasOwnProperty.call(out.h,p.k)) {
+							throw haxe_Exception.thrown("Error: Duplicate keys found => " + Std.string(p.k));
+						}
+						out.h[p.k] = p.v;
+					}
+					return out;
+				} else {
+					throw haxe_Exception.thrown("Error: Unsupported key Type");
+				}
+				break;
+			default:
+				throw haxe_Exception.thrown("Error: Unsupported key Type");
+			}
+			break;
+		case 1:
+			var out = { };
+			var _g = 0;
+			var _g1 = length;
+			while(_g < _g1) {
+				var n = _g++;
+				var k = this.decode(i,option);
+				var v = this.decode(i,option);
+				out[Std.string(k)] = v;
+			}
+			return out;
+		}
+	}
+	,getResult: function() {
+		return this.o;
+	}
+	,__class__: org_msgpack_Decoder
+};
+var org_msgpack_Encoder = function(d) {
+	this.o = new haxe_io_BytesOutput();
+	this.o.set_bigEndian(true);
+	this.encode(d);
+};
+$hxClasses["org.msgpack.Encoder"] = org_msgpack_Encoder;
+org_msgpack_Encoder.__name__ = "org.msgpack.Encoder";
+org_msgpack_Encoder.prototype = {
+	o: null
+	,encode: function(d) {
+		var _g = Type.typeof(d);
+		switch(_g._hx_index) {
+		case 0:
+			this.o.writeByte(192);
+			break;
+		case 1:
+			var d1 = d;
+			if(d1 < -32) {
+				if(d1 < -32768) {
+					this.o.writeByte(210);
+					this.o.writeInt32(d1);
+				} else if(d1 < -128) {
+					this.o.writeByte(209);
+					this.o.writeInt16(d1);
+				} else {
+					this.o.writeByte(208);
+					this.o.writeInt8(d1);
+				}
+			} else if(d1 < 128) {
+				this.o.writeByte(d1 & 255);
+			} else if(d1 < 256) {
+				this.o.writeByte(204);
+				this.o.writeByte(d1);
+			} else if(d1 < 65536) {
+				this.o.writeByte(205);
+				this.o.writeUInt16(d1);
+			} else {
+				this.o.writeByte(206);
+				this.o.writeInt32(d1);
+			}
+			break;
+		case 2:
+			var d1 = d;
+			var a = Math.abs(d1);
+			if(a > 1.40129846432481707e-45 && a < 3.40282346638528860e+38) {
+				this.o.writeByte(202);
+				this.o.writeFloat(d1);
+			} else {
+				this.o.writeByte(203);
+				this.o.writeDouble(d1);
+			}
+			break;
+		case 3:
+			this.o.writeByte(d ? 195 : 194);
+			break;
+		case 4:
+			var f = Reflect.fields(d);
+			var length = Lambda.count(f);
+			if(length < 16) {
+				this.o.writeByte(128 | length);
+			} else if(length < 65536) {
+				this.o.writeByte(222);
+				this.o.writeUInt16(length);
+			} else {
+				this.o.writeByte(223);
+				this.o.writeInt32(length);
+			}
+			var _g1 = 0;
+			while(_g1 < f.length) {
+				var k = f[_g1];
+				++_g1;
+				this.encode(k);
+				this.encode(Reflect.field(d,k));
+			}
+			break;
+		case 5:
+			throw haxe_Exception.thrown("Error: Function not supported");
+		case 6:
+			var c = _g.c;
+			switch(c.__name__) {
+			case "Array":
+				var d1 = d;
+				var length = d1.length;
+				if(length < 16) {
+					this.o.writeByte(144 | length);
+				} else if(length < 65536) {
+					this.o.writeByte(220);
+					this.o.writeUInt16(length);
+				} else {
+					this.o.writeByte(221);
+					this.o.writeInt32(length);
+				}
+				var _g1 = 0;
+				while(_g1 < d1.length) {
+					var e = d1[_g1];
+					++_g1;
+					this.encode(e);
+				}
+				break;
+			case "String":
+				var encoded = haxe_io_Bytes.ofString(d);
+				var length = encoded.length;
+				if(length < 32) {
+					this.o.writeByte(160 | length);
+				} else if(length < 256) {
+					this.o.writeByte(217);
+					this.o.writeByte(length);
+				} else if(length < 65536) {
+					this.o.writeByte(218);
+					this.o.writeUInt16(length);
+				} else {
+					this.o.writeByte(219);
+					this.o.writeInt32(length);
+				}
+				this.o.write(encoded);
+				break;
+			case "haxe._Int64.___Int64":
+				var d1 = d;
+				this.o.writeByte(211);
+				this.o.writeInt32(d1.high);
+				this.o.writeInt32(d1.low);
+				break;
+			case "haxe.ds.IntMap":case "haxe.ds.StringMap":case "haxe.ds.UnsafeStringMap":
+				var d1 = d;
+				var length = 0;
+				var k = d1.keys();
+				while(k.hasNext()) {
+					var k1 = k.next();
+					++length;
+				}
+				if(length < 16) {
+					this.o.writeByte(128 | length);
+				} else if(length < 65536) {
+					this.o.writeByte(222);
+					this.o.writeUInt16(length);
+				} else {
+					this.o.writeByte(223);
+					this.o.writeInt32(length);
+				}
+				var k = d1.keys();
+				while(k.hasNext()) {
+					var k1 = k.next();
+					this.encode(k1);
+					this.encode(d1.get(k1));
+				}
+				break;
+			case "haxe.io.Bytes":
+				var b = d;
+				var length = b.length;
+				if(length < 256) {
+					this.o.writeByte(196);
+					this.o.writeByte(length);
+				} else if(length < 65536) {
+					this.o.writeByte(197);
+					this.o.writeUInt16(length);
+				} else {
+					this.o.writeByte(198);
+					this.o.writeInt32(length);
+				}
+				this.o.write(b);
+				break;
+			default:
+				throw haxe_Exception.thrown("Error: " + c.__name__ + " not supported");
+			}
+			break;
+		case 7:
+			var e = _g.e;
+			throw haxe_Exception.thrown("Error: Enum not supported");
+		case 8:
+			throw haxe_Exception.thrown("Error: Unknown Data Type");
+		}
+	}
+	,writeInt64: function(d) {
+		this.o.writeByte(211);
+		this.o.writeInt32(d.high);
+		this.o.writeInt32(d.low);
+	}
+	,writeInt: function(d) {
+		if(d < -32) {
+			if(d < -32768) {
+				this.o.writeByte(210);
+				this.o.writeInt32(d);
+			} else if(d < -128) {
+				this.o.writeByte(209);
+				this.o.writeInt16(d);
+			} else {
+				this.o.writeByte(208);
+				this.o.writeInt8(d);
+			}
+		} else if(d < 128) {
+			this.o.writeByte(d & 255);
+		} else if(d < 256) {
+			this.o.writeByte(204);
+			this.o.writeByte(d);
+		} else if(d < 65536) {
+			this.o.writeByte(205);
+			this.o.writeUInt16(d);
+		} else {
+			this.o.writeByte(206);
+			this.o.writeInt32(d);
+		}
+	}
+	,writeFloat: function(d) {
+		var a = Math.abs(d);
+		if(a > 1.40129846432481707e-45 && a < 3.40282346638528860e+38) {
+			this.o.writeByte(202);
+			this.o.writeFloat(d);
+		} else {
+			this.o.writeByte(203);
+			this.o.writeDouble(d);
+		}
+	}
+	,writeBinary: function(b) {
+		var length = b.length;
+		if(length < 256) {
+			this.o.writeByte(196);
+			this.o.writeByte(length);
+		} else if(length < 65536) {
+			this.o.writeByte(197);
+			this.o.writeUInt16(length);
+		} else {
+			this.o.writeByte(198);
+			this.o.writeInt32(length);
+		}
+		this.o.write(b);
+	}
+	,writeString: function(b) {
+		var encoded = haxe_io_Bytes.ofString(b);
+		var length = encoded.length;
+		if(length < 32) {
+			this.o.writeByte(160 | length);
+		} else if(length < 256) {
+			this.o.writeByte(217);
+			this.o.writeByte(length);
+		} else if(length < 65536) {
+			this.o.writeByte(218);
+			this.o.writeUInt16(length);
+		} else {
+			this.o.writeByte(219);
+			this.o.writeInt32(length);
+		}
+		this.o.write(encoded);
+	}
+	,writeArray: function(d) {
+		var length = d.length;
+		if(length < 16) {
+			this.o.writeByte(144 | length);
+		} else if(length < 65536) {
+			this.o.writeByte(220);
+			this.o.writeUInt16(length);
+		} else {
+			this.o.writeByte(221);
+			this.o.writeInt32(length);
+		}
+		var _g = 0;
+		while(_g < d.length) {
+			var e = d[_g];
+			++_g;
+			this.encode(e);
+		}
+	}
+	,writeMapLength: function(length) {
+		if(length < 16) {
+			this.o.writeByte(128 | length);
+		} else if(length < 65536) {
+			this.o.writeByte(222);
+			this.o.writeUInt16(length);
+		} else {
+			this.o.writeByte(223);
+			this.o.writeInt32(length);
+		}
+	}
+	,writeMap: function(d) {
+		var length = 0;
+		var k = d.keys();
+		while(k.hasNext()) {
+			var k1 = k.next();
+			++length;
+		}
+		if(length < 16) {
+			this.o.writeByte(128 | length);
+		} else if(length < 65536) {
+			this.o.writeByte(222);
+			this.o.writeUInt16(length);
+		} else {
+			this.o.writeByte(223);
+			this.o.writeInt32(length);
+		}
+		var k = d.keys();
+		while(k.hasNext()) {
+			var k1 = k.next();
+			this.encode(k1);
+			this.encode(d.get(k1));
+		}
+	}
+	,writeObject: function(d) {
+		var f = Reflect.fields(d);
+		var length = Lambda.count(f);
+		if(length < 16) {
+			this.o.writeByte(128 | length);
+		} else if(length < 65536) {
+			this.o.writeByte(222);
+			this.o.writeUInt16(length);
+		} else {
+			this.o.writeByte(223);
+			this.o.writeInt32(length);
+		}
+		var _g = 0;
+		while(_g < f.length) {
+			var k = f[_g];
+			++_g;
+			this.encode(k);
+			this.encode(Reflect.field(d,k));
+		}
+	}
+	,getBytes: function() {
+		return this.o.getBytes();
+	}
+	,__class__: org_msgpack_Encoder
+};
+var org_msgpack_MsgPack = function() { };
+$hxClasses["org.msgpack.MsgPack"] = org_msgpack_MsgPack;
+org_msgpack_MsgPack.__name__ = "org.msgpack.MsgPack";
+org_msgpack_MsgPack.encode = function(d) {
+	return new org_msgpack_Encoder(d).o.getBytes();
+};
+org_msgpack_MsgPack.decode = function(b,option) {
+	if(option == null) {
+		option = org_msgpack_DecodeOption.AsObject;
+	}
+	return new org_msgpack_Decoder(b,option).o;
+};
 var primitive_Shape = function() {
 	kha_Assets.loadEverything(function() {
 	});
 };
 $hxClasses["primitive.Shape"] = primitive_Shape;
-primitive_Shape.__name__ = true;
+primitive_Shape.__name__ = "primitive.Shape";
 primitive_Shape.prototype = {
 	vertexBuffer: null
 	,indexBuffer: null
@@ -36813,7 +47457,7 @@ var primitive_Cube = function(x,y,z) {
 	this.indexBuffer.unlock();
 };
 $hxClasses["primitive.Cube"] = primitive_Cube;
-primitive_Cube.__name__ = true;
+primitive_Cube.__name__ = "primitive.Cube";
 primitive_Cube.__super__ = primitive_Shape;
 primitive_Cube.prototype = $extend(primitive_Shape.prototype,{
 	__class__: primitive_Cube
@@ -36934,7 +47578,7 @@ var primitive_Plane = function(w,h,segmentsX,segmentsY,uvsX,uvsY,heightData,idx,
 	this.indexBuffer.unlock();
 };
 $hxClasses["primitive.Plane"] = primitive_Plane;
-primitive_Plane.__name__ = true;
+primitive_Plane.__name__ = "primitive.Plane";
 primitive_Plane.__super__ = primitive_Shape;
 primitive_Plane.prototype = $extend(primitive_Shape.prototype,{
 	__class__: primitive_Plane
@@ -36957,7 +47601,7 @@ var primitive_PlaneModel = function(idx,idy,params) {
 	this.timeLocation = this.pipeline.getConstantLocation("time");
 };
 $hxClasses["primitive.PlaneModel"] = primitive_PlaneModel;
-primitive_PlaneModel.__name__ = true;
+primitive_PlaneModel.__name__ = "primitive.PlaneModel";
 primitive_PlaneModel.prototype = {
 	st: null
 	,vtb: null
@@ -37008,7 +47652,7 @@ var primitive_Primitive = function(shapeName,params) {
 	}
 };
 $hxClasses["primitive.Primitive"] = primitive_Primitive;
-primitive_Primitive.__name__ = true;
+primitive_Primitive.__name__ = "primitive.Primitive";
 primitive_Primitive.prototype = {
 	s: null
 	,getIndexBuffer: function() {
@@ -37025,6 +47669,7 @@ primitive_Primitive.prototype = {
 var primitive_SkyCubeModel = function(w,h,d) {
 	var _gthis = this;
 	var canvas = window.document.createElement("canvas");
+	canvas.style.display = "none";
 	canvas.width = 2048;
 	canvas.height = 2048;
 	window.document.body.appendChild(canvas);
@@ -37053,6 +47698,7 @@ var primitive_SkyCubeModel = function(w,h,d) {
 							var imgDatafront = ctx.getImageData(0,0,2048,2048);
 							ctx.drawImage(back,0,0);
 							var imgDataback = ctx.getImageData(0,0,2048,2048);
+							ctx.clearRect(0,0,2048,2048);
 							var structure = new kha_graphics4_VertexStructure();
 							structure.add("pos",2);
 							structure.add("col",2);
@@ -37337,7 +47983,7 @@ var primitive_SkyCubeModel = function(w,h,d) {
 	top.src = "top.jpg";
 };
 $hxClasses["primitive.SkyCubeModel"] = primitive_SkyCubeModel;
-primitive_SkyCubeModel.__name__ = true;
+primitive_SkyCubeModel.__name__ = "primitive.SkyCubeModel";
 primitive_SkyCubeModel.prototype = {
 	vertexBuffer: null
 	,indexBuffer: null
@@ -37366,7 +48012,7 @@ var primitive_GLBuffer = function(gl,t,d,usage) {
 	this.setData(gl,this.data,usage);
 };
 $hxClasses["primitive.GLBuffer"] = primitive_GLBuffer;
-primitive_GLBuffer.__name__ = true;
+primitive_GLBuffer.__name__ = "primitive.GLBuffer";
 primitive_GLBuffer.prototype = {
 	target: null
 	,data: null
@@ -37399,7 +48045,7 @@ var primitive_TerrainModel = function(heightmap,normalMap,idx,idy,params) {
 	this.mvpID = this.pipeline.getConstantLocation("MVP");
 };
 $hxClasses["primitive.TerrainModel"] = primitive_TerrainModel;
-primitive_TerrainModel.__name__ = true;
+primitive_TerrainModel.__name__ = "primitive.TerrainModel";
 primitive_TerrainModel.prototype = {
 	st: null
 	,vtb: null
@@ -37448,9 +48094,9 @@ if(typeof(performance) != "undefined" ? typeof(performance.now) == "function" : 
 $hxClasses["Math"] = Math;
 if( String.fromCodePoint == null ) String.fromCodePoint = function(c) { return c < 0x10000 ? String.fromCharCode(c) : String.fromCharCode((c>>10)+0xD7C0)+String.fromCharCode((c&0x3FF)+0xDC00); }
 String.prototype.__class__ = $hxClasses["String"] = String;
-String.__name__ = true;
+String.__name__ = "String";
 $hxClasses["Array"] = Array;
-Array.__name__ = true;
+Array.__name__ = "Array";
 Date.prototype.__class__ = $hxClasses["Date"] = Date;
 Date.__name__ = "Date";
 var Int = { };
@@ -37468,9 +48114,23 @@ haxe_Unserializer.DEFAULT_RESOLVER = new haxe__$Unserializer_DefaultResolver();
 haxe_Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 haxe_crypto_Base64.BYTES = haxe_io_Bytes.ofString(haxe_crypto_Base64.CHARS);
+haxe_io_FPHelper.i64tmp = (function($this) {
+	var $r;
+	var this1 = new haxe__$Int64__$_$_$Int64(0,0);
+	$r = this1;
+	return $r;
+}(this));
 haxe_io_FPHelper.helper = new DataView(new ArrayBuffer(8));
 instances_Instances.instancesX = 100;
 instances_Instances.instancesZ = 100;
+io_colyseus_Connection.isRunnerInitialized = false;
+io_colyseus_serializer_fossil_$delta_FossilDelta.NHASH = 16;
+io_colyseus_serializer_fossil_$delta_FossilDelta.zDigits = [48,49,50,51,52,53,54,55,56,57,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,95,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,126];
+io_colyseus_serializer_fossil_$delta_FossilDelta.zValue = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,0,1,2,3,4,5,6,7,8,9,-1,-1,-1,-1,-1,-1,-1,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,-1,-1,-1,-1,36,-1,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,-1,-1,-1,63,-1];
+io_colyseus_serializer_schema_CustomType.instance = new io_colyseus_serializer_schema_CustomType();
+io_colyseus_serializer_schema_Schema.decoder = new io_colyseus_serializer_schema_Decoder();
+io_colyseus_serializer_schema_SPEC.SWITCH_TO_STRUCTURE = 255;
+io_colyseus_serializer_schema_SPEC.TYPE_ID = 213;
 kha_Assets.images = new kha__$Assets_ImageList();
 kha_Assets.sounds = new kha__$Assets_SoundList();
 kha_Assets.blobs = new kha__$Assets_BlobList();
@@ -37495,17 +48155,20 @@ kha_Scheduler.timeWarpSaveTime = 10.0;
 kha_Scheduler.DIF_COUNT = 3;
 kha_Scheduler.maxframetime = 0.5;
 kha_Scheduler.startTime = 0;
+kha_Shaders.circle_fragData0 = "s1674:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCB2ZWM0IHNoYWRvd0NvbG9yc1sxNl07CnVuaWZvcm0gaGlnaHAgdmVjNCBjaXJjbGVzWzE2XTsKdW5pZm9ybSBoaWdocCB2ZWM0IGF0dHJpYnV0ZXNbMTZdOwp1bmlmb3JtIGhpZ2hwIHZlYzQgYm9yZGVyQ29sb3JbMTZdOwoKZmxhdCB2YXJ5aW5nIGludCBpbnN0YW5jZUlEOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY29sb3I7CgpoaWdocCBmbG9hdCBkaXN0YW5jZVRvQ2lyY2xlKGhpZ2hwIHZlYzIgY2VudGVyLCBoaWdocCBmbG9hdCByYWRpdXMsIGhpZ2hwIHZlYzIgcG9pbnQpCnsKICAgIHJldHVybiBsZW5ndGgocG9pbnQgLSBjZW50ZXIpIC0gcmFkaXVzOwp9Cgp2b2lkIG1haW4oKQp7CiAgICBpbnQgaUlEID0gaW5zdGFuY2VJRDsKICAgIGhpZ2hwIHZlYzQgc2hhZG93Q29sb3IgPSBzaGFkb3dDb2xvcnNbaUlEXTsKICAgIGhpZ2hwIGZsb2F0IGRzdCA9IGRpc3RhbmNlVG9DaXJjbGUoY2lyY2xlc1tpSURdLnh5LCBjaXJjbGVzW2lJRF0ueiwgZ2xfRnJhZ0Nvb3JkLnh5KTsKICAgIGhpZ2hwIGZsb2F0IHNoYWRvd1dpZHRoID0gYXR0cmlidXRlc1tpSURdLnkgKyA5Ljk5OTk5OTc0NzM3ODc1MTYzNTU1MTQ1MjYzNjcxODhlLTA1OwogICAgaGlnaHAgZmxvYXQgc2hhZG93QW1vdW50ID0gcG93KG1heCgwLjAsIDEuMCAtIChkc3QgLyBzaGFkb3dXaWR0aCkpLCBhdHRyaWJ1dGVzW2lJRF0ueik7CiAgICBoaWdocCB2ZWM0IHNoYWRvdyA9IHNoYWRvd0NvbG9yOwogICAgc2hhZG93LncgKj0gc2hhZG93QW1vdW50OwogICAgaGlnaHAgZmxvYXQgYm9yZGVyVGhpY2tuZXNzID0gYXR0cmlidXRlc1tpSURdLng7CiAgICBoaWdocCBmbG9hdCBib3JkZXJPdXRlciA9IHNtb290aHN0ZXAoLTEuMjAwMDAwMDQ3NjgzNzE1ODIwMzEyNSwgMC4wLCBkc3QpOwogICAgaGlnaHAgZmxvYXQgYm9yZGVySW5uZXIgPSBzbW9vdGhzdGVwKC0wLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCAwLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCBkc3QgKyBib3JkZXJUaGlja25lc3MpOwogICAgaGlnaHAgdmVjNCBiZ0NvbG9yID0gY29sb3I7CiAgICBiZ0NvbG9yID0gbWl4KGJnQ29sb3IsIGJvcmRlckNvbG9yW2lJRF0sIHZlYzQoYm9yZGVySW5uZXIpKTsKICAgIGJnQ29sb3IgPSBtaXgoYmdDb2xvciwgc2hhZG93LCB2ZWM0KGJvcmRlck91dGVyKSk7CiAgICBnbF9GcmFnRGF0YVswXSA9IGJnQ29sb3I7Cn0KCg";
+kha_Shaders.circle_fragData1 = "s1692:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCB2ZWM0IHNoYWRvd0NvbG9yc1sxNl07CnVuaWZvcm0gaGlnaHAgdmVjNCBjaXJjbGVzWzE2XTsKdW5pZm9ybSBoaWdocCB2ZWM0IGF0dHJpYnV0ZXNbMTZdOwp1bmlmb3JtIGhpZ2hwIHZlYzQgYm9yZGVyQ29sb3JbMTZdOwoKZmxhdCBpbiBpbnQgaW5zdGFuY2VJRDsKaW4gaGlnaHAgdmVjNCBjb2xvcjsKb3V0IGhpZ2hwIHZlYzQgZnJhZ0NvbG9yOwoKaGlnaHAgZmxvYXQgZGlzdGFuY2VUb0NpcmNsZShoaWdocCB2ZWMyIGNlbnRlciwgaGlnaHAgZmxvYXQgcmFkaXVzLCBoaWdocCB2ZWMyIHBvaW50KQp7CiAgICByZXR1cm4gbGVuZ3RoKHBvaW50IC0gY2VudGVyKSAtIHJhZGl1czsKfQoKdm9pZCBtYWluKCkKewogICAgaW50IGlJRCA9IGluc3RhbmNlSUQ7CiAgICBoaWdocCB2ZWM0IHNoYWRvd0NvbG9yID0gc2hhZG93Q29sb3JzW2lJRF07CiAgICBoaWdocCBmbG9hdCBkc3QgPSBkaXN0YW5jZVRvQ2lyY2xlKGNpcmNsZXNbaUlEXS54eSwgY2lyY2xlc1tpSURdLnosIGdsX0ZyYWdDb29yZC54eSk7CiAgICBoaWdocCBmbG9hdCBzaGFkb3dXaWR0aCA9IGF0dHJpYnV0ZXNbaUlEXS55ICsgOS45OTk5OTk3NDczNzg3NTE2MzU1NTE0NTI2MzY3MTg4ZS0wNTsKICAgIGhpZ2hwIGZsb2F0IHNoYWRvd0Ftb3VudCA9IHBvdyhtYXgoMC4wLCAxLjAgLSAoZHN0IC8gc2hhZG93V2lkdGgpKSwgYXR0cmlidXRlc1tpSURdLnopOwogICAgaGlnaHAgdmVjNCBzaGFkb3cgPSBzaGFkb3dDb2xvcjsKICAgIHNoYWRvdy53ICo9IHNoYWRvd0Ftb3VudDsKICAgIGhpZ2hwIGZsb2F0IGJvcmRlclRoaWNrbmVzcyA9IGF0dHJpYnV0ZXNbaUlEXS54OwogICAgaGlnaHAgZmxvYXQgYm9yZGVyT3V0ZXIgPSBzbW9vdGhzdGVwKC0xLjIwMDAwMDA0NzY4MzcxNTgyMDMxMjUsIDAuMCwgZHN0KTsKICAgIGhpZ2hwIGZsb2F0IGJvcmRlcklubmVyID0gc21vb3Roc3RlcCgtMC42MDAwMDAwMjM4NDE4NTc5MTAxNTYyNSwgMC42MDAwMDAwMjM4NDE4NTc5MTAxNTYyNSwgZHN0ICsgYm9yZGVyVGhpY2tuZXNzKTsKICAgIGhpZ2hwIHZlYzQgYmdDb2xvciA9IGNvbG9yOwogICAgYmdDb2xvciA9IG1peChiZ0NvbG9yLCBib3JkZXJDb2xvcltpSURdLCB2ZWM0KGJvcmRlcklubmVyKSk7CiAgICBiZ0NvbG9yID0gbWl4KGJnQ29sb3IsIHNoYWRvdywgdmVjNChib3JkZXJPdXRlcikpOwogICAgZnJhZ0NvbG9yID0gYmdDb2xvcjsKfQoK";
+kha_Shaders.circle_fragData2 = "s1532:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIHZlYzQgc2hhZG93Q29sb3JzWzE2XTsKdW5pZm9ybSB2ZWM0IGNpcmNsZXNbMTZdOwp1bmlmb3JtIHZlYzQgYXR0cmlidXRlc1sxNl07CnVuaWZvcm0gdmVjNCBib3JkZXJDb2xvclsxNl07CgpmbGF0IHZhcnlpbmcgaW50IGluc3RhbmNlSUQ7CnZhcnlpbmcgdmVjNCBjb2xvcjsKCmZsb2F0IGRpc3RhbmNlVG9DaXJjbGUodmVjMiBjZW50ZXIsIGZsb2F0IHJhZGl1cywgdmVjMiBwb2ludCkKewogICAgcmV0dXJuIGxlbmd0aChwb2ludCAtIGNlbnRlcikgLSByYWRpdXM7Cn0KCnZvaWQgbWFpbigpCnsKICAgIGludCBpSUQgPSBpbnN0YW5jZUlEOwogICAgdmVjNCBzaGFkb3dDb2xvciA9IHNoYWRvd0NvbG9yc1tpSURdOwogICAgZmxvYXQgZHN0ID0gZGlzdGFuY2VUb0NpcmNsZShjaXJjbGVzW2lJRF0ueHksIGNpcmNsZXNbaUlEXS56LCBnbF9GcmFnQ29vcmQueHkpOwogICAgZmxvYXQgc2hhZG93V2lkdGggPSBhdHRyaWJ1dGVzW2lJRF0ueSArIDkuOTk5OTk5NzQ3Mzc4NzUxNjM1NTUxNDUyNjM2NzE4OGUtMDU7CiAgICBmbG9hdCBzaGFkb3dBbW91bnQgPSBwb3cobWF4KDAuMCwgMS4wIC0gKGRzdCAvIHNoYWRvd1dpZHRoKSksIGF0dHJpYnV0ZXNbaUlEXS56KTsKICAgIHZlYzQgc2hhZG93ID0gc2hhZG93Q29sb3I7CiAgICBzaGFkb3cudyAqPSBzaGFkb3dBbW91bnQ7CiAgICBmbG9hdCBib3JkZXJUaGlja25lc3MgPSBhdHRyaWJ1dGVzW2lJRF0ueDsKICAgIGZsb2F0IGJvcmRlck91dGVyID0gc21vb3Roc3RlcCgtMS4yMDAwMDAwNDc2ODM3MTU4MjAzMTI1LCAwLjAsIGRzdCk7CiAgICBmbG9hdCBib3JkZXJJbm5lciA9IHNtb290aHN0ZXAoLTAuNjAwMDAwMDIzODQxODU3OTEwMTU2MjUsIDAuNjAwMDAwMDIzODQxODU3OTEwMTU2MjUsIGRzdCArIGJvcmRlclRoaWNrbmVzcyk7CiAgICB2ZWM0IGJnQ29sb3IgPSBjb2xvcjsKICAgIGJnQ29sb3IgPSBtaXgoYmdDb2xvciwgYm9yZGVyQ29sb3JbaUlEXSwgdmVjNChib3JkZXJJbm5lcikpOwogICAgYmdDb2xvciA9IG1peChiZ0NvbG9yLCBzaGFkb3csIHZlYzQoYm9yZGVyT3V0ZXIpKTsKICAgIGdsX0ZyYWdEYXRhWzBdID0gYmdDb2xvcjsKfQoK";
 kha_Shaders.cylinder_fragData0 = "s103:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdm9pZCBtYWluKCkKewp9Cgo";
 kha_Shaders.cylinder_fragData1 = "s107:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdm9pZCBtYWluKCkKewp9Cgo";
 kha_Shaders.cylinder_fragData2 = "s106:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp2b2lkIG1haW4oKQp7Cn0KCg";
-kha_Shaders.cylinder_vertData0 = "s207:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBNVlA7CgphdHRyaWJ1dGUgbWVkaXVtcCB2ZWMzIHBvczsKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyBjb2w7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IE1WUCAqIHZlYzQocG9zLCAxLjApOwp9Cgo";
-kha_Shaders.cylinder_vertData1 = "s192:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBNVlA7CgppbiBtZWRpdW1wIHZlYzMgcG9zOwppbiBtZWRpdW1wIHZlYzMgY29sOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBNVlAgKiB2ZWM0KHBvcywgMS4wKTsKfQoK";
+kha_Shaders.cylinder_vertData0 = "s175:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgTVZQOwoKYXR0cmlidXRlIHZlYzMgcG9zOwphdHRyaWJ1dGUgdmVjMyBjb2w7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IE1WUCAqIHZlYzQocG9zLCAxLjApOwp9Cgo";
+kha_Shaders.cylinder_vertData1 = "s160:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1hdDQgTVZQOwoKaW4gdmVjMyBwb3M7CmluIHZlYzMgY29sOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBNVlAgKiB2ZWM0KHBvcywgMS4wKTsKfQoK";
 kha_Shaders.cylinder_vertData2 = "s207:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBNVlA7CgphdHRyaWJ1dGUgbWVkaXVtcCB2ZWMzIHBvczsKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyBjb2w7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IE1WUCAqIHZlYzQocG9zLCAxLjApOwp9Cgo";
-kha_Shaders.ocean_fragData0 = "s2115:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCBzX3RleHR1cmU7CnVuaWZvcm0gbWVkaXVtcCBzYW1wbGVyMkQgc19ub3JtYWxzOwp1bmlmb3JtIGhpZ2hwIHZlYzMgbGlnaHRfcG9zaXRpb247CnVuaWZvcm0gaGlnaHAgdmVjMyBleWVfcG9zaXRpb247CnVuaWZvcm0gbWVkaXVtcCBzYW1wbGVyMkQgZ0NvbG9yOwoKdmFyeWluZyBoaWdocCB2ZWMyIHZfdGV4dHVyZUNvb3JkaW5hdGVzOwp2YXJ5aW5nIGhpZ2hwIGZsb2F0IHZfdGltZTsKdmFyeWluZyBoaWdocCB2ZWMzIHdvcmxkX3BvczsKdmFyeWluZyBoaWdocCB2ZWMzIHdvcmxkX25vcm1hbDsKdmFyeWluZyBoaWdocCB2ZWM0IHZpZXdTcGFjZTsKCnZvaWQgbWFpbigpCnsKICAgIGhpZ2hwIHZlYzMgdGV4MSA9IHRleHR1cmUyRChzX3RleHR1cmUsIHZfdGV4dHVyZUNvb3JkaW5hdGVzKS54eXo7CiAgICBoaWdocCB2ZWMzIG5vcm1hbCA9IHRleHR1cmUyRChzX25vcm1hbHMsIHZfdGV4dHVyZUNvb3JkaW5hdGVzKS54eXogKiBzaW4oMy4xNDI4NTcwNzQ3Mzc1NDg4MjgxMjUgKiB2X3RpbWUpOwogICAgbm9ybWFsID0gbm9ybWFsaXplKChub3JtYWwgKiAyLjApIC0gdmVjMygxLjApKSAvIHZlYzMoMTAuMCk7CiAgICBoaWdocCB2ZWMzIEwgPSBub3JtYWxpemUobGlnaHRfcG9zaXRpb24gLSB3b3JsZF9wb3MpOwogICAgaGlnaHAgdmVjMyBWID0gbm9ybWFsaXplKGV5ZV9wb3NpdGlvbiAtIHdvcmxkX3Bvcyk7CiAgICBoaWdocCB2ZWMzIGRpZmZ1c2UgPSB2ZWMzKDAuMTUwMDAwMDA1OTYwNDY0NDc3NTM5MDYyNSwgMC4wNTAwMDAwMDA3NDUwNTgwNTk2OTIzODI4MTI1LCAwLjApICogbWF4KDAuMCwgZG90KEwsIHdvcmxkX25vcm1hbCkpOwogICAgaGlnaHAgZmxvYXQgcmltID0gMS4wIC0gbWF4KGRvdChWLCB3b3JsZF9ub3JtYWwpLCAwLjApOwogICAgcmltID0gc21vb3Roc3RlcCgwLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCAxLjAsIHJpbSk7CiAgICBoaWdocCB2ZWMzIGZpbmFsUmltID0gdmVjMygwLjIwMDAwMDAwMjk4MDIzMjIzODc2OTUzMTI1KSAqIHZlYzMocmltLCByaW0sIHJpbSk7CiAgICBoaWdocCB2ZWMzIGxpZ2h0Q29sb3IgPSAoZmluYWxSaW0gKyBkaWZmdXNlKSArIHRleDE7CiAgICBoaWdocCB2ZWMzIGZpbmFsQ29sb3IgPSB2ZWMzKDAuMCk7CiAgICBoaWdocCBmbG9hdCBkaXN0ID0gMC4wOwogICAgaGlnaHAgZmxvYXQgZm9nRmFjdG9yID0gMC4wOwogICAgZGlzdCA9IGdsX0ZyYWdDb29yZC56IC8gZ2xfRnJhZ0Nvb3JkLnc7CiAgICBmb2dGYWN0b3IgPSAxLjAgLyBleHAoKGRpc3QgKiA5Ljk5OTk5OTc0NzM3ODc1MTYzNTU1MTQ1MjYzNjcxODhlLTA1KSAqIChkaXN0ICogOS45OTk5OTk3NDczNzg3NTE2MzU1NTE0NTI2MzY3MTg4ZS0wNSkpOwogICAgZm9nRmFjdG9yID0gY2xhbXAoZm9nRmFjdG9yLCAwLjAsIDEuMCk7CiAgICBmaW5hbENvbG9yID0gbWl4KHZlYzMoMC41KSwgbGlnaHRDb2xvciwgdmVjMyhmb2dGYWN0b3IpKTsKICAgIGdsX0ZyYWdEYXRhWzBdID0gdmVjNChmaW5hbENvbG9yLCAxLjApOwp9Cgo";
-kha_Shaders.ocean_fragData1 = "s2106:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCBzX3RleHR1cmU7CnVuaWZvcm0gbWVkaXVtcCBzYW1wbGVyMkQgc19ub3JtYWxzOwp1bmlmb3JtIGhpZ2hwIHZlYzMgbGlnaHRfcG9zaXRpb247CnVuaWZvcm0gaGlnaHAgdmVjMyBleWVfcG9zaXRpb247CnVuaWZvcm0gbWVkaXVtcCBzYW1wbGVyMkQgZ0NvbG9yOwoKaW4gaGlnaHAgdmVjMiB2X3RleHR1cmVDb29yZGluYXRlczsKaW4gaGlnaHAgZmxvYXQgdl90aW1lOwppbiBoaWdocCB2ZWMzIHdvcmxkX3BvczsKaW4gaGlnaHAgdmVjMyB3b3JsZF9ub3JtYWw7Cm91dCBoaWdocCB2ZWM0IG91dENvbG9yOwppbiBoaWdocCB2ZWM0IHZpZXdTcGFjZTsKCnZvaWQgbWFpbigpCnsKICAgIGhpZ2hwIHZlYzMgdGV4MSA9IHRleHR1cmUoc190ZXh0dXJlLCB2X3RleHR1cmVDb29yZGluYXRlcykueHl6OwogICAgaGlnaHAgdmVjMyBub3JtYWwgPSB0ZXh0dXJlKHNfbm9ybWFscywgdl90ZXh0dXJlQ29vcmRpbmF0ZXMpLnh5eiAqIHNpbigzLjE0Mjg1NzA3NDczNzU0ODgyODEyNSAqIHZfdGltZSk7CiAgICBub3JtYWwgPSBub3JtYWxpemUoKG5vcm1hbCAqIDIuMCkgLSB2ZWMzKDEuMCkpIC8gdmVjMygxMC4wKTsKICAgIGhpZ2hwIHZlYzMgTCA9IG5vcm1hbGl6ZShsaWdodF9wb3NpdGlvbiAtIHdvcmxkX3Bvcyk7CiAgICBoaWdocCB2ZWMzIFYgPSBub3JtYWxpemUoZXllX3Bvc2l0aW9uIC0gd29ybGRfcG9zKTsKICAgIGhpZ2hwIHZlYzMgZGlmZnVzZSA9IHZlYzMoMC4xNTAwMDAwMDU5NjA0NjQ0Nzc1MzkwNjI1LCAwLjA1MDAwMDAwMDc0NTA1ODA1OTY5MjM4MjgxMjUsIDAuMCkgKiBtYXgoMC4wLCBkb3QoTCwgd29ybGRfbm9ybWFsKSk7CiAgICBoaWdocCBmbG9hdCByaW0gPSAxLjAgLSBtYXgoZG90KFYsIHdvcmxkX25vcm1hbCksIDAuMCk7CiAgICByaW0gPSBzbW9vdGhzdGVwKDAuNjAwMDAwMDIzODQxODU3OTEwMTU2MjUsIDEuMCwgcmltKTsKICAgIGhpZ2hwIHZlYzMgZmluYWxSaW0gPSB2ZWMzKDAuMjAwMDAwMDAyOTgwMjMyMjM4NzY5NTMxMjUpICogdmVjMyhyaW0sIHJpbSwgcmltKTsKICAgIGhpZ2hwIHZlYzMgbGlnaHRDb2xvciA9IChmaW5hbFJpbSArIGRpZmZ1c2UpICsgdGV4MTsKICAgIGhpZ2hwIHZlYzMgZmluYWxDb2xvciA9IHZlYzMoMC4wKTsKICAgIGhpZ2hwIGZsb2F0IGRpc3QgPSAwLjA7CiAgICBoaWdocCBmbG9hdCBmb2dGYWN0b3IgPSAwLjA7CiAgICBkaXN0ID0gZ2xfRnJhZ0Nvb3JkLnogLyBnbF9GcmFnQ29vcmQudzsKICAgIGZvZ0ZhY3RvciA9IDEuMCAvIGV4cCgoZGlzdCAqIDkuOTk5OTk5NzQ3Mzc4NzUxNjM1NTUxNDUyNjM2NzE4OGUtMDUpICogKGRpc3QgKiA5Ljk5OTk5OTc0NzM3ODc1MTYzNTU1MTQ1MjYzNjcxODhlLTA1KSk7CiAgICBmb2dGYWN0b3IgPSBjbGFtcChmb2dGYWN0b3IsIDAuMCwgMS4wKTsKICAgIGZpbmFsQ29sb3IgPSBtaXgodmVjMygwLjUpLCBsaWdodENvbG9yLCB2ZWMzKGZvZ0ZhY3RvcikpOwogICAgb3V0Q29sb3IgPSB2ZWM0KGZpbmFsQ29sb3IsIDEuMCk7Cn0KCg";
+kha_Shaders.ocean_fragData0 = "s2107:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc190ZXh0dXJlOwp1bmlmb3JtIGhpZ2hwIHNhbXBsZXIyRCBzX25vcm1hbHM7CnVuaWZvcm0gaGlnaHAgdmVjMyBsaWdodF9wb3NpdGlvbjsKdW5pZm9ybSBoaWdocCB2ZWMzIGV5ZV9wb3NpdGlvbjsKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgZ0NvbG9yOwoKdmFyeWluZyBoaWdocCB2ZWMyIHZfdGV4dHVyZUNvb3JkaW5hdGVzOwp2YXJ5aW5nIGhpZ2hwIGZsb2F0IHZfdGltZTsKdmFyeWluZyBoaWdocCB2ZWMzIHdvcmxkX3BvczsKdmFyeWluZyBoaWdocCB2ZWMzIHdvcmxkX25vcm1hbDsKdmFyeWluZyBoaWdocCB2ZWM0IHZpZXdTcGFjZTsKCnZvaWQgbWFpbigpCnsKICAgIGhpZ2hwIHZlYzMgdGV4MSA9IHRleHR1cmUyRChzX3RleHR1cmUsIHZfdGV4dHVyZUNvb3JkaW5hdGVzKS54eXo7CiAgICBoaWdocCB2ZWMzIG5vcm1hbCA9IHRleHR1cmUyRChzX25vcm1hbHMsIHZfdGV4dHVyZUNvb3JkaW5hdGVzKS54eXogKiBzaW4oMy4xNDI4NTcwNzQ3Mzc1NDg4MjgxMjUgKiB2X3RpbWUpOwogICAgbm9ybWFsID0gbm9ybWFsaXplKChub3JtYWwgKiAyLjApIC0gdmVjMygxLjApKSAvIHZlYzMoMTAuMCk7CiAgICBoaWdocCB2ZWMzIEwgPSBub3JtYWxpemUobGlnaHRfcG9zaXRpb24gLSB3b3JsZF9wb3MpOwogICAgaGlnaHAgdmVjMyBWID0gbm9ybWFsaXplKGV5ZV9wb3NpdGlvbiAtIHdvcmxkX3Bvcyk7CiAgICBoaWdocCB2ZWMzIGRpZmZ1c2UgPSB2ZWMzKDAuMTUwMDAwMDA1OTYwNDY0NDc3NTM5MDYyNSwgMC4wNTAwMDAwMDA3NDUwNTgwNTk2OTIzODI4MTI1LCAwLjApICogbWF4KDAuMCwgZG90KEwsIHdvcmxkX25vcm1hbCkpOwogICAgaGlnaHAgZmxvYXQgcmltID0gMS4wIC0gbWF4KGRvdChWLCB3b3JsZF9ub3JtYWwpLCAwLjApOwogICAgcmltID0gc21vb3Roc3RlcCgwLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCAxLjAsIHJpbSk7CiAgICBoaWdocCB2ZWMzIGZpbmFsUmltID0gdmVjMygwLjIwMDAwMDAwMjk4MDIzMjIzODc2OTUzMTI1KSAqIHZlYzMocmltLCByaW0sIHJpbSk7CiAgICBoaWdocCB2ZWMzIGxpZ2h0Q29sb3IgPSAoZmluYWxSaW0gKyBkaWZmdXNlKSArIHRleDE7CiAgICBoaWdocCB2ZWMzIGZpbmFsQ29sb3IgPSB2ZWMzKDAuMCk7CiAgICBoaWdocCBmbG9hdCBkaXN0ID0gMC4wOwogICAgaGlnaHAgZmxvYXQgZm9nRmFjdG9yID0gMC4wOwogICAgZGlzdCA9IGdsX0ZyYWdDb29yZC56IC8gZ2xfRnJhZ0Nvb3JkLnc7CiAgICBmb2dGYWN0b3IgPSAxLjAgLyBleHAoKGRpc3QgKiA5Ljk5OTk5OTc0NzM3ODc1MTYzNTU1MTQ1MjYzNjcxODhlLTA1KSAqIChkaXN0ICogOS45OTk5OTk3NDczNzg3NTE2MzU1NTE0NTI2MzY3MTg4ZS0wNSkpOwogICAgZm9nRmFjdG9yID0gY2xhbXAoZm9nRmFjdG9yLCAwLjAsIDEuMCk7CiAgICBmaW5hbENvbG9yID0gbWl4KHZlYzMoMC41KSwgbGlnaHRDb2xvciwgdmVjMyhmb2dGYWN0b3IpKTsKICAgIGdsX0ZyYWdEYXRhWzBdID0gdmVjNChmaW5hbENvbG9yLCAxLjApOwp9Cgo";
+kha_Shaders.ocean_fragData1 = "s2098:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc190ZXh0dXJlOwp1bmlmb3JtIGhpZ2hwIHNhbXBsZXIyRCBzX25vcm1hbHM7CnVuaWZvcm0gaGlnaHAgdmVjMyBsaWdodF9wb3NpdGlvbjsKdW5pZm9ybSBoaWdocCB2ZWMzIGV5ZV9wb3NpdGlvbjsKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgZ0NvbG9yOwoKaW4gaGlnaHAgdmVjMiB2X3RleHR1cmVDb29yZGluYXRlczsKaW4gaGlnaHAgZmxvYXQgdl90aW1lOwppbiBoaWdocCB2ZWMzIHdvcmxkX3BvczsKaW4gaGlnaHAgdmVjMyB3b3JsZF9ub3JtYWw7Cm91dCBoaWdocCB2ZWM0IG91dENvbG9yOwppbiBoaWdocCB2ZWM0IHZpZXdTcGFjZTsKCnZvaWQgbWFpbigpCnsKICAgIGhpZ2hwIHZlYzMgdGV4MSA9IHRleHR1cmUoc190ZXh0dXJlLCB2X3RleHR1cmVDb29yZGluYXRlcykueHl6OwogICAgaGlnaHAgdmVjMyBub3JtYWwgPSB0ZXh0dXJlKHNfbm9ybWFscywgdl90ZXh0dXJlQ29vcmRpbmF0ZXMpLnh5eiAqIHNpbigzLjE0Mjg1NzA3NDczNzU0ODgyODEyNSAqIHZfdGltZSk7CiAgICBub3JtYWwgPSBub3JtYWxpemUoKG5vcm1hbCAqIDIuMCkgLSB2ZWMzKDEuMCkpIC8gdmVjMygxMC4wKTsKICAgIGhpZ2hwIHZlYzMgTCA9IG5vcm1hbGl6ZShsaWdodF9wb3NpdGlvbiAtIHdvcmxkX3Bvcyk7CiAgICBoaWdocCB2ZWMzIFYgPSBub3JtYWxpemUoZXllX3Bvc2l0aW9uIC0gd29ybGRfcG9zKTsKICAgIGhpZ2hwIHZlYzMgZGlmZnVzZSA9IHZlYzMoMC4xNTAwMDAwMDU5NjA0NjQ0Nzc1MzkwNjI1LCAwLjA1MDAwMDAwMDc0NTA1ODA1OTY5MjM4MjgxMjUsIDAuMCkgKiBtYXgoMC4wLCBkb3QoTCwgd29ybGRfbm9ybWFsKSk7CiAgICBoaWdocCBmbG9hdCByaW0gPSAxLjAgLSBtYXgoZG90KFYsIHdvcmxkX25vcm1hbCksIDAuMCk7CiAgICByaW0gPSBzbW9vdGhzdGVwKDAuNjAwMDAwMDIzODQxODU3OTEwMTU2MjUsIDEuMCwgcmltKTsKICAgIGhpZ2hwIHZlYzMgZmluYWxSaW0gPSB2ZWMzKDAuMjAwMDAwMDAyOTgwMjMyMjM4NzY5NTMxMjUpICogdmVjMyhyaW0sIHJpbSwgcmltKTsKICAgIGhpZ2hwIHZlYzMgbGlnaHRDb2xvciA9IChmaW5hbFJpbSArIGRpZmZ1c2UpICsgdGV4MTsKICAgIGhpZ2hwIHZlYzMgZmluYWxDb2xvciA9IHZlYzMoMC4wKTsKICAgIGhpZ2hwIGZsb2F0IGRpc3QgPSAwLjA7CiAgICBoaWdocCBmbG9hdCBmb2dGYWN0b3IgPSAwLjA7CiAgICBkaXN0ID0gZ2xfRnJhZ0Nvb3JkLnogLyBnbF9GcmFnQ29vcmQudzsKICAgIGZvZ0ZhY3RvciA9IDEuMCAvIGV4cCgoZGlzdCAqIDkuOTk5OTk5NzQ3Mzc4NzUxNjM1NTUxNDUyNjM2NzE4OGUtMDUpICogKGRpc3QgKiA5Ljk5OTk5OTc0NzM3ODc1MTYzNTU1MTQ1MjYzNjcxODhlLTA1KSk7CiAgICBmb2dGYWN0b3IgPSBjbGFtcChmb2dGYWN0b3IsIDAuMCwgMS4wKTsKICAgIGZpbmFsQ29sb3IgPSBtaXgodmVjMygwLjUpLCBsaWdodENvbG9yLCB2ZWMzKGZvZ0ZhY3RvcikpOwogICAgb3V0Q29sb3IgPSB2ZWM0KGZpbmFsQ29sb3IsIDEuMCk7Cn0KCg";
 kha_Shaders.ocean_fragData2 = "s1974:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHNfdGV4dHVyZTsKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCBzX25vcm1hbHM7CnVuaWZvcm0gdmVjMyBsaWdodF9wb3NpdGlvbjsKdW5pZm9ybSB2ZWMzIGV5ZV9wb3NpdGlvbjsKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCBnQ29sb3I7Cgp2YXJ5aW5nIHZlYzIgdl90ZXh0dXJlQ29vcmRpbmF0ZXM7CnZhcnlpbmcgZmxvYXQgdl90aW1lOwp2YXJ5aW5nIHZlYzMgd29ybGRfcG9zOwp2YXJ5aW5nIHZlYzMgd29ybGRfbm9ybWFsOwp2YXJ5aW5nIHZlYzQgdmlld1NwYWNlOwoKdm9pZCBtYWluKCkKewogICAgdmVjMyB0ZXgxID0gdGV4dHVyZTJEKHNfdGV4dHVyZSwgdl90ZXh0dXJlQ29vcmRpbmF0ZXMpLnh5ejsKICAgIHZlYzMgbm9ybWFsID0gdGV4dHVyZTJEKHNfbm9ybWFscywgdl90ZXh0dXJlQ29vcmRpbmF0ZXMpLnh5eiAqIHNpbigzLjE0Mjg1NzA3NDczNzU0ODgyODEyNSAqIHZfdGltZSk7CiAgICBub3JtYWwgPSBub3JtYWxpemUoKG5vcm1hbCAqIDIuMCkgLSB2ZWMzKDEuMCkpIC8gdmVjMygxMC4wKTsKICAgIHZlYzMgTCA9IG5vcm1hbGl6ZShsaWdodF9wb3NpdGlvbiAtIHdvcmxkX3Bvcyk7CiAgICB2ZWMzIFYgPSBub3JtYWxpemUoZXllX3Bvc2l0aW9uIC0gd29ybGRfcG9zKTsKICAgIHZlYzMgZGlmZnVzZSA9IHZlYzMoMC4xNTAwMDAwMDU5NjA0NjQ0Nzc1MzkwNjI1LCAwLjA1MDAwMDAwMDc0NTA1ODA1OTY5MjM4MjgxMjUsIDAuMCkgKiBtYXgoMC4wLCBkb3QoTCwgd29ybGRfbm9ybWFsKSk7CiAgICBmbG9hdCByaW0gPSAxLjAgLSBtYXgoZG90KFYsIHdvcmxkX25vcm1hbCksIDAuMCk7CiAgICByaW0gPSBzbW9vdGhzdGVwKDAuNjAwMDAwMDIzODQxODU3OTEwMTU2MjUsIDEuMCwgcmltKTsKICAgIHZlYzMgZmluYWxSaW0gPSB2ZWMzKDAuMjAwMDAwMDAyOTgwMjMyMjM4NzY5NTMxMjUpICogdmVjMyhyaW0sIHJpbSwgcmltKTsKICAgIHZlYzMgbGlnaHRDb2xvciA9IChmaW5hbFJpbSArIGRpZmZ1c2UpICsgdGV4MTsKICAgIHZlYzMgZmluYWxDb2xvciA9IHZlYzMoMC4wKTsKICAgIGZsb2F0IGRpc3QgPSAwLjA7CiAgICBmbG9hdCBmb2dGYWN0b3IgPSAwLjA7CiAgICBkaXN0ID0gZ2xfRnJhZ0Nvb3JkLnogLyBnbF9GcmFnQ29vcmQudzsKICAgIGZvZ0ZhY3RvciA9IDEuMCAvIGV4cCgoZGlzdCAqIDkuOTk5OTk5NzQ3Mzc4NzUxNjM1NTUxNDUyNjM2NzE4OGUtMDUpICogKGRpc3QgKiA5Ljk5OTk5OTc0NzM3ODc1MTYzNTU1MTQ1MjYzNjcxODhlLTA1KSk7CiAgICBmb2dGYWN0b3IgPSBjbGFtcChmb2dGYWN0b3IsIDAuMCwgMS4wKTsKICAgIGZpbmFsQ29sb3IgPSBtaXgodmVjMygwLjUpLCBsaWdodENvbG9yLCB2ZWMzKGZvZ0ZhY3RvcikpOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSB2ZWM0KGZpbmFsQ29sb3IsIDEuMCk7Cn0KCg";
-kha_Shaders.ocean_vertData0 = "s1152:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIGZsb2F0IHRpbWU7CnVuaWZvcm0gbWF0NCBtb2RlbF9tYXRyaXg7CnVuaWZvcm0gbWF0NCB2aWV3X21hdHJpeDsKdW5pZm9ybSBtYXQ0IE1WUDsKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCBzX3RleHR1cmU7CnVuaWZvcm0gbWF0NCBwcm9qZWN0aW9uX21hdHJpeDsKCnZhcnlpbmcgZmxvYXQgdl90aW1lOwphdHRyaWJ1dGUgdmVjNCBhX3Bvc2l0aW9uOwp2YXJ5aW5nIHZlYzIgdl90ZXh0dXJlQ29vcmRpbmF0ZXM7CmF0dHJpYnV0ZSB2ZWMyIHV2Owp2YXJ5aW5nIHZlYzMgd29ybGRfcG9zOwp2YXJ5aW5nIHZlYzMgd29ybGRfbm9ybWFsOwphdHRyaWJ1dGUgdmVjMyBpbl9ub3JtYWw7CnZhcnlpbmcgdmVjNCB2aWV3U3BhY2U7Cgp2b2lkIG1haW4oKQp7CiAgICB2X3RpbWUgPSB0aW1lOwogICAgdmVjNCB2ZXJ0ZXhDb29yZCA9IGFfcG9zaXRpb247CiAgICBmbG9hdCBfZGlzdGFuY2UgPSBsZW5ndGgodmVydGV4Q29vcmQpOwogICAgdmVydGV4Q29vcmQueSArPSAoc2luKCgzLjE0Mjg1NzA3NDczNzU0ODgyODEyNSAqIF9kaXN0YW5jZSkgKyB0aW1lKSAqIDEwLjApOwogICAgdl90ZXh0dXJlQ29vcmRpbmF0ZXMgPSB1djsKICAgIHdvcmxkX3BvcyA9IChtb2RlbF9tYXRyaXggKiB2ZXJ0ZXhDb29yZCkueHl6OwogICAgd29ybGRfbm9ybWFsID0gbm9ybWFsaXplKG1hdDMobW9kZWxfbWF0cml4WzBdLnh5eiwgbW9kZWxfbWF0cml4WzFdLnh5eiwgbW9kZWxfbWF0cml4WzJdLnh5eikgKiBpbl9ub3JtYWwpOwogICAgdmlld1NwYWNlID0gKHZpZXdfbWF0cml4ICogbW9kZWxfbWF0cml4KSAqIHZlcnRleENvb3JkOwogICAgZ2xfUG9zaXRpb24gPSBNVlAgKiB2ZXJ0ZXhDb29yZDsKfQoK";
-kha_Shaders.ocean_vertData1 = "s1102:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIGZsb2F0IHRpbWU7CnVuaWZvcm0gbWF0NCBtb2RlbF9tYXRyaXg7CnVuaWZvcm0gbWF0NCB2aWV3X21hdHJpeDsKdW5pZm9ybSBtYXQ0IE1WUDsKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCBzX3RleHR1cmU7CnVuaWZvcm0gbWF0NCBwcm9qZWN0aW9uX21hdHJpeDsKCm91dCBmbG9hdCB2X3RpbWU7CmluIHZlYzQgYV9wb3NpdGlvbjsKb3V0IHZlYzIgdl90ZXh0dXJlQ29vcmRpbmF0ZXM7CmluIHZlYzIgdXY7Cm91dCB2ZWMzIHdvcmxkX3BvczsKb3V0IHZlYzMgd29ybGRfbm9ybWFsOwppbiB2ZWMzIGluX25vcm1hbDsKb3V0IHZlYzQgdmlld1NwYWNlOwoKdm9pZCBtYWluKCkKewogICAgdl90aW1lID0gdGltZTsKICAgIHZlYzQgdmVydGV4Q29vcmQgPSBhX3Bvc2l0aW9uOwogICAgZmxvYXQgX2Rpc3RhbmNlID0gbGVuZ3RoKHZlcnRleENvb3JkKTsKICAgIHZlcnRleENvb3JkLnkgKz0gKHNpbigoMy4xNDI4NTcwNzQ3Mzc1NDg4MjgxMjUgKiBfZGlzdGFuY2UpICsgdGltZSkgKiAxMC4wKTsKICAgIHZfdGV4dHVyZUNvb3JkaW5hdGVzID0gdXY7CiAgICB3b3JsZF9wb3MgPSAobW9kZWxfbWF0cml4ICogdmVydGV4Q29vcmQpLnh5ejsKICAgIHdvcmxkX25vcm1hbCA9IG5vcm1hbGl6ZShtYXQzKG1vZGVsX21hdHJpeFswXS54eXosIG1vZGVsX21hdHJpeFsxXS54eXosIG1vZGVsX21hdHJpeFsyXS54eXopICogaW5fbm9ybWFsKTsKICAgIHZpZXdTcGFjZSA9ICh2aWV3X21hdHJpeCAqIG1vZGVsX21hdHJpeCkgKiB2ZXJ0ZXhDb29yZDsKICAgIGdsX1Bvc2l0aW9uID0gTVZQICogdmVydGV4Q29vcmQ7Cn0KCg";
+kha_Shaders.ocean_vertData0 = "s1150:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIGZsb2F0IHRpbWU7CnVuaWZvcm0gbWF0NCBtb2RlbF9tYXRyaXg7CnVuaWZvcm0gbWF0NCB2aWV3X21hdHJpeDsKdW5pZm9ybSBtYXQ0IE1WUDsKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc190ZXh0dXJlOwp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbl9tYXRyaXg7Cgp2YXJ5aW5nIGZsb2F0IHZfdGltZTsKYXR0cmlidXRlIHZlYzQgYV9wb3NpdGlvbjsKdmFyeWluZyB2ZWMyIHZfdGV4dHVyZUNvb3JkaW5hdGVzOwphdHRyaWJ1dGUgdmVjMiB1djsKdmFyeWluZyB2ZWMzIHdvcmxkX3BvczsKdmFyeWluZyB2ZWMzIHdvcmxkX25vcm1hbDsKYXR0cmlidXRlIHZlYzMgaW5fbm9ybWFsOwp2YXJ5aW5nIHZlYzQgdmlld1NwYWNlOwoKdm9pZCBtYWluKCkKewogICAgdl90aW1lID0gdGltZTsKICAgIHZlYzQgdmVydGV4Q29vcmQgPSBhX3Bvc2l0aW9uOwogICAgZmxvYXQgX2Rpc3RhbmNlID0gbGVuZ3RoKHZlcnRleENvb3JkKTsKICAgIHZlcnRleENvb3JkLnkgKz0gKHNpbigoMy4xNDI4NTcwNzQ3Mzc1NDg4MjgxMjUgKiBfZGlzdGFuY2UpICsgdGltZSkgKiAxMC4wKTsKICAgIHZfdGV4dHVyZUNvb3JkaW5hdGVzID0gdXY7CiAgICB3b3JsZF9wb3MgPSAobW9kZWxfbWF0cml4ICogdmVydGV4Q29vcmQpLnh5ejsKICAgIHdvcmxkX25vcm1hbCA9IG5vcm1hbGl6ZShtYXQzKG1vZGVsX21hdHJpeFswXS54eXosIG1vZGVsX21hdHJpeFsxXS54eXosIG1vZGVsX21hdHJpeFsyXS54eXopICogaW5fbm9ybWFsKTsKICAgIHZpZXdTcGFjZSA9ICh2aWV3X21hdHJpeCAqIG1vZGVsX21hdHJpeCkgKiB2ZXJ0ZXhDb29yZDsKICAgIGdsX1Bvc2l0aW9uID0gTVZQICogdmVydGV4Q29vcmQ7Cn0KCg";
+kha_Shaders.ocean_vertData1 = "s1099:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIGZsb2F0IHRpbWU7CnVuaWZvcm0gbWF0NCBtb2RlbF9tYXRyaXg7CnVuaWZvcm0gbWF0NCB2aWV3X21hdHJpeDsKdW5pZm9ybSBtYXQ0IE1WUDsKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc190ZXh0dXJlOwp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbl9tYXRyaXg7CgpvdXQgZmxvYXQgdl90aW1lOwppbiB2ZWM0IGFfcG9zaXRpb247Cm91dCB2ZWMyIHZfdGV4dHVyZUNvb3JkaW5hdGVzOwppbiB2ZWMyIHV2OwpvdXQgdmVjMyB3b3JsZF9wb3M7Cm91dCB2ZWMzIHdvcmxkX25vcm1hbDsKaW4gdmVjMyBpbl9ub3JtYWw7Cm91dCB2ZWM0IHZpZXdTcGFjZTsKCnZvaWQgbWFpbigpCnsKICAgIHZfdGltZSA9IHRpbWU7CiAgICB2ZWM0IHZlcnRleENvb3JkID0gYV9wb3NpdGlvbjsKICAgIGZsb2F0IF9kaXN0YW5jZSA9IGxlbmd0aCh2ZXJ0ZXhDb29yZCk7CiAgICB2ZXJ0ZXhDb29yZC55ICs9IChzaW4oKDMuMTQyODU3MDc0NzM3NTQ4ODI4MTI1ICogX2Rpc3RhbmNlKSArIHRpbWUpICogMTAuMCk7CiAgICB2X3RleHR1cmVDb29yZGluYXRlcyA9IHV2OwogICAgd29ybGRfcG9zID0gKG1vZGVsX21hdHJpeCAqIHZlcnRleENvb3JkKS54eXo7CiAgICB3b3JsZF9ub3JtYWwgPSBub3JtYWxpemUobWF0Myhtb2RlbF9tYXRyaXhbMF0ueHl6LCBtb2RlbF9tYXRyaXhbMV0ueHl6LCBtb2RlbF9tYXRyaXhbMl0ueHl6KSAqIGluX25vcm1hbCk7CiAgICB2aWV3U3BhY2UgPSAodmlld19tYXRyaXggKiBtb2RlbF9tYXRyaXgpICogdmVydGV4Q29vcmQ7CiAgICBnbF9Qb3NpdGlvbiA9IE1WUCAqIHZlcnRleENvb3JkOwp9Cgo";
 kha_Shaders.ocean_vertData2 = "s1312:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgZmxvYXQgdGltZTsKdW5pZm9ybSBtZWRpdW1wIG1hdDQgbW9kZWxfbWF0cml4Owp1bmlmb3JtIG1lZGl1bXAgbWF0NCB2aWV3X21hdHJpeDsKdW5pZm9ybSBtZWRpdW1wIG1hdDQgTVZQOwp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHNfdGV4dHVyZTsKdW5pZm9ybSBtZWRpdW1wIG1hdDQgcHJvamVjdGlvbl9tYXRyaXg7Cgp2YXJ5aW5nIG1lZGl1bXAgZmxvYXQgdl90aW1lOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWM0IGFfcG9zaXRpb247CnZhcnlpbmcgbWVkaXVtcCB2ZWMyIHZfdGV4dHVyZUNvb3JkaW5hdGVzOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWMyIHV2Owp2YXJ5aW5nIG1lZGl1bXAgdmVjMyB3b3JsZF9wb3M7CnZhcnlpbmcgbWVkaXVtcCB2ZWMzIHdvcmxkX25vcm1hbDsKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyBpbl9ub3JtYWw7CnZhcnlpbmcgbWVkaXVtcCB2ZWM0IHZpZXdTcGFjZTsKCnZvaWQgbWFpbigpCnsKICAgIHZfdGltZSA9IHRpbWU7CiAgICBtZWRpdW1wIHZlYzQgdmVydGV4Q29vcmQgPSBhX3Bvc2l0aW9uOwogICAgbWVkaXVtcCBmbG9hdCBfZGlzdGFuY2UgPSBsZW5ndGgodmVydGV4Q29vcmQpOwogICAgdmVydGV4Q29vcmQueSArPSAoc2luKCgzLjE0Mjg1NzA3NDczNzU0ODgyODEyNSAqIF9kaXN0YW5jZSkgKyB0aW1lKSAqIDEwLjApOwogICAgdl90ZXh0dXJlQ29vcmRpbmF0ZXMgPSB1djsKICAgIHdvcmxkX3BvcyA9IChtb2RlbF9tYXRyaXggKiB2ZXJ0ZXhDb29yZCkueHl6OwogICAgd29ybGRfbm9ybWFsID0gbm9ybWFsaXplKG1hdDMobW9kZWxfbWF0cml4WzBdLnh5eiwgbW9kZWxfbWF0cml4WzFdLnh5eiwgbW9kZWxfbWF0cml4WzJdLnh5eikgKiBpbl9ub3JtYWwpOwogICAgdmlld1NwYWNlID0gKHZpZXdfbWF0cml4ICogbW9kZWxfbWF0cml4KSAqIHZlcnRleENvb3JkOwogICAgZ2xfUG9zaXRpb24gPSBNVlAgKiB2ZXJ0ZXhDb29yZDsKfQoK";
 kha_Shaders.painter_colored_fragData0 = "s198:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdmFyeWluZyBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9GcmFnRGF0YVswXSA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
 kha_Shaders.painter_colored_fragData1 = "s223:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKb3V0IGhpZ2hwIHZlYzQgRnJhZ0NvbG9yOwppbiBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBGcmFnQ29sb3IgPSBmcmFnbWVudENvbG9yOwp9Cgo";
@@ -37531,14 +48194,20 @@ kha_Shaders.painter_video_fragData2 = "s444:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRp
 kha_Shaders.painter_video_vertData0 = "s407:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSB2ZWMyIHZlcnRleFVWOwp2YXJ5aW5nIHZlYzQgY29sb3I7CmF0dHJpYnV0ZSB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdmVydGV4VVY7CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_video_vertData1 = "s372:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmluIHZlYzMgdmVydGV4UG9zaXRpb247Cm91dCB2ZWMyIHRleENvb3JkOwppbiB2ZWMyIHZlcnRleFVWOwpvdXQgdmVjNCBjb2xvcjsKaW4gdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICB0ZXhDb29yZCA9IHZlcnRleFVWOwogICAgY29sb3IgPSB2ZXJ0ZXhDb2xvcjsKfQoK";
 kha_Shaders.painter_video_vertData2 = "s471:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzIgdmVydGV4VVY7CnZhcnlpbmcgbWVkaXVtcCB2ZWM0IGNvbG9yOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdmVydGV4VVY7CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
+kha_Shaders.rect_fragData0 = "s2068:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCB2ZWM0IHNoYWRvd0NvbG9yc1sxNl07CnVuaWZvcm0gaGlnaHAgdmVjNCBhdHRyaWJ1dGVzWzE2XTsKdW5pZm9ybSBoaWdocCB2ZWM0IHJlY3RzWzE2XTsKdW5pZm9ybSBoaWdocCB2ZWM0IGJvcmRlckNvbG9yWzE2XTsKCmZsYXQgdmFyeWluZyBpbnQgaW5zdGFuY2VJRDsKdmFyeWluZyBoaWdocCB2ZWM0IGNvbG9yOwoKaGlnaHAgZmxvYXQgZGlzdGFuY2VUb1JlY3QoaGlnaHAgdmVjNCByZWN0LCBoaWdocCB2ZWMyIHBvaW50KQp7CiAgICBoaWdocCBmbG9hdCBkeCA9IG1heChyZWN0LnggLSBwb2ludC54LCBwb2ludC54IC0gcmVjdC55KTsKICAgIGhpZ2hwIGZsb2F0IGR5ID0gbWF4KHJlY3QudyAtIHBvaW50LnksIHBvaW50LnkgLSByZWN0LnopOwogICAgaGlnaHAgdmVjMiBkc3QgPSB2ZWMyKGR4LCBkeSk7CiAgICByZXR1cm4gbGVuZ3RoKG1heChkc3QsIHZlYzIoMC4wKSkpICsgbWluKG1heChkc3QueCwgZHN0LnkpLCAwLjApOwp9Cgp2b2lkIG1haW4oKQp7CiAgICBpbnQgaUlEID0gaW5zdGFuY2VJRDsKICAgIGhpZ2hwIHZlYzQgc2hhZG93Q29sb3IgPSBzaGFkb3dDb2xvcnNbaUlEXTsKICAgIGhpZ2hwIGZsb2F0IGNvcm5lclJhZGl1cyA9IGF0dHJpYnV0ZXNbaUlEXS55OwogICAgaGlnaHAgdmVjNCBvdXRlclJlY3QgPSByZWN0c1tpSURdOwogICAgaGlnaHAgZmxvYXQgb3V0ZXJEc3QgPSBkaXN0YW5jZVRvUmVjdChvdXRlclJlY3QsIGdsX0ZyYWdDb29yZC54eSkgLSBjb3JuZXJSYWRpdXM7CiAgICBoaWdocCBmbG9hdCBzaGFkb3dXaWR0aCA9IGF0dHJpYnV0ZXNbaUlEXS56ICsgOS45OTk5OTk3NDczNzg3NTE2MzU1NTE0NTI2MzY3MTg4ZS0wNTsKICAgIGhpZ2hwIGZsb2F0IHNoYWRvd0Ftb3VudCA9IHBvdyhtYXgoMC4wLCAxLjAgLSAob3V0ZXJEc3QgLyBzaGFkb3dXaWR0aCkpLCBhdHRyaWJ1dGVzW2lJRF0udyk7CiAgICBoaWdocCB2ZWM0IHNoYWRvdyA9IHNoYWRvd0NvbG9yOwogICAgc2hhZG93LncgKj0gc2hhZG93QW1vdW50OwogICAgaGlnaHAgZmxvYXQgYm9yZGVyVGhpY2tuZXNzID0gYXR0cmlidXRlc1tpSURdLng7CiAgICBoaWdocCBmbG9hdCBpbm5lckRzdCA9IG91dGVyRHN0ICsgYm9yZGVyVGhpY2tuZXNzOwogICAgaGlnaHAgZmxvYXQgYm9yZGVyT3V0ZXIgPSBzbW9vdGhzdGVwKC0xLjIwMDAwMDA0NzY4MzcxNTgyMDMxMjUsIDAuMCwgb3V0ZXJEc3QpOwogICAgaGlnaHAgZmxvYXQgYm9yZGVySW5uZXIgPSBzbW9vdGhzdGVwKC0wLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCAwLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCBpbm5lckRzdCk7CiAgICBoaWdocCB2ZWM0IGJnQ29sb3IgPSBjb2xvcjsKICAgIGJnQ29sb3IgPSBtaXgoYmdDb2xvciwgYm9yZGVyQ29sb3JbaUlEXSwgdmVjNChib3JkZXJJbm5lcikpOwogICAgYmdDb2xvciA9IG1peChiZ0NvbG9yLCBzaGFkb3csIHZlYzQoYm9yZGVyT3V0ZXIpKTsKICAgIGdsX0ZyYWdEYXRhWzBdID0gYmdDb2xvcjsKfQoK";
+kha_Shaders.rect_fragData1 = "s2087:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCB2ZWM0IHNoYWRvd0NvbG9yc1sxNl07CnVuaWZvcm0gaGlnaHAgdmVjNCBhdHRyaWJ1dGVzWzE2XTsKdW5pZm9ybSBoaWdocCB2ZWM0IHJlY3RzWzE2XTsKdW5pZm9ybSBoaWdocCB2ZWM0IGJvcmRlckNvbG9yWzE2XTsKCmZsYXQgaW4gaW50IGluc3RhbmNlSUQ7CmluIGhpZ2hwIHZlYzQgY29sb3I7Cm91dCBoaWdocCB2ZWM0IGZyYWdDb2xvcjsKCmhpZ2hwIGZsb2F0IGRpc3RhbmNlVG9SZWN0KGhpZ2hwIHZlYzQgcmVjdCwgaGlnaHAgdmVjMiBwb2ludCkKewogICAgaGlnaHAgZmxvYXQgZHggPSBtYXgocmVjdC54IC0gcG9pbnQueCwgcG9pbnQueCAtIHJlY3QueSk7CiAgICBoaWdocCBmbG9hdCBkeSA9IG1heChyZWN0LncgLSBwb2ludC55LCBwb2ludC55IC0gcmVjdC56KTsKICAgIGhpZ2hwIHZlYzIgZHN0ID0gdmVjMihkeCwgZHkpOwogICAgcmV0dXJuIGxlbmd0aChtYXgoZHN0LCB2ZWMyKDAuMCkpKSArIG1pbihtYXgoZHN0LngsIGRzdC55KSwgMC4wKTsKfQoKdm9pZCBtYWluKCkKewogICAgaW50IGlJRCA9IGluc3RhbmNlSUQ7CiAgICBoaWdocCB2ZWM0IHNoYWRvd0NvbG9yID0gc2hhZG93Q29sb3JzW2lJRF07CiAgICBoaWdocCBmbG9hdCBjb3JuZXJSYWRpdXMgPSBhdHRyaWJ1dGVzW2lJRF0ueTsKICAgIGhpZ2hwIHZlYzQgb3V0ZXJSZWN0ID0gcmVjdHNbaUlEXTsKICAgIGhpZ2hwIGZsb2F0IG91dGVyRHN0ID0gZGlzdGFuY2VUb1JlY3Qob3V0ZXJSZWN0LCBnbF9GcmFnQ29vcmQueHkpIC0gY29ybmVyUmFkaXVzOwogICAgaGlnaHAgZmxvYXQgc2hhZG93V2lkdGggPSBhdHRyaWJ1dGVzW2lJRF0ueiArIDkuOTk5OTk5NzQ3Mzc4NzUxNjM1NTUxNDUyNjM2NzE4OGUtMDU7CiAgICBoaWdocCBmbG9hdCBzaGFkb3dBbW91bnQgPSBwb3cobWF4KDAuMCwgMS4wIC0gKG91dGVyRHN0IC8gc2hhZG93V2lkdGgpKSwgYXR0cmlidXRlc1tpSURdLncpOwogICAgaGlnaHAgdmVjNCBzaGFkb3cgPSBzaGFkb3dDb2xvcjsKICAgIHNoYWRvdy53ICo9IHNoYWRvd0Ftb3VudDsKICAgIGhpZ2hwIGZsb2F0IGJvcmRlclRoaWNrbmVzcyA9IGF0dHJpYnV0ZXNbaUlEXS54OwogICAgaGlnaHAgZmxvYXQgaW5uZXJEc3QgPSBvdXRlckRzdCArIGJvcmRlclRoaWNrbmVzczsKICAgIGhpZ2hwIGZsb2F0IGJvcmRlck91dGVyID0gc21vb3Roc3RlcCgtMS4yMDAwMDAwNDc2ODM3MTU4MjAzMTI1LCAwLjAsIG91dGVyRHN0KTsKICAgIGhpZ2hwIGZsb2F0IGJvcmRlcklubmVyID0gc21vb3Roc3RlcCgtMC42MDAwMDAwMjM4NDE4NTc5MTAxNTYyNSwgMC42MDAwMDAwMjM4NDE4NTc5MTAxNTYyNSwgaW5uZXJEc3QpOwogICAgaGlnaHAgdmVjNCBiZ0NvbG9yID0gY29sb3I7CiAgICBiZ0NvbG9yID0gbWl4KGJnQ29sb3IsIGJvcmRlckNvbG9yW2lJRF0sIHZlYzQoYm9yZGVySW5uZXIpKTsKICAgIGJnQ29sb3IgPSBtaXgoYmdDb2xvciwgc2hhZG93LCB2ZWM0KGJvcmRlck91dGVyKSk7CiAgICBmcmFnQ29sb3IgPSBiZ0NvbG9yOwp9Cgo";
+kha_Shaders.rect_fragData2 = "s1887:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIHZlYzQgc2hhZG93Q29sb3JzWzE2XTsKdW5pZm9ybSB2ZWM0IGF0dHJpYnV0ZXNbMTZdOwp1bmlmb3JtIHZlYzQgcmVjdHNbMTZdOwp1bmlmb3JtIHZlYzQgYm9yZGVyQ29sb3JbMTZdOwoKZmxhdCB2YXJ5aW5nIGludCBpbnN0YW5jZUlEOwp2YXJ5aW5nIHZlYzQgY29sb3I7CgpmbG9hdCBkaXN0YW5jZVRvUmVjdCh2ZWM0IHJlY3QsIHZlYzIgcG9pbnQpCnsKICAgIGZsb2F0IGR4ID0gbWF4KHJlY3QueCAtIHBvaW50LngsIHBvaW50LnggLSByZWN0LnkpOwogICAgZmxvYXQgZHkgPSBtYXgocmVjdC53IC0gcG9pbnQueSwgcG9pbnQueSAtIHJlY3Queik7CiAgICB2ZWMyIGRzdCA9IHZlYzIoZHgsIGR5KTsKICAgIHJldHVybiBsZW5ndGgobWF4KGRzdCwgdmVjMigwLjApKSkgKyBtaW4obWF4KGRzdC54LCBkc3QueSksIDAuMCk7Cn0KCnZvaWQgbWFpbigpCnsKICAgIGludCBpSUQgPSBpbnN0YW5jZUlEOwogICAgdmVjNCBzaGFkb3dDb2xvciA9IHNoYWRvd0NvbG9yc1tpSURdOwogICAgZmxvYXQgY29ybmVyUmFkaXVzID0gYXR0cmlidXRlc1tpSURdLnk7CiAgICB2ZWM0IG91dGVyUmVjdCA9IHJlY3RzW2lJRF07CiAgICBmbG9hdCBvdXRlckRzdCA9IGRpc3RhbmNlVG9SZWN0KG91dGVyUmVjdCwgZ2xfRnJhZ0Nvb3JkLnh5KSAtIGNvcm5lclJhZGl1czsKICAgIGZsb2F0IHNoYWRvd1dpZHRoID0gYXR0cmlidXRlc1tpSURdLnogKyA5Ljk5OTk5OTc0NzM3ODc1MTYzNTU1MTQ1MjYzNjcxODhlLTA1OwogICAgZmxvYXQgc2hhZG93QW1vdW50ID0gcG93KG1heCgwLjAsIDEuMCAtIChvdXRlckRzdCAvIHNoYWRvd1dpZHRoKSksIGF0dHJpYnV0ZXNbaUlEXS53KTsKICAgIHZlYzQgc2hhZG93ID0gc2hhZG93Q29sb3I7CiAgICBzaGFkb3cudyAqPSBzaGFkb3dBbW91bnQ7CiAgICBmbG9hdCBib3JkZXJUaGlja25lc3MgPSBhdHRyaWJ1dGVzW2lJRF0ueDsKICAgIGZsb2F0IGlubmVyRHN0ID0gb3V0ZXJEc3QgKyBib3JkZXJUaGlja25lc3M7CiAgICBmbG9hdCBib3JkZXJPdXRlciA9IHNtb290aHN0ZXAoLTEuMjAwMDAwMDQ3NjgzNzE1ODIwMzEyNSwgMC4wLCBvdXRlckRzdCk7CiAgICBmbG9hdCBib3JkZXJJbm5lciA9IHNtb290aHN0ZXAoLTAuNjAwMDAwMDIzODQxODU3OTEwMTU2MjUsIDAuNjAwMDAwMDIzODQxODU3OTEwMTU2MjUsIGlubmVyRHN0KTsKICAgIHZlYzQgYmdDb2xvciA9IGNvbG9yOwogICAgYmdDb2xvciA9IG1peChiZ0NvbG9yLCBib3JkZXJDb2xvcltpSURdLCB2ZWM0KGJvcmRlcklubmVyKSk7CiAgICBiZ0NvbG9yID0gbWl4KGJnQ29sb3IsIHNoYWRvdywgdmVjNChib3JkZXJPdXRlcikpOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSBiZ0NvbG9yOwp9Cgo";
+kha_Shaders.rect_vertData0 = "s287:I3ZlcnNpb24gMTAwCgp2YXJ5aW5nIHZlYzQgY29sb3I7CmF0dHJpYnV0ZSB2ZWM0IGNvbDsKZmxhdCB2YXJ5aW5nIGludCBpbnN0YW5jZUlEOwphdHRyaWJ1dGUgdmVjMyBwb3M7Cgp2b2lkIG1haW4oKQp7CiAgICBjb2xvciA9IGNvbDsKICAgIGluc3RhbmNlSUQgPSBpbnQocG9zLnopOwogICAgZ2xfUG9zaXRpb24gPSB2ZWM0KHBvcy54LCBwb3MueSwgMC4wLCAxLjApOwp9Cgo";
+kha_Shaders.rect_vertData1 = "s262:I3ZlcnNpb24gMzAwIGVzCgpvdXQgdmVjNCBjb2xvcjsKaW4gdmVjNCBjb2w7CmZsYXQgb3V0IGludCBpbnN0YW5jZUlEOwppbiB2ZWMzIHBvczsKCnZvaWQgbWFpbigpCnsKICAgIGNvbG9yID0gY29sOwogICAgaW5zdGFuY2VJRCA9IGludChwb3Mueik7CiAgICBnbF9Qb3NpdGlvbiA9IHZlYzQocG9zLngsIHBvcy55LCAwLjAsIDEuMCk7Cn0KCg";
+kha_Shaders.rect_vertData2 = "s330:I3ZlcnNpb24gMTAwCgp2YXJ5aW5nIG1lZGl1bXAgdmVjNCBjb2xvcjsKYXR0cmlidXRlIG1lZGl1bXAgdmVjNCBjb2w7CmZsYXQgdmFyeWluZyBtZWRpdW1wIGludCBpbnN0YW5jZUlEOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWMzIHBvczsKCnZvaWQgbWFpbigpCnsKICAgIGNvbG9yID0gY29sOwogICAgaW5zdGFuY2VJRCA9IGludChwb3Mueik7CiAgICBnbF9Qb3NpdGlvbiA9IHZlYzQocG9zLngsIHBvcy55LCAwLjAsIDEuMCk7Cn0KCg";
 kha_Shaders.red_fragData0 = "s166:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdm9pZCBtYWluKCkKewogICAgZ2xfRnJhZ0RhdGFbMF0gPSB2ZWM0KDEuMCwgMC4wLCAwLjAsIDEuMCk7Cn0KCg";
-kha_Shaders.red_fragData1 = "s180:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKb3V0IHZlYzQgY29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBjb2xvciA9IHZlYzQoMS4wLCAwLjAsIDAuMCwgMS4wKTsKfQoK";
+kha_Shaders.red_fragData1 = "s188:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKb3V0IGhpZ2hwIHZlYzQgY29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBjb2xvciA9IHZlYzQoMS4wLCAwLjAsIDAuMCwgMS4wKTsKfQoK";
 kha_Shaders.red_fragData2 = "s168:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9GcmFnRGF0YVswXSA9IHZlYzQoMS4wLCAwLjAsIDAuMCwgMS4wKTsKfQoK";
 kha_Shaders.red_vertData0 = "s175:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgTVZQOwoKYXR0cmlidXRlIHZlYzMgcG9zOwphdHRyaWJ1dGUgdmVjMyBjb2w7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IE1WUCAqIHZlYzQocG9zLCAxLjApOwp9Cgo";
 kha_Shaders.red_vertData1 = "s160:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1hdDQgTVZQOwoKaW4gdmVjMyBwb3M7CmluIHZlYzMgY29sOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBNVlAgKiB2ZWM0KHBvcywgMS4wKTsKfQoK";
 kha_Shaders.red_vertData2 = "s207:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBNVlA7CgphdHRyaWJ1dGUgbWVkaXVtcCB2ZWMzIHBvczsKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyBjb2w7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IE1WUCAqIHZlYzQocG9zLCAxLjApOwp9Cgo";
-kha_Shaders.simple_fragData0 = "s2026:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCBzYW5kOwp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIGdyYXNzOwp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHN0b25lOwp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHNub3c7Cgp2YXJ5aW5nIHZlYzMgdk5vcm07CnZhcnlpbmcgdmVjMyBGcmFnUG9zOwp2YXJ5aW5nIGZsb2F0IHZIZWlnaHQ7CnZhcnlpbmcgdmVjMiB2VVY7Cgp2b2lkIG1haW4oKQp7CiAgICB2ZWMzIGxpZ2h0Q29sb3IgPSB2ZWMzKDAuNSk7CiAgICBmbG9hdCBhbWJpZW50U3RyZW5ndGggPSAwLjIwMDAwMDAwMjk4MDIzMjIzODc2OTUzMTI1OwogICAgdmVjMyBhbWJpZW50ID0gbGlnaHRDb2xvciAqIGFtYmllbnRTdHJlbmd0aDsKICAgIHZlYzMgbGlnaHRQb3MgPSB2ZWMzKDEwMC4wKTsKICAgIHZlYzMgbm9ybSA9IG5vcm1hbGl6ZSh2Tm9ybSk7CiAgICB2ZWMzIGxpZ2h0RGlyID0gbm9ybWFsaXplKGxpZ2h0UG9zIC0gRnJhZ1Bvcyk7CiAgICBmbG9hdCBkaWZmID0gbWF4KGRvdChub3JtLCBsaWdodERpciksIDAuMDA5OTk5OTk5Nzc2NDgyNTgyMDkyMjg1MTU2MjUpOwogICAgdmVjMyBkaWZmdXNlID0gbGlnaHRDb2xvciAqIGRpZmY7CiAgICB2ZWM0IHNkID0gKHRleHR1cmUyRChzYW5kLCB2VVYsIDEuMjAwMDAwMDQ3NjgzNzE1ODIwMzEyNSkgKiAoc21vb3Roc3RlcCgtMTIwMC4wLCAxMDAuMCwgdkhlaWdodCkgLSBzbW9vdGhzdGVwKDEwMC4wICogbm9ybS54LCAyNTAuMCwgdkhlaWdodCkpKSAqICgobm9ybS54IC8gMi4wKSArIDAuNSk7CiAgICB2ZWM0IHMgPSAoKHRleHR1cmUyRChncmFzcywgdlVWLCAyLjApICogKHNtb290aHN0ZXAoLTEyMDAuMCwgMTAwLjAgKiBub3JtLngsIHZIZWlnaHQpIC0gc21vb3Roc3RlcCgxMDAuMCAqIG5vcm0ueCwgMjUwLjAsIHZIZWlnaHQpKSkgKiAoKDEuMCAtIG5vcm0ueCkgLSAwLjIwMDAwMDAwMjk4MDIzMjIzODc2OTUzMTI1KSkgLyB2ZWM0KDIuMCk7CiAgICB2ZWM0IGcgPSAodGV4dHVyZTJEKHN0b25lLCB2VVYsIDEuMjAwMDAwMDQ3NjgzNzE1ODIwMzEyNSkgKiAoc21vb3Roc3RlcCgyMDAuMCAqIG5vcm0ueCwgNDUwLjAsIHZIZWlnaHQpIC0gc21vb3Roc3RlcCg0NTAuMCAqIG5vcm0ueCwgMzAwMC4wLCB2SGVpZ2h0KSkpICogKCgxLjAgLSBub3JtLnopIC0gMC41KTsKICAgIHZlYzQgc24gPSAodGV4dHVyZTJEKHNub3csIHZVViwgMS4yMDAwMDAwNDc2ODM3MTU4MjAzMTI1KSAqIChzbW9vdGhzdGVwKDIwMC4wICogbm9ybS54LCA0NTAuMCwgdkhlaWdodCkgLSBzbW9vdGhzdGVwKDQ1MC4wICogbm9ybS54LCAzMDAwLjAsIHZIZWlnaHQpKSkgKiAobm9ybS56ICsgMC41KTsKICAgIGdsX0ZyYWdEYXRhWzBdID0gKCgodmVjNChhbWJpZW50LCAxLjApICsgdmVjNChkaWZmdXNlLCAxLjApKSArIHZlYzQodk5vcm0sIDEuMCkpIC8gdmVjNCgxMC4wKSkgKyAoKChnICsgcykgKyBzZCkgKyBzbik7Cn0KCg";
-kha_Shaders.simple_fragData1 = "s2038:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCBzYW5kOwp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIGdyYXNzOwp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHN0b25lOwp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHNub3c7CgppbiB2ZWMzIHZOb3JtOwppbiB2ZWMzIEZyYWdQb3M7CmluIGZsb2F0IHZIZWlnaHQ7CmluIHZlYzIgdlVWOwpsYXlvdXQobG9jYXRpb24gPSAwKSBvdXQgdmVjNCBvdXRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIHZlYzMgbGlnaHRDb2xvciA9IHZlYzMoMC41KTsKICAgIGZsb2F0IGFtYmllbnRTdHJlbmd0aCA9IDAuMjAwMDAwMDAyOTgwMjMyMjM4NzY5NTMxMjU7CiAgICB2ZWMzIGFtYmllbnQgPSBsaWdodENvbG9yICogYW1iaWVudFN0cmVuZ3RoOwogICAgdmVjMyBsaWdodFBvcyA9IHZlYzMoMTAwLjApOwogICAgdmVjMyBub3JtID0gbm9ybWFsaXplKHZOb3JtKTsKICAgIHZlYzMgbGlnaHREaXIgPSBub3JtYWxpemUobGlnaHRQb3MgLSBGcmFnUG9zKTsKICAgIGZsb2F0IGRpZmYgPSBtYXgoZG90KG5vcm0sIGxpZ2h0RGlyKSwgMC4wMDk5OTk5OTk3NzY0ODI1ODIwOTIyODUxNTYyNSk7CiAgICB2ZWMzIGRpZmZ1c2UgPSBsaWdodENvbG9yICogZGlmZjsKICAgIHZlYzQgc2QgPSAodGV4dHVyZShzYW5kLCB2VVYsIDEuMjAwMDAwMDQ3NjgzNzE1ODIwMzEyNSkgKiAoc21vb3Roc3RlcCgtMTIwMC4wLCAxMDAuMCwgdkhlaWdodCkgLSBzbW9vdGhzdGVwKDEwMC4wICogbm9ybS54LCAyNTAuMCwgdkhlaWdodCkpKSAqICgobm9ybS54IC8gMi4wKSArIDAuNSk7CiAgICB2ZWM0IHMgPSAoKHRleHR1cmUoZ3Jhc3MsIHZVViwgMi4wKSAqIChzbW9vdGhzdGVwKC0xMjAwLjAsIDEwMC4wICogbm9ybS54LCB2SGVpZ2h0KSAtIHNtb290aHN0ZXAoMTAwLjAgKiBub3JtLngsIDI1MC4wLCB2SGVpZ2h0KSkpICogKCgxLjAgLSBub3JtLngpIC0gMC4yMDAwMDAwMDI5ODAyMzIyMzg3Njk1MzEyNSkpIC8gdmVjNCgyLjApOwogICAgdmVjNCBnID0gKHRleHR1cmUoc3RvbmUsIHZVViwgMS4yMDAwMDAwNDc2ODM3MTU4MjAzMTI1KSAqIChzbW9vdGhzdGVwKDIwMC4wICogbm9ybS54LCA0NTAuMCwgdkhlaWdodCkgLSBzbW9vdGhzdGVwKDQ1MC4wICogbm9ybS54LCAzMDAwLjAsIHZIZWlnaHQpKSkgKiAoKDEuMCAtIG5vcm0ueikgLSAwLjUpOwogICAgdmVjNCBzbiA9ICh0ZXh0dXJlKHNub3csIHZVViwgMS4yMDAwMDAwNDc2ODM3MTU4MjAzMTI1KSAqIChzbW9vdGhzdGVwKDIwMC4wICogbm9ybS54LCA0NTAuMCwgdkhlaWdodCkgLSBzbW9vdGhzdGVwKDQ1MC4wICogbm9ybS54LCAzMDAwLjAsIHZIZWlnaHQpKSkgKiAobm9ybS56ICsgMC41KTsKICAgIG91dENvbG9yID0gKCgodmVjNChhbWJpZW50LCAxLjApICsgdmVjNChkaWZmdXNlLCAxLjApKSArIHZlYzQodk5vcm0sIDEuMCkpIC8gdmVjNCgxMC4wKSkgKyAoKChnICsgcykgKyBzZCkgKyBzbik7Cn0KCg";
+kha_Shaders.simple_fragData0 = "s2143:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc2FuZDsKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgZ3Jhc3M7CnVuaWZvcm0gaGlnaHAgc2FtcGxlcjJEIHN0b25lOwp1bmlmb3JtIGhpZ2hwIHNhbXBsZXIyRCBzbm93OwoKdmFyeWluZyBoaWdocCB2ZWMzIHZOb3JtOwp2YXJ5aW5nIGhpZ2hwIHZlYzMgRnJhZ1BvczsKdmFyeWluZyBoaWdocCBmbG9hdCB2SGVpZ2h0Owp2YXJ5aW5nIGhpZ2hwIHZlYzIgdlVWOwoKdm9pZCBtYWluKCkKewogICAgaGlnaHAgdmVjMyBsaWdodENvbG9yID0gdmVjMygwLjUpOwogICAgaGlnaHAgZmxvYXQgYW1iaWVudFN0cmVuZ3RoID0gMC4yMDAwMDAwMDI5ODAyMzIyMzg3Njk1MzEyNTsKICAgIGhpZ2hwIHZlYzMgYW1iaWVudCA9IGxpZ2h0Q29sb3IgKiBhbWJpZW50U3RyZW5ndGg7CiAgICBoaWdocCB2ZWMzIGxpZ2h0UG9zID0gdmVjMygxMDAuMCk7CiAgICBoaWdocCB2ZWMzIG5vcm0gPSBub3JtYWxpemUodk5vcm0pOwogICAgaGlnaHAgdmVjMyBsaWdodERpciA9IG5vcm1hbGl6ZShsaWdodFBvcyAtIEZyYWdQb3MpOwogICAgaGlnaHAgZmxvYXQgZGlmZiA9IG1heChkb3Qobm9ybSwgbGlnaHREaXIpLCAwLjAwOTk5OTk5OTc3NjQ4MjU4MjA5MjI4NTE1NjI1KTsKICAgIGhpZ2hwIHZlYzMgZGlmZnVzZSA9IGxpZ2h0Q29sb3IgKiBkaWZmOwogICAgaGlnaHAgdmVjNCBzZCA9ICh0ZXh0dXJlMkQoc2FuZCwgdlVWLCAxLjIwMDAwMDA0NzY4MzcxNTgyMDMxMjUpICogKHNtb290aHN0ZXAoLTEyMDAuMCwgMTAwLjAsIHZIZWlnaHQpIC0gc21vb3Roc3RlcCgxMDAuMCAqIG5vcm0ueCwgMjUwLjAsIHZIZWlnaHQpKSkgKiAoKG5vcm0ueCAvIDIuMCkgKyAwLjUpOwogICAgaGlnaHAgdmVjNCBzID0gKCh0ZXh0dXJlMkQoZ3Jhc3MsIHZVViwgMi4wKSAqIChzbW9vdGhzdGVwKC0xMjAwLjAsIDEwMC4wICogbm9ybS54LCB2SGVpZ2h0KSAtIHNtb290aHN0ZXAoMTAwLjAgKiBub3JtLngsIDI1MC4wLCB2SGVpZ2h0KSkpICogKCgxLjAgLSBub3JtLngpIC0gMC4yMDAwMDAwMDI5ODAyMzIyMzg3Njk1MzEyNSkpIC8gdmVjNCgyLjApOwogICAgaGlnaHAgdmVjNCBnID0gKHRleHR1cmUyRChzdG9uZSwgdlVWLCAxLjIwMDAwMDA0NzY4MzcxNTgyMDMxMjUpICogKHNtb290aHN0ZXAoMjAwLjAgKiBub3JtLngsIDQ1MC4wLCB2SGVpZ2h0KSAtIHNtb290aHN0ZXAoNDUwLjAgKiBub3JtLngsIDMwMDAuMCwgdkhlaWdodCkpKSAqICgoMS4wIC0gbm9ybS56KSAtIDAuNSk7CiAgICBoaWdocCB2ZWM0IHNuID0gKHRleHR1cmUyRChzbm93LCB2VVYsIDEuMjAwMDAwMDQ3NjgzNzE1ODIwMzEyNSkgKiAoc21vb3Roc3RlcCgyMDAuMCAqIG5vcm0ueCwgNDUwLjAsIHZIZWlnaHQpIC0gc21vb3Roc3RlcCg0NTAuMCAqIG5vcm0ueCwgMzAwMC4wLCB2SGVpZ2h0KSkpICogKG5vcm0ueiArIDAuNSk7CiAgICBnbF9GcmFnRGF0YVswXSA9ICgoKHZlYzQoYW1iaWVudCwgMS4wKSArIHZlYzQoZGlmZnVzZSwgMS4wKSkgKyB2ZWM0KHZOb3JtLCAxLjApKSAvIHZlYzQoMTAuMCkpICsgKCgoZyArIHMpICsgc2QpICsgc24pOwp9Cgo";
+kha_Shaders.simple_fragData1 = "s2163:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc2FuZDsKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgZ3Jhc3M7CnVuaWZvcm0gaGlnaHAgc2FtcGxlcjJEIHN0b25lOwp1bmlmb3JtIGhpZ2hwIHNhbXBsZXIyRCBzbm93OwoKaW4gaGlnaHAgdmVjMyB2Tm9ybTsKaW4gaGlnaHAgdmVjMyBGcmFnUG9zOwppbiBoaWdocCBmbG9hdCB2SGVpZ2h0OwppbiBoaWdocCB2ZWMyIHZVVjsKbGF5b3V0KGxvY2F0aW9uID0gMCkgb3V0IGhpZ2hwIHZlYzQgb3V0Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCB2ZWMzIGxpZ2h0Q29sb3IgPSB2ZWMzKDAuNSk7CiAgICBoaWdocCBmbG9hdCBhbWJpZW50U3RyZW5ndGggPSAwLjIwMDAwMDAwMjk4MDIzMjIzODc2OTUzMTI1OwogICAgaGlnaHAgdmVjMyBhbWJpZW50ID0gbGlnaHRDb2xvciAqIGFtYmllbnRTdHJlbmd0aDsKICAgIGhpZ2hwIHZlYzMgbGlnaHRQb3MgPSB2ZWMzKDEwMC4wKTsKICAgIGhpZ2hwIHZlYzMgbm9ybSA9IG5vcm1hbGl6ZSh2Tm9ybSk7CiAgICBoaWdocCB2ZWMzIGxpZ2h0RGlyID0gbm9ybWFsaXplKGxpZ2h0UG9zIC0gRnJhZ1Bvcyk7CiAgICBoaWdocCBmbG9hdCBkaWZmID0gbWF4KGRvdChub3JtLCBsaWdodERpciksIDAuMDA5OTk5OTk5Nzc2NDgyNTgyMDkyMjg1MTU2MjUpOwogICAgaGlnaHAgdmVjMyBkaWZmdXNlID0gbGlnaHRDb2xvciAqIGRpZmY7CiAgICBoaWdocCB2ZWM0IHNkID0gKHRleHR1cmUoc2FuZCwgdlVWLCAxLjIwMDAwMDA0NzY4MzcxNTgyMDMxMjUpICogKHNtb290aHN0ZXAoLTEyMDAuMCwgMTAwLjAsIHZIZWlnaHQpIC0gc21vb3Roc3RlcCgxMDAuMCAqIG5vcm0ueCwgMjUwLjAsIHZIZWlnaHQpKSkgKiAoKG5vcm0ueCAvIDIuMCkgKyAwLjUpOwogICAgaGlnaHAgdmVjNCBzID0gKCh0ZXh0dXJlKGdyYXNzLCB2VVYsIDIuMCkgKiAoc21vb3Roc3RlcCgtMTIwMC4wLCAxMDAuMCAqIG5vcm0ueCwgdkhlaWdodCkgLSBzbW9vdGhzdGVwKDEwMC4wICogbm9ybS54LCAyNTAuMCwgdkhlaWdodCkpKSAqICgoMS4wIC0gbm9ybS54KSAtIDAuMjAwMDAwMDAyOTgwMjMyMjM4NzY5NTMxMjUpKSAvIHZlYzQoMi4wKTsKICAgIGhpZ2hwIHZlYzQgZyA9ICh0ZXh0dXJlKHN0b25lLCB2VVYsIDEuMjAwMDAwMDQ3NjgzNzE1ODIwMzEyNSkgKiAoc21vb3Roc3RlcCgyMDAuMCAqIG5vcm0ueCwgNDUwLjAsIHZIZWlnaHQpIC0gc21vb3Roc3RlcCg0NTAuMCAqIG5vcm0ueCwgMzAwMC4wLCB2SGVpZ2h0KSkpICogKCgxLjAgLSBub3JtLnopIC0gMC41KTsKICAgIGhpZ2hwIHZlYzQgc24gPSAodGV4dHVyZShzbm93LCB2VVYsIDEuMjAwMDAwMDQ3NjgzNzE1ODIwMzEyNSkgKiAoc21vb3Roc3RlcCgyMDAuMCAqIG5vcm0ueCwgNDUwLjAsIHZIZWlnaHQpIC0gc21vb3Roc3RlcCg0NTAuMCAqIG5vcm0ueCwgMzAwMC4wLCB2SGVpZ2h0KSkpICogKG5vcm0ueiArIDAuNSk7CiAgICBvdXRDb2xvciA9ICgoKHZlYzQoYW1iaWVudCwgMS4wKSArIHZlYzQoZGlmZnVzZSwgMS4wKSkgKyB2ZWM0KHZOb3JtLCAxLjApKSAvIHZlYzQoMTAuMCkpICsgKCgoZyArIHMpICsgc2QpICsgc24pOwp9Cgo";
 kha_Shaders.simple_fragData2 = "s2028:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHNhbmQ7CnVuaWZvcm0gbWVkaXVtcCBzYW1wbGVyMkQgZ3Jhc3M7CnVuaWZvcm0gbWVkaXVtcCBzYW1wbGVyMkQgc3RvbmU7CnVuaWZvcm0gbWVkaXVtcCBzYW1wbGVyMkQgc25vdzsKCnZhcnlpbmcgdmVjMyB2Tm9ybTsKdmFyeWluZyB2ZWMzIEZyYWdQb3M7CnZhcnlpbmcgZmxvYXQgdkhlaWdodDsKdmFyeWluZyB2ZWMyIHZVVjsKCnZvaWQgbWFpbigpCnsKICAgIHZlYzMgbGlnaHRDb2xvciA9IHZlYzMoMC41KTsKICAgIGZsb2F0IGFtYmllbnRTdHJlbmd0aCA9IDAuMjAwMDAwMDAyOTgwMjMyMjM4NzY5NTMxMjU7CiAgICB2ZWMzIGFtYmllbnQgPSBsaWdodENvbG9yICogYW1iaWVudFN0cmVuZ3RoOwogICAgdmVjMyBsaWdodFBvcyA9IHZlYzMoMTAwLjApOwogICAgdmVjMyBub3JtID0gbm9ybWFsaXplKHZOb3JtKTsKICAgIHZlYzMgbGlnaHREaXIgPSBub3JtYWxpemUobGlnaHRQb3MgLSBGcmFnUG9zKTsKICAgIGZsb2F0IGRpZmYgPSBtYXgoZG90KG5vcm0sIGxpZ2h0RGlyKSwgMC4wMDk5OTk5OTk3NzY0ODI1ODIwOTIyODUxNTYyNSk7CiAgICB2ZWMzIGRpZmZ1c2UgPSBsaWdodENvbG9yICogZGlmZjsKICAgIHZlYzQgc2QgPSAodGV4dHVyZTJEKHNhbmQsIHZVViwgMS4yMDAwMDAwNDc2ODM3MTU4MjAzMTI1KSAqIChzbW9vdGhzdGVwKC0xMjAwLjAsIDEwMC4wLCB2SGVpZ2h0KSAtIHNtb290aHN0ZXAoMTAwLjAgKiBub3JtLngsIDI1MC4wLCB2SGVpZ2h0KSkpICogKChub3JtLnggLyAyLjApICsgMC41KTsKICAgIHZlYzQgcyA9ICgodGV4dHVyZTJEKGdyYXNzLCB2VVYsIDIuMCkgKiAoc21vb3Roc3RlcCgtMTIwMC4wLCAxMDAuMCAqIG5vcm0ueCwgdkhlaWdodCkgLSBzbW9vdGhzdGVwKDEwMC4wICogbm9ybS54LCAyNTAuMCwgdkhlaWdodCkpKSAqICgoMS4wIC0gbm9ybS54KSAtIDAuMjAwMDAwMDAyOTgwMjMyMjM4NzY5NTMxMjUpKSAvIHZlYzQoMi4wKTsKICAgIHZlYzQgZyA9ICh0ZXh0dXJlMkQoc3RvbmUsIHZVViwgMS4yMDAwMDAwNDc2ODM3MTU4MjAzMTI1KSAqIChzbW9vdGhzdGVwKDIwMC4wICogbm9ybS54LCA0NTAuMCwgdkhlaWdodCkgLSBzbW9vdGhzdGVwKDQ1MC4wICogbm9ybS54LCAzMDAwLjAsIHZIZWlnaHQpKSkgKiAoKDEuMCAtIG5vcm0ueikgLSAwLjUpOwogICAgdmVjNCBzbiA9ICh0ZXh0dXJlMkQoc25vdywgdlVWLCAxLjIwMDAwMDA0NzY4MzcxNTgyMDMxMjUpICogKHNtb290aHN0ZXAoMjAwLjAgKiBub3JtLngsIDQ1MC4wLCB2SGVpZ2h0KSAtIHNtb290aHN0ZXAoNDUwLjAgKiBub3JtLngsIDMwMDAuMCwgdkhlaWdodCkpKSAqIChub3JtLnogKyAwLjUpOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSAoKCh2ZWM0KGFtYmllbnQsIDEuMCkgKyB2ZWM0KGRpZmZ1c2UsIDEuMCkpICsgdmVjNCh2Tm9ybSwgMS4wKSkgLyB2ZWM0KDEwLjApKSArICgoKGcgKyBzKSArIHNkKSArIHNuKTsKfQoK";
 kha_Shaders.simple_vertData0 = "s430:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgTVZQOwoKdmFyeWluZyB2ZWMzIHZOb3JtOwphdHRyaWJ1dGUgdmVjMyB2ZXJ0ZXhOb3JtYWw7CmF0dHJpYnV0ZSB2ZWMzIHBvczsKdmFyeWluZyBmbG9hdCB2SGVpZ2h0Owp2YXJ5aW5nIHZlYzIgdlVWOwphdHRyaWJ1dGUgdmVjMiB1djsKdmFyeWluZyB2ZWMzIEZyYWdQb3M7Cgp2b2lkIG1haW4oKQp7CiAgICB2Tm9ybSA9IHZlcnRleE5vcm1hbDsKICAgIGdsX1Bvc2l0aW9uID0gTVZQICogdmVjNChwb3MsIDEuMCk7CiAgICB2SGVpZ2h0ID0gcG9zLnk7CiAgICB2VVYgPSB1djsKICAgIEZyYWdQb3MgPSBwb3M7Cn0KCg";
 kha_Shaders.simple_vertData1 = "s468:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1hdDQgTVZQOwoKb3V0IHZlYzMgdk5vcm07CmxheW91dChsb2NhdGlvbiA9IDIpIGluIHZlYzMgdmVydGV4Tm9ybWFsOwpsYXlvdXQobG9jYXRpb24gPSAwKSBpbiB2ZWMzIHBvczsKb3V0IGZsb2F0IHZIZWlnaHQ7Cm91dCB2ZWMyIHZVVjsKbGF5b3V0KGxvY2F0aW9uID0gMSkgaW4gdmVjMiB1djsKb3V0IHZlYzMgRnJhZ1BvczsKCnZvaWQgbWFpbigpCnsKICAgIHZOb3JtID0gdmVydGV4Tm9ybWFsOwogICAgZ2xfUG9zaXRpb24gPSBNVlAgKiB2ZWM0KHBvcywgMS4wKTsKICAgIHZIZWlnaHQgPSBwb3MueTsKICAgIHZVViA9IHV2OwogICAgRnJhZ1BvcyA9IHBvczsKfQoK";
@@ -37787,8 +48456,109 @@ kha_netsync_Session.RPC_SERVER = 0;
 kha_netsync_Session.RPC_ALL = 1;
 kha_netsync_SyncBuilder.nextId = 0;
 kha_netsync_SyncBuilder.objects = [];
+koui_Config.scrollSensitivity = 50;
+koui_Config.keyRepeatDelay = 0.5;
+koui_Config.keyRepeatPeriod = 0.03;
+koui_Config.textInputMaxLength = 1024;
+koui_Koui.KOUI_VERSION = "2020.10";
+koui_Koui.initialized = false;
+koui_Koui.overlays = [];
+koui_Koui.overlay_offsets = [];
+koui_effects_Effect.__meta__ = { obj : { subclasses : ["koui.effects.Border"]}};
+koui_elements_Element.invalidations = new koui_utils_Set_$koui_$elements_$Element();
+koui_elements_layouts_Layout.isValidating = false;
+koui_events_Event.__meta__ = { obj : { typeUID : ["event"]}};
+koui_events_EventHandler.mouseX = 0;
+koui_events_EventHandler.mouseY = 0;
+koui_events_EventHandler.mouseDX = 0;
+koui_events_EventHandler.mouseDY = 0;
+koui_events_EventHandler.isCtrlDown = false;
+koui_events_EventHandler.isShiftDown = false;
+koui_events_EventHandler.isAltDown = false;
+koui_events_EventHandler.events = new haxe_ds_ObjectMap();
+koui_events_EventHandler.mouseMoved = false;
+koui_events_EventHandler.mousePressed = (function($this) {
+	var $r;
+	var this1 = new Array(3);
+	$r = this1;
+	return $r;
+}(this));
+koui_events_EventHandler.lastPressedKeyActive = false;
+koui_events_EventHandler.lastPressedTime = 0.0;
+koui_events_EventHandler.markUnblock = false;
+koui_events_EventHandler.inBackground = false;
+koui_events_MouseEvent.__meta__ = { obj : { typeUID : ["localClass.module.MouseEvent"]}};
+koui_events_MouseButtonEvent.__meta__ = { obj : { typeUID : ["localClass.module.MouseButtonEvent"]}};
+koui_events_FocusEvent.__meta__ = { obj : { typeUID : ["localClass.module.FocusEvent"]}};
+koui_events_KeyEvent.__meta__ = { obj : { typeUID : ["localClass.module.KeyEvent"]}};
+koui_events_KeyCodeEvent.__meta__ = { obj : { typeUID : ["localClass.module.KeyCodeEvent"]}};
+koui_events_KeyCodeStatusEvent.__meta__ = { obj : { typeUID : ["localClass.module.KeyCodeStatusEvent"]}};
+koui_events_KeyCodePressEvent.__meta__ = { obj : { typeUID : ["localClass.module.KeyCodePressEvent"]}};
+koui_events_KeyCharPressEvent.__meta__ = { obj : { typeUID : ["localClass.module.KeyCharPressEvent"]}};
+koui_events_MouseClickEvent.__meta__ = { obj : { typeUID : ["localClass.module.MouseClickEvent"]}};
+koui_events_MouseHoverEvent.__meta__ = { obj : { typeUID : ["localClass.module.MouseHoverEvent"]}};
+koui_events_MouseScrollEvent.__meta__ = { obj : { typeUID : ["localClass.module.MouseScrollEvent"]}};
+koui_graphics_KPainter.bufferSize = 16;
+koui_theme_Style.styles = new haxe_ds_StringMap();
+koui_theme_parser_ThemeParser.regIndent = new EReg("^(\t*)(.*)$","i");
+koui_theme_parser_ThemeParser.regEmpty = new EReg("^[ \t]*(//.*)?$","i");
+koui_theme_parser_ThemeParser.lineReg = new EReg("^([\\w\\-]+)(![\\w\\-]+)?( *> *([\\w\\-]+))? *: *(.*)$","i");
+koui_theme_parser_ThemeParser.ruleReg = new EReg("^(\\?)?([\\w\\-]+) *: *(.*)$","i");
+koui_theme_parser_ThemeParser.rulesReg = new EReg("^@rules( )*:( )*$","i");
+koui_theme_parser_ThemeParser.globalsReg = new EReg("^(@globals)( )*:( )*$","i");
+koui_theme_parser_ThemeParser.regColor = new EReg("^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})?$","i");
+koui_theme_parser_ThemeParser.validTypes = ["Asset","Bool","Color","Float","Int","String"];
+koui_theme_parser_ThemeParser.reservedKeywords = ["abstract","break","case","cast","catch","class","continue","default","do","dynamic","else","enum","extends","extern","false","final","for","function","if","implements","import","in","inline","interface","is","macro","new","null","operator","overload","override","package","private","public","return","static","switch","this","throw","true","try","typedef","untyped","using","var","while"];
+koui_utils_Cursor.mouseX = 0;
+koui_utils_Cursor.mouseY = 0;
+koui_utils_Cursor.type = kha_input_MouseCursor.Default;
+koui_utils_Cursor.systemCursorHidden = false;
+koui_utils_FontUtil.BASE_GLYPHS = (function($this) {
+	var $r;
+	var _g = [];
+	{
+		var _g1 = 32;
+		while(_g1 < 383) {
+			var i = _g1++;
+			_g.push(i);
+		}
+	}
+	$r = _g;
+	return $r;
+}(this));
+koui_utils_FontUtil.localeDefaultGlyphs = (function($this) {
+	var $r;
+	var _g = new haxe_ds_StringMap();
+	{
+		var _g1 = [];
+		var _g2 = 880;
+		while(_g2 < 1023) {
+			var i = _g2++;
+			_g1.push(i);
+		}
+		_g.h["el"] = _g1;
+	}
+	{
+		var _g1 = [];
+		var _g2 = 1024;
+		while(_g2 < 1119) {
+			var i = _g2++;
+			_g1.push(i);
+		}
+		_g.h["ru"] = _g1;
+	}
+	$r = _g;
+	return $r;
+}(this));
+koui_utils_FontUtil.additionalGlyphs = new koui_utils_Set_$Int();
+koui_utils_FontUtil.additionalLocales = new koui_utils_Set_$String();
+koui_utils_SceneManager.scenes = new haxe_ds_StringMap();
 noisetile_SimplexNoise.grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],[1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],[0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
 noisetile_SimplexNoise.sqrt3 = Math.sqrt(3);
+org_msgpack_Encoder.FLOAT_SINGLE_MIN = 1.40129846432481707e-45;
+org_msgpack_Encoder.FLOAT_SINGLE_MAX = 3.40282346638528860e+38;
+org_msgpack_Encoder.FLOAT_DOUBLE_MIN = 4.94065645841246544e-324;
+org_msgpack_Encoder.FLOAT_DOUBLE_MAX = 1.79769313486231570e+308;
 primitive_SkyCubeModel.DEPTH_BUFFER_BIT = 256;
 primitive_SkyCubeModel.STENCIL_BUFFER_BIT = 1024;
 primitive_SkyCubeModel.COLOR_BUFFER_BIT = 16384;
