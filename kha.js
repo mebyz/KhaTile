@@ -2054,7 +2054,7 @@ Math.__name__ = "Math";
 var PlaneInstance = function() {
 	this.tileSize = 10000;
 	this.tilePx = 100;
-	this.gridSize = 4;
+	this.gridSize = 3;
 	this.verticalAngle = 0.0;
 	this.horizontalAngle = 3.14;
 	this.position = new kha_math_FastVector3(0,100,5);
@@ -2119,7 +2119,7 @@ PlaneInstance.prototype = {
 			}
 		}
 		this.planes2.push(new primitive_PlaneModel(0,0,{ w : 80000, h : 80000, x : 20, y : 20}));
-		this.sky = new primitive_SkyCubeModel(30000,30000,30000);
+		this.sky = new primitive_SkyCubeModel(40000,40000,40000);
 		var uh = 1.0 / Math.tan(22.5);
 		var uw = uh / 1.33333333333333326;
 		this.projection = new kha_math_FastMatrix4(uw,0,0,0,0,uh,0,0,0,0,-1.000002000002,-0.200000200000200024,0,0,-1,0);
