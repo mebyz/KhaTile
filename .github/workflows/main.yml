@@ -23,7 +23,7 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Cache Kha
+    - name: cache Kha
       uses: actions/cache@v3
       with:
         path: ~/Kha
@@ -42,7 +42,16 @@ jobs:
       if: steps.cache-koui.outputs.cache-hit != 'true'
       run: rm -rf Subprojects/koui && git clone "https://gitlab.com/koui/koui.git" Subprojects/koui
 
-    - uses: FedericoCarboni/setup-ffmpeg@v2
+    - name: cache koui
+      uses: actions/cache@v3
+      with:
+        path: ~/Subprojects/koui
+        key: koui
+        restore-keys: |
+          koui
+
+    - name: setup ffmpeg
+      uses: FedericoCarboni/setup-ffmpeg@v2
       id: setup-ffmpeg
 
     - name: create build dir
