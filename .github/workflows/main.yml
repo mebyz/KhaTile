@@ -61,8 +61,8 @@ jobs:
     - name: export sound files
       uses: canastro/copy-file-action@master
       with:
-        source: "Assets/sound.ogg"
-        target: "build/html5/sound.ogg"
+        source: "Assets/sound.mp3"
+        target: "build/html5/sound.mp3"
 
     - name: build ${{ matrix.target }}
       run: |
