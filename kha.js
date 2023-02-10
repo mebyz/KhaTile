@@ -15084,10 +15084,8 @@ kha_LoaderImpl.loadSoundFromDescription = function(desc,done,failed) {
 		while(_g < _g1) {
 			var i = _g++;
 			var file = desc.files[i];
-			if(StringTools.endsWith(file,".ogg")) {
-				new kha_js_WebAudioSound(file,done,failed);
-				return;
-			}
+			new kha_js_WebAudioSound(file,done,failed);
+			return;
 		}
 		failed({ url : desc.files.join(","), error : "Unable to find sound files with supported audio formats"});
 	} else if(kha_SystemImpl.mobile) {
