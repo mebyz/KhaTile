@@ -11,30 +11,28 @@ jobs:
         os: [ubuntu-latest]
         target: [html5]
     steps:
-      - uses: actions/cache/restore@v3
-        id: cache
-        with:
-          path: Kha
-          key: kha
+    - uses: actions/cache/restore@v3
+      id: cache
+      with:
+        path: Kha
+        key: kha
 
-      - name: 
-        if: steps.cache.outputs.cache-hit != 'true'
-        steps:
+    - name: cache test + checkout khatile & dependencies submodules
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: actions/checkout@v1
+      with:
+        submodules: recursive
 
-          - name: checkout khatile & dependencies submodules
-            uses: actions/checkout@v1
-            with:
-              submodules: recursive
-          - name: Cache Kha
-            uses: actions/cache@v3
-            with:
-              path: ~/Kha
-              key: kha
-              restore-keys: |
-                kha
+    - name: Cache Kha
+      uses: actions/cache@v3
+      with:
+        path: ~/Kha
+        key: kha
+        restore-keys: |
+          kha
 
     - name: checkout koui (gitlab)
-      run: git clone "https://gitlab.com/koui/koui.git" Subprojects/koui
+      run: rm -rf Subprojects/koui && git clone "https://gitlab.com/koui/koui.git" Subprojects/koui
 
     - uses: FedericoCarboni/setup-ffmpeg@v2
       id: setup-ffmpeg
