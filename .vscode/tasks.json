@@ -2,6 +2,39 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Build Electron-watch",
+			"type": "shell",
+			"command": "node ${command:kha.findKha}/make debug-html5 --watch",
+			"isBackground": true,
+			"problemMatcher": {
+				"pattern": [
+					{
+						"regexp": ".",
+						"file": 1,
+						"location": 2,
+						"message": 3
+					}
+				],
+				"background": {
+					"activeOnStart": false,
+					"beginsPattern": "Haxe compilation...",
+					"endsPattern": "Haxe compile end."
+				}
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "postDebugKill",
+			"type": "process",
+			"command": [
+				"${command:workbench.action.tasks.terminate}",
+				"${command:workbench.action.acceptSelectedQuickOpenItem}"
+			]
+		},
+		{
 			"type": "Kha",
 			"target": "Debug HTML5",
 			"problemMatcher": [

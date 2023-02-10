@@ -1,6 +1,23 @@
 {
     "configurations": [
         {
+            "name": "HTML5-watch",
+            "request": "launch",
+            "type": "pwa-chrome",
+            "cwd": "${workspaceFolder}/build/debug-html5",
+            "runtimeExecutable": "${command:kha.findKhaElectron}",
+            "runtimeArgs": [
+              "--no-sandbox",
+              "."
+            ],
+            "outFiles": [
+              "${workspaceFolder}/build/debug-html5/*.js"
+            ],
+            "preLaunchTask": "Build Electron-watch",
+            "postDebugTask": "postDebugKill",
+            "internalConsoleOptions": "openOnSessionStart"
+          },
+        {
             "name": "Kha: HTML5",
             "request": "launch",
             "type": "pwa-chrome",

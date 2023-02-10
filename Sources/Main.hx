@@ -20,7 +20,7 @@ class Main {
 
 	public var mySound: kha.Sound;
 	public static function main() {
-
+		#if hotml new hotml.client.Client(); #end
 		setFullWindowCanvas();
 		var client = new Client('ws://localhost:2567');
 		
