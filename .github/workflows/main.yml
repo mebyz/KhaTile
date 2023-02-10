@@ -12,20 +12,23 @@ jobs:
         target: [html5]
 
     steps:
+    - name: checkout koui (gitlab)
+      run: git clone "https://gitlab.com/koui/koui.git" Subprojects/koui
+    - uses: FedericoCarboni/setup-ffmpeg@v2
+      id: setup-ffmpeg
     - name: checkout khatile & dependencies submodules
       uses: actions/checkout@v1
       with:
         submodules: recursive
-    - name: checkout koui (gitlab)
-      run: git clone "https://gitlab.com/koui/koui.git" Subprojects/koui
     - name: export sound files
       uses: canastro/copy-file-action@master
       with:
         source: "Assets/sound.ogg"
         target: "build/html5/sound.ogg"
     - name: build ${{ matrix.target }}
+      needs: setup-ffmpeg
       run: |
-        node Kha/make ${{ matrix.target }} --compile
+        node Kha/make ${{ matrix.target }} --compile --ffmpeg ${{needs.setup-ffmpeg.outputs.ffmpeg_path}}
     - name: deploy to github pages
       uses: JamesIves/github-pages-deploy-action@v4
       with:
