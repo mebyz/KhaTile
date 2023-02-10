@@ -11,14 +11,15 @@ jobs:
         os: [ubuntu-latest]
         target: [html5]
     steps:
-    - uses: actions/cache/restore@v3
+    
+    - name: try to restore kha from cache
+      uses: actions/cache/restore@v3
       id: cache-kha
       with:
         path: Kha
         key: kha
 
-    - name: cache test + checkout khatile & dependencies submodules
-      if: steps.cache-kha.outputs.cache-hit != 'true'
+    - name: checkout khatile & dependencies submodules
       uses: actions/checkout@v1
       with:
         submodules: recursive
@@ -38,7 +39,7 @@ jobs:
         path: Subprojects/koui
         key: koui
 
-    - name: checkout koui (gitlab)
+    - name: cache test / checkout koui (gitlab)
       if: steps.cache-koui.outputs.cache-hit != 'true'
       run: rm -rf Subprojects/koui && git clone "https://gitlab.com/koui/koui.git" Subprojects/koui
 
@@ -64,7 +65,7 @@ jobs:
         source: "Assets/sound.mp3"
         target: "build/html5/sound.mp3"
 
-    - name: export mp3
+    - name: export ogg
       uses: canastro/copy-file-action@master
       with:
         source: "Assets/sound.ogg"
