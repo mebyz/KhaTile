@@ -170,15 +170,15 @@ Main.main = function() {
 	Main.setFullWindowCanvas();
 	var client = new io_colyseus_Client("ws://localhost:2567");
 	kha_System.start(new kha_SystemOptions("PlaneInstance",-1,-1,null,null),function(_) {
-		koui_Koui.init(function() {
-			var pb = new koui_elements_Progressbar(0,100);
-			pb.set_posX(300);
-			pb.set_posY(300);
-			pb.precision = 0;
-			koui_Koui.anchorPane.add(pb,0);
-			var loadConfig = new aura_AuraLoadConfig(null,["sound"],null);
-			aura_Aura.init();
-			aura_Aura.loadAssets(loadConfig,function() {
+		var loadConfig = new aura_AuraLoadConfig(null,["sound"],null);
+		aura_Aura.init();
+		aura_Aura.loadAssets(loadConfig,function() {
+			koui_Koui.init(function() {
+				var pb = new koui_elements_Progressbar(0,100);
+				pb.set_posX(300);
+				pb.set_posY(300);
+				pb.precision = 0;
+				koui_Koui.anchorPane.add(pb,0);
 				haxe_Timer.delay(function() {
 					pb.set_value(10);
 				},1000);
@@ -206,28 +206,25 @@ Main.main = function() {
 						}
 					});
 				},10000);
-			});
-			var rg = new koui_utils_RadioGroup();
-			var rb1 = new koui_elements_RadioButton(rg,"test1");
-			rb1.set_posX(10);
-			rb1.set_posY(50);
-			var rb2 = new koui_elements_RadioButton(rg,"test2");
-			rb2.set_posX(10);
-			rb2.set_posY(100);
-			var mySlider = new koui_elements_Slider(0,100);
-			mySlider.set_posX(10);
-			mySlider.set_posY(150);
-			mySlider.precision = 0;
-			mySlider.set_height(10);
-			koui_Koui.anchorPane.add(rb1,0);
-			koui_Koui.anchorPane.add(rb2,0);
-			koui_Koui.anchorPane.add(mySlider,0);
-			var game = new PlaneInstance();
-			kha_Scheduler.addTimeTask(function() {
-				game.update();
-			},0,0.02);
-			kha_System.notifyOnFrames(function(f) {
-				game.render(f);
+				var rg = new koui_utils_RadioGroup();
+				var rb1 = new koui_elements_RadioButton(rg,"test1");
+				rb1.set_posX(10);
+				rb1.set_posY(50);
+				var rb2 = new koui_elements_RadioButton(rg,"test2");
+				rb2.set_posX(10);
+				rb2.set_posY(100);
+				var mySlider = new koui_elements_Slider(0,100);
+				mySlider.set_posX(10);
+				mySlider.set_posY(150);
+				mySlider.precision = 0;
+				mySlider.set_height(10);
+				var game = new PlaneInstance();
+				kha_Scheduler.addTimeTask(function() {
+					game.update();
+				},0,0.02);
+				kha_System.notifyOnFrames(function(f) {
+					game.render(f);
+				});
 			});
 		});
 	});
@@ -2055,8 +2052,8 @@ Mat4Data.prototype = {
 };
 Math.__name__ = "Math";
 var PlaneInstance = function() {
-	this.tileSize = 7000;
-	this.tilePx = 70;
+	this.tileSize = 10000;
+	this.tilePx = 100;
 	this.gridSize = 4;
 	this.verticalAngle = 0.0;
 	this.horizontalAngle = 3.14;
@@ -2105,8 +2102,9 @@ PlaneInstance.prototype = {
 	,gridSize: null
 	,tilePx: null
 	,tileSize: null
+	,nt: null
 	,loadingFinished: function() {
-		var nt = new noisetile_NoiseTile(this.gridSize,this.gridSize,this.tilePx);
+		this.nt = new noisetile_NoiseTile(this.gridSize,this.gridSize,this.tilePx);
 		this.planes = [];
 		this.planes2 = [];
 		var _g = 0;
@@ -2117,11 +2115,11 @@ PlaneInstance.prototype = {
 			var _g3 = this.gridSize;
 			while(_g2 < _g3) {
 				var i = _g2++;
-				this.planes.push(new primitive_TerrainModel(nt.t.tiles[i + j * this.gridSize],nt.t.normals[i + j * this.gridSize],i,j,{ w : this.tileSize, h : this.tileSize, x : this.tilePx, y : this.tilePx}));
+				this.planes.push(new primitive_TerrainModel(this.nt.t.tiles[i + j * this.gridSize],this.nt.t.normals[i + j * this.gridSize],i,j,{ w : this.tileSize, h : this.tileSize, x : this.tilePx, y : this.tilePx}));
 			}
 		}
 		this.planes2.push(new primitive_PlaneModel(0,0,{ w : 80000, h : 80000, x : 20, y : 20}));
-		this.sky = new primitive_SkyCubeModel(40000,40000,40000);
+		this.sky = new primitive_SkyCubeModel(30000,30000,30000);
 		var uh = 1.0 / Math.tan(22.5);
 		var uw = uh / 1.33333333333333326;
 		this.projection = new kha_math_FastMatrix4(uw,0,0,0,0,uh,0,0,0,0,-1.000002000002,-0.200000200000200024,0,0,-1,0);
@@ -2283,9 +2281,11 @@ PlaneInstance.prototype = {
 	}
 	,update: function() {
 		if(this.position != this.lastPosition) {
-			var h = noisetile_NoiseTile.getHeight(this.position.z / this.tileSize * this.tilePx | 0,this.position.x / this.tileSize * this.tilePx | 0) * 2;
-			if(h < 0) {
-				h = 0;
+			var xx = this.position.z / this.tilePx | 0;
+			var zz = this.position.x / this.tilePx | 0;
+			var h = 150 + noisetile_NoiseTile.getHeight(xx,zz);
+			if(h < 150) {
+				h = 150;
 			}
 			this.position.y = h;
 		}
@@ -2567,7 +2567,6 @@ PlaneInstance.prototype = {
 		this.mouseY = y;
 	}
 	,onKeyDown: function(key) {
-		haxe_Log.trace(key + " down",{ fileName : "PlaneInstance.hx", lineNumber : 199, className : "PlaneInstance", methodName : "onKeyDown"});
 		if(key == 38) {
 			this.moveForward = true;
 		} else if(key == 40) {
@@ -2579,7 +2578,6 @@ PlaneInstance.prototype = {
 		}
 	}
 	,onKeyUp: function(key) {
-		haxe_Log.trace(key + " up",{ fileName : "PlaneInstance.hx", lineNumber : 212, className : "PlaneInstance", methodName : "onKeyUp"});
 		if(key == 38) {
 			this.moveForward = false;
 		} else if(key == 40) {
@@ -52226,6 +52224,12 @@ noisetile_Tiles.getHeight = function(x,z) {
 	height += (70 * (n0 + n1 + n2) / 2 + 0.5) * 1.8;
 	height /= 1.875;
 	height *= 3.6;
+	if(x < 50) {
+		height -= 50 - x;
+	}
+	if(z < 50) {
+		height -= 50 - z;
+	}
 	return height * 500 + 1500;
 };
 noisetile_Tiles.prototype = {
@@ -52975,13 +52979,15 @@ var primitive_Plane = function(w,h,segmentsX,segmentsY,uvsX,uvsY,heightData,idx,
 		var _g3 = segmentsX;
 		while(_g2 < _g3) {
 			var i = _g2++;
-			vertices.push(i * stepX - w / 2 + idx * w);
-			if(heightData == null) {
-				vertices.push(-350.0);
-			} else {
-				vertices.push((heightData[j * segmentsX + i] + 50) / 1);
+			var xx = i * stepX - (heightData == null ? w / 2 : 0) + idx * w;
+			var yy = 0;
+			if(heightData != null) {
+				yy = heightData[j * (segmentsX | 0) + i];
 			}
-			vertices.push(j * stepY - h / 2 + idy * h);
+			var zz = j * stepY - (heightData == null ? h / 2 : 0) + idy * h;
+			vertices.push(xx);
+			vertices.push(yy);
+			vertices.push(zz);
 			this.uvsBuffer.push(i / 100);
 			this.uvsBuffer.push(j / 100);
 		}
@@ -53756,9 +53762,9 @@ kha_Shaders.simple_vertData2 = "s515:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF
 kha_Shaders.sky_fragData0 = "s282:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyQ3ViZSB1X3RleHR1cmU7Cgp2YXJ5aW5nIGhpZ2hwIHZlYzMgdl9ub3JtYWw7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9GcmFnRGF0YVswXSA9IHRleHR1cmVDdWJlKHVfdGV4dHVyZSwgbm9ybWFsaXplKHZfbm9ybWFsKSk7Cn0KCg";
 kha_Shaders.sky_fragData1 = "s299:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyQ3ViZSB1X3RleHR1cmU7CgpvdXQgaGlnaHAgdmVjNCBvdXRDb2xvcjsKaW4gaGlnaHAgdmVjMyB2X25vcm1hbDsKCnZvaWQgbWFpbigpCnsKICAgIG91dENvbG9yID0gdGV4dHVyZSh1X3RleHR1cmUsIG5vcm1hbGl6ZSh2X25vcm1hbCkpOwp9Cgo";
 kha_Shaders.sky_fragData2 = "s279:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlckN1YmUgdV90ZXh0dXJlOwoKdmFyeWluZyB2ZWMzIHZfbm9ybWFsOwoKdm9pZCBtYWluKCkKewogICAgZ2xfRnJhZ0RhdGFbMF0gPSB0ZXh0dXJlQ3ViZSh1X3RleHR1cmUsIG5vcm1hbGl6ZSh2X25vcm1hbCkpOwp9Cgo";
-kha_Shaders.sky_vertData0 = "s423:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgTVZQOwp1bmlmb3JtIG1hdDQgbW9kZWxNYXRyaXg7CnVuaWZvcm0gbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIHZlYzMgcG9zOwp2YXJ5aW5nIGZsb2F0IHZIZWlnaHQ7CnZhcnlpbmcgdmVjMiB2VVY7CmF0dHJpYnV0ZSB2ZWMyIHV2Owp2YXJ5aW5nIHZlYzMgdl9ub3JtYWw7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IE1WUCAqIHZlYzQocG9zLCAxLjApOwogICAgdkhlaWdodCA9IHBvcy55OwogICAgdlVWID0gdXY7CiAgICB2X25vcm1hbCA9IG5vcm1hbGl6ZShwb3MpOwp9Cgo";
-kha_Shaders.sky_vertData1 = "s448:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1hdDQgTVZQOwp1bmlmb3JtIG1hdDQgbW9kZWxNYXRyaXg7CnVuaWZvcm0gbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKbGF5b3V0KGxvY2F0aW9uID0gMCkgaW4gdmVjMyBwb3M7Cm91dCBmbG9hdCB2SGVpZ2h0OwpvdXQgdmVjMiB2VVY7CmxheW91dChsb2NhdGlvbiA9IDEpIGluIHZlYzIgdXY7Cm91dCB2ZWMzIHZfbm9ybWFsOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBNVlAgKiB2ZWM0KHBvcywgMS4wKTsKICAgIHZIZWlnaHQgPSBwb3MueTsKICAgIHZVViA9IHV2OwogICAgdl9ub3JtYWwgPSBub3JtYWxpemUocG9zKTsKfQoK";
-kha_Shaders.sky_vertData2 = "s508:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBNVlA7CnVuaWZvcm0gbWVkaXVtcCBtYXQ0IG1vZGVsTWF0cml4Owp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyBwb3M7CnZhcnlpbmcgbWVkaXVtcCBmbG9hdCB2SGVpZ2h0Owp2YXJ5aW5nIG1lZGl1bXAgdmVjMiB2VVY7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzIgdXY7CnZhcnlpbmcgbWVkaXVtcCB2ZWMzIHZfbm9ybWFsOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBNVlAgKiB2ZWM0KHBvcywgMS4wKTsKICAgIHZIZWlnaHQgPSBwb3MueTsKICAgIHZVViA9IHV2OwogICAgdl9ub3JtYWwgPSBub3JtYWxpemUocG9zKTsKfQoK";
+kha_Shaders.sky_vertData0 = "s382:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgTVZQOwp1bmlmb3JtIG1hdDQgbW9kZWxNYXRyaXg7CgphdHRyaWJ1dGUgdmVjMyBwb3M7CnZhcnlpbmcgZmxvYXQgdkhlaWdodDsKdmFyeWluZyB2ZWMyIHZVVjsKYXR0cmlidXRlIHZlYzIgdXY7CnZhcnlpbmcgdmVjMyB2X25vcm1hbDsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gTVZQICogdmVjNChwb3MsIDEuMCk7CiAgICB2SGVpZ2h0ID0gcG9zLnk7CiAgICB2VVYgPSB1djsKICAgIHZfbm9ybWFsID0gbm9ybWFsaXplKHBvcyk7Cn0KCg";
+kha_Shaders.sky_vertData1 = "s407:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1hdDQgTVZQOwp1bmlmb3JtIG1hdDQgbW9kZWxNYXRyaXg7CgpsYXlvdXQobG9jYXRpb24gPSAwKSBpbiB2ZWMzIHBvczsKb3V0IGZsb2F0IHZIZWlnaHQ7Cm91dCB2ZWMyIHZVVjsKbGF5b3V0KGxvY2F0aW9uID0gMSkgaW4gdmVjMiB1djsKb3V0IHZlYzMgdl9ub3JtYWw7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IE1WUCAqIHZlYzQocG9zLCAxLjApOwogICAgdkhlaWdodCA9IHBvcy55OwogICAgdlVWID0gdXY7CiAgICB2X25vcm1hbCA9IG5vcm1hbGl6ZShwb3MpOwp9Cgo";
+kha_Shaders.sky_vertData2 = "s456:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBNVlA7CnVuaWZvcm0gbWVkaXVtcCBtYXQ0IG1vZGVsTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyBwb3M7CnZhcnlpbmcgbWVkaXVtcCBmbG9hdCB2SGVpZ2h0Owp2YXJ5aW5nIG1lZGl1bXAgdmVjMiB2VVY7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzIgdXY7CnZhcnlpbmcgbWVkaXVtcCB2ZWMzIHZfbm9ybWFsOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBNVlAgKiB2ZWM0KHBvcywgMS4wKTsKICAgIHZIZWlnaHQgPSBwb3MueTsKICAgIHZVViA9IHV2OwogICAgdl9ub3JtYWwgPSBub3JtYWxpemUocG9zKTsKfQoK";
 kha_System.renderListeners = [];
 kha_System.foregroundListeners = [];
 kha_System.resumeListeners = [];
