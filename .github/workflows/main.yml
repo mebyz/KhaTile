@@ -46,9 +46,9 @@ jobs:
       id: setup-ffmpeg
 
     - name: create build dir
-        run: |
-          mkdir build && mkdir build/html5
-          
+      run: |
+        mkdir build && mkdir build/html5
+
     - name: export sound files
       uses: canastro/copy-file-action@master
       with:
