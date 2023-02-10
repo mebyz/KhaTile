@@ -30,9 +30,8 @@ jobs:
         target: "build/html5/sound.ogg"
 
     - name: build ${{ matrix.target }}
-      needs: setup-ffmpeg
       run: |
-        node Kha/make ${{ matrix.target }} --compile --ffmpeg ${{needs.setup-ffmpeg.outputs.ffmpeg_path}}
+        node Kha/make ${{ matrix.target }} --compile --ffmpeg ${{steps.setup-ffmpeg.outputs.ffmpeg_path}}
 
     - name: deploy to github pages
       uses: JamesIves/github-pages-deploy-action@v4
