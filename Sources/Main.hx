@@ -1,5 +1,8 @@
 package;
 
+import haxe.Timer;
+import kha.Assets;
+import koui.utils.RadioGroup;
 import js.Browser;
 import kha.WindowOptions;
 import kha.Canvas;
@@ -7,12 +10,15 @@ import kha.Image;
 import kha.Scheduler;
 import kha.System;
 import koui.Koui;
+import koui.events.MouseEvent;
 import koui.elements.*;
 import io.colyseus.Client;
 import io.colyseus.Room;
+import aura.Aura;
 
 class Main {
 
+	public var mySound: kha.Sound;
 	public static function main() {
 
 		setFullWindowCanvas();
@@ -21,12 +27,61 @@ class Main {
 		System.start({title: "PlaneInstance"}, function(_) {
 
 			Koui.init(() -> {
-                var button = new Button("Click me!");
-                button.setPosition(10, 10);
-            
-               
 
-                Koui.add(button);
+
+				var pb = new Progressbar(0,100);
+				pb.setPosition(300,300);
+				pb.precision = 0;
+
+				Koui.add(pb);
+				
+				var loadConfig: AuraLoadConfig = {
+					
+					uncompressed: ["sound"],
+				};
+
+				Aura.init();
+				
+				Aura.loadAssets(loadConfig, () -> {
+
+					Timer.delay(function() { pb.set_value(10); }, 1000);
+					Timer.delay(function() { pb.set_value(70); }, 5000);
+					Timer.delay(function() { pb.set_value(100); 
+						var button = new Button("Click me!");
+						button.setPosition(300, 300);
+						pb.visible = false;
+						Koui.add(button);	
+						button.addEventListener(MouseClickEvent, function(e: MouseClickEvent) {
+							switch (e.getState()) {
+								case ClickStart:
+									Aura.createHandle(Play, Aura.getSound("sound")).play();
+								case ClickEnd:
+										button.visible = false;
+								default:
+							}
+						});
+					
+					}, 10000);
+
+					
+	
+				});
+
+
+
+				var rg = new RadioGroup();
+				var rb1 = new RadioButton(rg,"test1");
+                rb1.setPosition(10, 50);
+				var rb2 = new RadioButton(rg,"test2");
+                rb2.setPosition(10, 100);
+				var mySlider = new Slider(0, 100);
+				mySlider.setPosition(10,150);
+				mySlider.precision = 0;
+				mySlider.height = 10;
+               
+                Koui.add(rb1);
+                Koui.add(rb2);
+				Koui.add(mySlider);
 
 				var game = new PlaneInstance();
 

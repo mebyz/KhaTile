@@ -102,7 +102,8 @@ class PlaneInstance {
 
 	public function update() {
 		if (position != lastPosition) {
-			var h = NoiseTile.getHeight(Std.int(position.x/tileSize*tilePx),Std.int(position.z/tileSize*tilePx));
+			
+			var h = NoiseTile.getHeight(Std.int(position.z/tileSize*tilePx),Std.int(position.x/tileSize*tilePx))*2;
 
 			if (h < 0)
 				h=0;
