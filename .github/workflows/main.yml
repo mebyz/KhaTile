@@ -58,11 +58,17 @@ jobs:
       run: |
         mkdir build && mkdir build/html5
 
-    - name: export sound files
+    - name: export mp3
       uses: canastro/copy-file-action@master
       with:
         source: "Assets/sound.mp3"
         target: "build/html5/sound.mp3"
+
+    - name: export mp3
+      uses: canastro/copy-file-action@master
+      with:
+        source: "Assets/sound.ogg"
+        target: "build/html5/sound.ogg"
 
     - name: build ${{ matrix.target }}
       run: |
