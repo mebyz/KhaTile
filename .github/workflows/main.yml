@@ -59,12 +59,6 @@ jobs:
       run: |
         mkdir build && mkdir build/html5
 
-    - name: export mp3
-      uses: canastro/copy-file-action@master
-      with:
-        source: "Assets/sound.mp3"
-        target: "build/html5/sound.mp3"
-
     - name: export ogg
       uses: canastro/copy-file-action@master
       with:
