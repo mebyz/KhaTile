@@ -49,16 +49,16 @@ class PlaneInstance {
 	var lastPosition:FastVector3;
 
 	var gridSize = 4;
-	var tilePx :Int = 70;
-	var tileSize :Int = 7000;
+	var tilePx :Int = 100;
+	var tileSize :Int = 10000;
+	public var nt:Dynamic;
 
 	public function new() {
 		Assets.loadEverything(loadingFinished);
 	}
 
 	public function loadingFinished() {
-		var nt:Dynamic = new NoiseTile(gridSize, gridSize, tilePx);
-
+		nt = new NoiseTile(gridSize, gridSize, tilePx);
 		planes = new Array();
 		planes2 = new Array();
 
@@ -75,7 +75,7 @@ class PlaneInstance {
 
 		// water & sky
 		 planes2.push(new PlaneModel(0,0,{ w:80000, h:80000, x:20, y:20 }));
-		 sky = new SkyCubeModel(40000,40000,40000);
+		 sky = new SkyCubeModel(30000,30000,30000);
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
 
@@ -102,11 +102,17 @@ class PlaneInstance {
 
 	public function update() {
 		if (position != lastPosition) {
+			var xx = Std.int(position.z/tilePx);
+			var zz = Std.int(position.x/tilePx);
+			//trace("x:"+xx+" Y:"+NoiseTile.getHeight(xx,zz)+" z:"+zz);
 			
-			var h = NoiseTile.getHeight(Std.int(position.z/tileSize*tilePx),Std.int(position.x/tileSize*tilePx))*2;
+			//trace("index: "+ (zz*tilePx+xx));
+			//trace(nt.t.tiles[0][0][zz*tilePx+xx]);
+			
+			var h = 150+NoiseTile.getHeight(xx,zz);//5000+ nt.t.tiles[0][0][zz*tilePx+xx]; //+NoiseTile.getHeight(Std.int(-position.x/tileSize*tilePx),Std.int(-position.z/tileSize*tilePx));
 
-			if (h < 0)
-				h=0;
+			if (h < 150)
+				h=150;
 			// h=500;
 
 			// DISABLING stick to ground for now
@@ -196,7 +202,7 @@ class PlaneInstance {
 
 	// Create callback functions for when keys are pressed
 	public function onKeyDown(key:kha.input.KeyCode):Void {
-		trace(key + " down");
+		//trace(key + " down");
 
 		if (key == KeyCode.Up)
 			this.moveForward = true;
@@ -209,7 +215,7 @@ class PlaneInstance {
 	}
 
 	public function onKeyUp(key:kha.input.KeyCode):Void {
-		trace(key + " up");
+		//trace(key + " up");
 
 		if (key == KeyCode.Up)
 			moveForward = false;

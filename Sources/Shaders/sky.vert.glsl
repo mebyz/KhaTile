@@ -9,7 +9,7 @@ out vec2 vUV;
 out float vHeight;
 out vec3 v_normal;
 // Values that stay constant for the whole mesh
-uniform mat4 MVP, modelMatrix, projectionMatrix;
+uniform mat4 MVP, modelMatrix;
 
 void main() {
   // Output position of the vertex, in clip space: MVP * position

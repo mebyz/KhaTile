@@ -26,6 +26,14 @@ class Main {
 		
 		System.start({title: "PlaneInstance"}, function(_) {
 
+			var loadConfig: AuraLoadConfig = {
+					
+				uncompressed: ["sound"],
+			};
+
+			Aura.init();
+			
+			Aura.loadAssets(loadConfig, () -> {
 			Koui.init(() -> {
 
 
@@ -35,14 +43,6 @@ class Main {
 
 				Koui.add(pb);
 				
-				var loadConfig: AuraLoadConfig = {
-					
-					uncompressed: ["sound"],
-				};
-
-				Aura.init();
-				
-				Aura.loadAssets(loadConfig, () -> {
 
 					Timer.delay(function() { pb.set_value(10); }, 1000);
 					Timer.delay(function() { pb.set_value(70); }, 5000);
@@ -65,7 +65,6 @@ class Main {
 
 					
 	
-				});
 
 
 
@@ -79,9 +78,9 @@ class Main {
 				mySlider.precision = 0;
 				mySlider.height = 10;
                
-                Koui.add(rb1);
-                Koui.add(rb2);
-				Koui.add(mySlider);
+                //Koui.add(rb1);
+                //Koui.add(rb2);
+				//Koui.add(mySlider);
 
 				var game = new PlaneInstance();
 
@@ -92,6 +91,8 @@ class Main {
 					game.render(f);
 				});
             });
+			
+		});
 
 				
 		});
