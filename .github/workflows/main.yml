@@ -12,13 +12,13 @@ jobs:
         target: [html5]
     steps:
     - uses: actions/cache/restore@v3
-      id: cache
+      id: cache-kha
       with:
         path: Kha
         key: kha
 
     - name: cache test + checkout khatile & dependencies submodules
-      if: steps.cache.outputs.cache-hit != 'true'
+      if: steps.cache-kha.outputs.cache-hit != 'true'
       uses: actions/checkout@v1
       with:
         submodules: recursive
@@ -31,12 +31,24 @@ jobs:
         restore-keys: |
           kha
 
+    - name: try to restore koui from cache
+      uses: actions/cache/restore@v3
+      id: cache-koui
+      with:
+        path: Subprojects/koui
+        key: koui
+
     - name: checkout koui (gitlab)
+      if: steps.cache-koui.outputs.cache-hit != 'true'
       run: rm -rf Subprojects/koui && git clone "https://gitlab.com/koui/koui.git" Subprojects/koui
 
     - uses: FedericoCarboni/setup-ffmpeg@v2
       id: setup-ffmpeg
 
+    - name: create build dir
+        run: |
+          mkdir build && mkdir build/html5
+          
     - name: export sound files
       uses: canastro/copy-file-action@master
       with:
