@@ -101,17 +101,6 @@ HxOverrides.remove = function(a,obj) {
 HxOverrides.now = function() {
 	return Date.now();
 };
-var IntIterator = function(min,max) {
-	this.min = min;
-	this.max = max;
-};
-$hxClasses["IntIterator"] = IntIterator;
-IntIterator.__name__ = "IntIterator";
-IntIterator.prototype = {
-	min: null
-	,max: null
-	,__class__: IntIterator
-};
 var Lambda = function() { };
 $hxClasses["Lambda"] = Lambda;
 Lambda.__name__ = "Lambda";
@@ -170,61 +159,54 @@ Main.main = function() {
 	Main.setFullWindowCanvas();
 	var client = new io_colyseus_Client("ws://localhost:2567");
 	kha_System.start(new kha_SystemOptions("PlaneInstance",-1,-1,null,null),function(_) {
-		var loadConfig = new aura_AuraLoadConfig(null,["sound"],null);
-		aura_Aura.init();
-		aura_Aura.loadAssets(loadConfig,function() {
-			koui_Koui.init(function() {
-				var pb = new koui_elements_Progressbar(0,100);
-				pb.set_posX(300);
-				pb.set_posY(300);
-				pb.precision = 0;
-				koui_Koui.anchorPane.add(pb,0);
-				haxe_Timer.delay(function() {
-					pb.set_value(10);
-				},1000);
-				haxe_Timer.delay(function() {
-					pb.set_value(70);
-				},5000);
-				haxe_Timer.delay(function() {
-					pb.set_value(100);
-					var button = new koui_elements_Button("Click me!");
-					button.set_posX(300);
-					button.set_posY(300);
-					pb.visible = false;
-					koui_Koui.anchorPane.add(button,0);
-					button.addEventListener(koui_events_MouseClickEvent,function(e) {
-						switch(e.getState()) {
-						case 1:
-							var _this = aura_Aura.createHandle(0,kha_Assets.sounds.get("sound")).channel;
-							var message = new aura_threading_Message(0,false);
-							_this.messages.add(message);
-							break;
-						case 2:
-							button.visible = false;
-							break;
-						default:
-						}
-					});
-				},10000);
-				var rg = new koui_utils_RadioGroup();
-				var rb1 = new koui_elements_RadioButton(rg,"test1");
-				rb1.set_posX(10);
-				rb1.set_posY(50);
-				var rb2 = new koui_elements_RadioButton(rg,"test2");
-				rb2.set_posX(10);
-				rb2.set_posY(100);
-				var mySlider = new koui_elements_Slider(0,100);
-				mySlider.set_posX(10);
-				mySlider.set_posY(150);
-				mySlider.precision = 0;
-				mySlider.set_height(10);
-				var game = new PlaneInstance();
-				kha_Scheduler.addTimeTask(function() {
-					game.update();
-				},0,0.02);
-				kha_System.notifyOnFrames(function(f) {
-					game.render(f);
+		koui_Koui.init(function() {
+			var pb = new koui_elements_Progressbar(0,100);
+			pb.set_posX(300);
+			pb.set_posY(300);
+			pb.precision = 0;
+			koui_Koui.anchorPane.add(pb,0);
+			haxe_Timer.delay(function() {
+				pb.set_value(10);
+			},1000);
+			haxe_Timer.delay(function() {
+				pb.set_value(70);
+			},5000);
+			haxe_Timer.delay(function() {
+				pb.set_value(100);
+				var button = new koui_elements_Button("Click me!");
+				button.set_posX(300);
+				button.set_posY(300);
+				pb.visible = false;
+				koui_Koui.anchorPane.add(button,0);
+				button.addEventListener(koui_events_MouseClickEvent,function(e) {
+					switch(e.getState()) {
+					case 1:
+						break;
+					case 2:
+						button.visible = false;
+						break;
+					default:
+					}
 				});
+			},10000);
+			var rg = new koui_utils_RadioGroup();
+			var rb1 = new koui_elements_RadioButton(rg,"test1");
+			rb1.set_posX(10);
+			rb1.set_posY(50);
+			var rb2 = new koui_elements_RadioButton(rg,"test2");
+			rb2.set_posX(10);
+			rb2.set_posY(100);
+			var mySlider = new koui_elements_Slider(0,100);
+			mySlider.set_posX(10);
+			mySlider.set_posY(150);
+			mySlider.precision = 0;
+			mySlider.set_height(10);
+			var game = new PlaneInstance();
+			kha_Scheduler.addTimeTask(function() {
+				game.update();
+			},0,0.02);
+			kha_System.notifyOnFrames(function(f) {
+				game.render(f);
 			});
 		});
 	});
@@ -2052,9 +2034,9 @@ Mat4Data.prototype = {
 };
 Math.__name__ = "Math";
 var PlaneInstance = function() {
-	this.tileSize = 10000;
-	this.tilePx = 100;
-	this.gridSize = 3;
+	this.tileSize = 5000;
+	this.tilePx = 50;
+	this.gridSize = 6;
 	this.verticalAngle = 0.0;
 	this.horizontalAngle = 3.14;
 	this.position = new kha_math_FastVector3(0,100,5);
@@ -2079,6 +2061,7 @@ PlaneInstance.prototype = {
 	,planes2: null
 	,sky: null
 	,mvp: null
+	,invmvp: null
 	,model: null
 	,view: null
 	,projection: null
@@ -2281,8 +2264,8 @@ PlaneInstance.prototype = {
 	}
 	,update: function() {
 		if(this.position != this.lastPosition) {
-			var xx = this.position.z / this.tilePx | 0;
-			var zz = this.position.x / this.tilePx | 0;
+			var xx = this.position.z / this.tilePx / 2 | 0;
+			var zz = this.position.x / this.tilePx / 2 | 0;
 			var h = 150 + noisetile_NoiseTile.getHeight(xx,zz);
 			if(h < 150) {
 				h = 150;
@@ -2535,6 +2518,132 @@ PlaneInstance.prototype = {
 		var yaxis_y = y;
 		var yaxis_z = z;
 		this.view = new kha_math_FastMatrix4(xaxis_x,xaxis_y,xaxis_z,-(xaxis_x * eye.x + xaxis_y * eye.y + xaxis_z * eye.z),yaxis_x,yaxis_y,yaxis_z,-(yaxis_x * eye.x + yaxis_y * eye.y + yaxis_z * eye.z),-zaxis_x,-zaxis_y,-zaxis_z,zaxis_x * eye.x + zaxis_y * eye.y + zaxis_z * eye.z,0,0,0,1);
+		var x = this.position.x;
+		var y = -this.position.y;
+		var z = this.position.z;
+		if(z == null) {
+			z = 0;
+		}
+		if(y == null) {
+			y = 0;
+		}
+		if(x == null) {
+			x = 0;
+		}
+		var eye_x = x;
+		var eye_y = y;
+		var eye_z = z;
+		var x = look_x - eye_x;
+		var y = look_y - eye_y;
+		var z = look_z - eye_z;
+		if(z == null) {
+			z = 0;
+		}
+		if(y == null) {
+			y = 0;
+		}
+		if(x == null) {
+			x = 0;
+		}
+		var _this_x = x;
+		var _this_y = y;
+		var _this_z = z;
+		var x = _this_x;
+		var y = _this_y;
+		var z = _this_z;
+		if(z == null) {
+			z = 0;
+		}
+		if(y == null) {
+			y = 0;
+		}
+		if(x == null) {
+			x = 0;
+		}
+		var zaxis_x = x;
+		var zaxis_y = y;
+		var zaxis_z = z;
+		var currentLength = Math.sqrt(zaxis_x * zaxis_x + zaxis_y * zaxis_y + zaxis_z * zaxis_z);
+		if(currentLength != 0) {
+			var mul = 1 / currentLength;
+			zaxis_x *= mul;
+			zaxis_y *= mul;
+			zaxis_z *= mul;
+		}
+		var _x = zaxis_y * up_z - zaxis_z * up_y;
+		var _y = zaxis_z * up_x - zaxis_x * up_z;
+		var _z = zaxis_x * up_y - zaxis_y * up_x;
+		var x = _x;
+		var y = _y;
+		var z = _z;
+		if(z == null) {
+			z = 0;
+		}
+		if(y == null) {
+			y = 0;
+		}
+		if(x == null) {
+			x = 0;
+		}
+		var _this_x = x;
+		var _this_y = y;
+		var _this_z = z;
+		var x = _this_x;
+		var y = _this_y;
+		var z = _this_z;
+		if(z == null) {
+			z = 0;
+		}
+		if(y == null) {
+			y = 0;
+		}
+		if(x == null) {
+			x = 0;
+		}
+		var xaxis_x = x;
+		var xaxis_y = y;
+		var xaxis_z = z;
+		var currentLength = Math.sqrt(xaxis_x * xaxis_x + xaxis_y * xaxis_y + xaxis_z * xaxis_z);
+		if(currentLength != 0) {
+			var mul = 1 / currentLength;
+			xaxis_x *= mul;
+			xaxis_y *= mul;
+			xaxis_z *= mul;
+		}
+		var _x = xaxis_y * zaxis_z - xaxis_z * zaxis_y;
+		var _y = xaxis_z * zaxis_x - xaxis_x * zaxis_z;
+		var _z = xaxis_x * zaxis_y - xaxis_y * zaxis_x;
+		var x = _x;
+		var y = _y;
+		var z = _z;
+		if(z == null) {
+			z = 0;
+		}
+		if(y == null) {
+			y = 0;
+		}
+		if(x == null) {
+			x = 0;
+		}
+		var yaxis_x = x;
+		var yaxis_y = y;
+		var yaxis_z = z;
+		var invView = new kha_math_FastMatrix4(xaxis_x,xaxis_y,xaxis_z,-(xaxis_x * eye_x + xaxis_y * eye_y + xaxis_z * eye_z),yaxis_x,yaxis_y,yaxis_z,-(yaxis_x * eye_x + yaxis_y * eye_y + yaxis_z * eye_z),-zaxis_x,-zaxis_y,-zaxis_z,zaxis_x * eye_x + zaxis_y * eye_y + zaxis_z * eye_z,0,0,0,1);
+		this.invmvp = new kha_math_FastMatrix4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+		if(this.projection != null) {
+			var _this = this.invmvp;
+			var m = this.projection;
+			this.invmvp = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
+		}
+		if(invView != null) {
+			var _this = this.invmvp;
+			this.invmvp = new kha_math_FastMatrix4(_this._00 * invView._00 + _this._10 * invView._01 + _this._20 * invView._02 + _this._30 * invView._03,_this._00 * invView._10 + _this._10 * invView._11 + _this._20 * invView._12 + _this._30 * invView._13,_this._00 * invView._20 + _this._10 * invView._21 + _this._20 * invView._22 + _this._30 * invView._23,_this._00 * invView._30 + _this._10 * invView._31 + _this._20 * invView._32 + _this._30 * invView._33,_this._01 * invView._00 + _this._11 * invView._01 + _this._21 * invView._02 + _this._31 * invView._03,_this._01 * invView._10 + _this._11 * invView._11 + _this._21 * invView._12 + _this._31 * invView._13,_this._01 * invView._20 + _this._11 * invView._21 + _this._21 * invView._22 + _this._31 * invView._23,_this._01 * invView._30 + _this._11 * invView._31 + _this._21 * invView._32 + _this._31 * invView._33,_this._02 * invView._00 + _this._12 * invView._01 + _this._22 * invView._02 + _this._32 * invView._03,_this._02 * invView._10 + _this._12 * invView._11 + _this._22 * invView._12 + _this._32 * invView._13,_this._02 * invView._20 + _this._12 * invView._21 + _this._22 * invView._22 + _this._32 * invView._23,_this._02 * invView._30 + _this._12 * invView._31 + _this._22 * invView._32 + _this._32 * invView._33,_this._03 * invView._00 + _this._13 * invView._01 + _this._23 * invView._02 + _this._33 * invView._03,_this._03 * invView._10 + _this._13 * invView._11 + _this._23 * invView._12 + _this._33 * invView._13,_this._03 * invView._20 + _this._13 * invView._21 + _this._23 * invView._22 + _this._33 * invView._23,_this._03 * invView._30 + _this._13 * invView._31 + _this._23 * invView._32 + _this._33 * invView._33);
+		}
+		if(this.model != null) {
+			var _this = this.invmvp;
+			var m = this.model;
+			this.invmvp = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
+		}
 		this.mvp = new kha_math_FastMatrix4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
 		if(this.projection != null) {
 			var _this = this.mvp;
@@ -4268,3086 +4377,84 @@ function VectorMath_log2f(v) {
 		return l2;
 	}
 }
-var aura_types_AudioBuffer = function(numChannels,channelLength) {
-	this.numChannels = numChannels;
-	this.channelLength = channelLength;
-	this.rawData = kha_arrays_Float32Array._new(numChannels * channelLength);
-	var this1 = new Array(numChannels);
-	this.channelViews = this1;
+var haxe_StackItem = $hxEnums["haxe.StackItem"] = { __ename__:true,__constructs__:null
+	,CFunction: {_hx_name:"CFunction",_hx_index:0,__enum__:"haxe.StackItem",toString:$estr}
+	,Module: ($_=function(m) { return {_hx_index:1,m:m,__enum__:"haxe.StackItem",toString:$estr}; },$_._hx_name="Module",$_.__params__ = ["m"],$_)
+	,FilePos: ($_=function(s,file,line,column) { return {_hx_index:2,s:s,file:file,line:line,column:column,__enum__:"haxe.StackItem",toString:$estr}; },$_._hx_name="FilePos",$_.__params__ = ["s","file","line","column"],$_)
+	,Method: ($_=function(classname,method) { return {_hx_index:3,classname:classname,method:method,__enum__:"haxe.StackItem",toString:$estr}; },$_._hx_name="Method",$_.__params__ = ["classname","method"],$_)
+	,LocalFunction: ($_=function(v) { return {_hx_index:4,v:v,__enum__:"haxe.StackItem",toString:$estr}; },$_._hx_name="LocalFunction",$_.__params__ = ["v"],$_)
+};
+haxe_StackItem.__constructs__ = [haxe_StackItem.CFunction,haxe_StackItem.Module,haxe_StackItem.FilePos,haxe_StackItem.Method,haxe_StackItem.LocalFunction];
+var haxe_CallStack = {};
+haxe_CallStack.toString = function(stack) {
+	var b = new StringBuf();
 	var _g = 0;
-	var _g1 = numChannels;
-	while(_g < _g1) {
-		var c = _g++;
-		var end = channelLength * (c + 1);
-		var start = channelLength * c * 4;
-		var end1 = end != null ? end * 4 : end;
-		this.channelViews[c] = kha_arrays_ByteArray._new(this.rawData.buffer,start,end1 != null ? end1 - start : null);
-	}
-};
-$hxClasses["aura.types.AudioBuffer"] = aura_types_AudioBuffer;
-aura_types_AudioBuffer.__name__ = "aura.types.AudioBuffer";
-aura_types_AudioBuffer.prototype = {
-	numChannels: null
-	,channelLength: null
-	,rawData: null
-	,channelViews: null
-	,getChannelView: function(channelIndex) {
-		return this.channelViews[channelIndex];
-	}
-	,interleaveToFloat32Array: function(target,sourceOffset,targetOffset,channelLength) {
-		if(channelLength == null) {
-			channelLength = 1;
-		}
-		if(targetOffset == null) {
-			targetOffset = 0;
-		}
-		if(sourceOffset == null) {
-			sourceOffset = 0;
-		}
-		var _g = 0;
-		var a = this.channelLength;
-		var _g1 = a < channelLength ? a : channelLength;
-		while(_g < _g1) {
-			var i = _g++;
-			var _g2 = 0;
-			var _g3 = this.numChannels;
-			while(_g2 < _g3) {
-				var c = _g2++;
-				var k = targetOffset + i * this.numChannels + c;
-				var v = aura_types_AudioBufferChannelView.get(this.channelViews[c],sourceOffset + i);
-				target.setFloat32(k * 4,v,true);
-			}
-		}
-	}
-	,deinterleaveFromFloat32Array: function(source,numChannels) {
-		if(numChannels == null) {
-			numChannels = 1;
-		}
-		var _g = 0;
-		var a = this.channelLength;
-		var b = this.channelLength;
-		var _g1 = a < b ? a : b;
-		while(_g < _g1) {
-			var i = _g++;
-			var _g2 = 0;
-			var _g3 = numChannels;
-			while(_g2 < _g3) {
-				var c = _g2++;
-				aura_types_AudioBufferChannelView.set(this.channelViews[c],i,source.getFloat32((i * numChannels + c) * 4,kha_arrays_ByteArray.LITTLE_ENDIAN));
-			}
-		}
-	}
-	,clear: function() {
-		var _g = 0;
-		var _g1 = this.rawData.byteLength >> 2;
-		while(_g < _g1) {
-			var i = _g++;
-			this.rawData.setFloat32(i * 4,0,true);
-		}
-	}
-	,__class__: aura_types_AudioBuffer
-};
-var kha_arrays_Float32Array = {};
-kha_arrays_Float32Array.__properties__ = {get_length:"get_length"};
-kha_arrays_Float32Array.get_length = function(this1) {
-	return this1.byteLength >> 2;
-};
-kha_arrays_Float32Array._new = function(elements) {
-	var this1 = kha_arrays_ByteArray.make(elements * 4);
-	return this1;
-};
-kha_arrays_Float32Array.get = function(this1,k) {
-	return this1.getFloat32(k * 4,kha_arrays_ByteArray.LITTLE_ENDIAN);
-};
-kha_arrays_Float32Array.set = function(this1,k,v) {
-	this1.setFloat32(k * 4,v,true);
-	return v;
-};
-kha_arrays_Float32Array.subarray = function(this1,start,end) {
-	var start1 = start * 4;
-	var end1 = end != null ? end * 4 : end;
-	return kha_arrays_ByteArray._new(this1.buffer,start1,end1 != null ? end1 - start1 : null);
-};
-var kha_arrays_ByteArray = {};
-kha_arrays_ByteArray.__properties__ = {get_buffer:"get_buffer"};
-kha_arrays_ByteArray.get_buffer = function(this1) {
-	return this1.buffer;
-};
-kha_arrays_ByteArray._new = function(buffer,byteOffset,byteLength) {
-	var this1 = new DataView(buffer,byteOffset,byteLength);
-	return this1;
-};
-kha_arrays_ByteArray.make = function(byteLength) {
-	return kha_arrays_ByteArray._new(kha_arrays_ByteBuffer.create(byteLength));
-};
-kha_arrays_ByteArray.getInt8 = function(this1,byteOffset) {
-	return this1.getInt8(byteOffset);
-};
-kha_arrays_ByteArray.getUint8 = function(this1,byteOffset) {
-	return this1.getUint8(byteOffset);
-};
-kha_arrays_ByteArray.getInt16 = function(this1,byteOffset) {
-	return this1.getInt16(byteOffset,kha_arrays_ByteArray.LITTLE_ENDIAN);
-};
-kha_arrays_ByteArray.getUint16 = function(this1,byteOffset) {
-	return this1.getUint16(byteOffset,kha_arrays_ByteArray.LITTLE_ENDIAN);
-};
-kha_arrays_ByteArray.getInt32 = function(this1,byteOffset) {
-	return this1.getInt32(byteOffset,kha_arrays_ByteArray.LITTLE_ENDIAN);
-};
-kha_arrays_ByteArray.getUint32 = function(this1,byteOffset) {
-	return this1.getUint32(byteOffset,kha_arrays_ByteArray.LITTLE_ENDIAN);
-};
-kha_arrays_ByteArray.getFloat32 = function(this1,byteOffset) {
-	return this1.getFloat32(byteOffset,kha_arrays_ByteArray.LITTLE_ENDIAN);
-};
-kha_arrays_ByteArray.getFloat64 = function(this1,byteOffset) {
-	return this1.getFloat64(byteOffset,kha_arrays_ByteArray.LITTLE_ENDIAN);
-};
-kha_arrays_ByteArray.setInt8 = function(this1,byteOffset,value) {
-	this1.setInt8(byteOffset,value);
-};
-kha_arrays_ByteArray.setUint8 = function(this1,byteOffset,value) {
-	this1.setUint8(byteOffset,value);
-};
-kha_arrays_ByteArray.setInt16 = function(this1,byteOffset,value) {
-	this1.setInt16(byteOffset,value,kha_arrays_ByteArray.LITTLE_ENDIAN);
-};
-kha_arrays_ByteArray.setUint16 = function(this1,byteOffset,value) {
-	this1.setUint16(byteOffset,value,kha_arrays_ByteArray.LITTLE_ENDIAN);
-};
-kha_arrays_ByteArray.setInt32 = function(this1,byteOffset,value) {
-	this1.setInt32(byteOffset,value,kha_arrays_ByteArray.LITTLE_ENDIAN);
-};
-kha_arrays_ByteArray.setUint32 = function(this1,byteOffset,value) {
-	this1.setUint32(byteOffset,value,kha_arrays_ByteArray.LITTLE_ENDIAN);
-};
-kha_arrays_ByteArray.setFloat32 = function(this1,byteOffset,value) {
-	this1.setFloat32(byteOffset,value,true);
-};
-kha_arrays_ByteArray.setFloat64 = function(this1,byteOffset,value) {
-	this1.setFloat64(byteOffset,value,kha_arrays_ByteArray.LITTLE_ENDIAN);
-};
-kha_arrays_ByteArray.getInt16LE = function(this1,byteOffset) {
-	return this1.getInt16(byteOffset,true);
-};
-kha_arrays_ByteArray.getUint16LE = function(this1,byteOffset) {
-	return this1.getUint16(byteOffset,true);
-};
-kha_arrays_ByteArray.getInt32LE = function(this1,byteOffset) {
-	return this1.getInt32(byteOffset,true);
-};
-kha_arrays_ByteArray.getUint32LE = function(this1,byteOffset) {
-	return this1.getUint32(byteOffset,true);
-};
-kha_arrays_ByteArray.getFloat32LE = function(this1,byteOffset) {
-	return this1.getFloat32(byteOffset,true);
-};
-kha_arrays_ByteArray.getFloat64LE = function(this1,byteOffset) {
-	return this1.getFloat64(byteOffset,true);
-};
-kha_arrays_ByteArray.setInt16LE = function(this1,byteOffset,value) {
-	this1.setInt16(byteOffset,value,true);
-};
-kha_arrays_ByteArray.setUint16LE = function(this1,byteOffset,value) {
-	this1.setUint16(byteOffset,value,true);
-};
-kha_arrays_ByteArray.setInt32LE = function(this1,byteOffset,value) {
-	this1.setInt32(byteOffset,value,true);
-};
-kha_arrays_ByteArray.setUint32LE = function(this1,byteOffset,value) {
-	this1.setUint32(byteOffset,value,true);
-};
-kha_arrays_ByteArray.setFloat32LE = function(this1,byteOffset,value) {
-	this1.setFloat32(byteOffset,value,true);
-};
-kha_arrays_ByteArray.setFloat64LE = function(this1,byteOffset,value) {
-	this1.setFloat64(byteOffset,value,true);
-};
-kha_arrays_ByteArray.getInt16BE = function(this1,byteOffset) {
-	return this1.getInt16(byteOffset);
-};
-kha_arrays_ByteArray.getUint16BE = function(this1,byteOffset) {
-	return this1.getUint16(byteOffset);
-};
-kha_arrays_ByteArray.getInt32BE = function(this1,byteOffset) {
-	return this1.getInt32(byteOffset);
-};
-kha_arrays_ByteArray.getUint32BE = function(this1,byteOffset) {
-	return this1.getUint32(byteOffset);
-};
-kha_arrays_ByteArray.getFloat32BE = function(this1,byteOffset) {
-	return this1.getFloat32(byteOffset);
-};
-kha_arrays_ByteArray.getFloat64BE = function(this1,byteOffset) {
-	return this1.getFloat64(byteOffset);
-};
-kha_arrays_ByteArray.setInt16BE = function(this1,byteOffset,value) {
-	this1.setInt16(byteOffset,value);
-};
-kha_arrays_ByteArray.setUint16BE = function(this1,byteOffset,value) {
-	this1.setUint16(byteOffset,value);
-};
-kha_arrays_ByteArray.setInt32BE = function(this1,byteOffset,value) {
-	this1.setInt32(byteOffset,value);
-};
-kha_arrays_ByteArray.setUint32BE = function(this1,byteOffset,value) {
-	this1.setUint32(byteOffset,value);
-};
-kha_arrays_ByteArray.setFloat32BE = function(this1,byteOffset,value) {
-	this1.setFloat32(byteOffset,value);
-};
-kha_arrays_ByteArray.setFloat64BE = function(this1,byteOffset,value) {
-	this1.setFloat64(byteOffset,value);
-};
-kha_arrays_ByteArray.subarray = function(this1,start,end) {
-	return kha_arrays_ByteArray._new(this1.buffer,start,end != null ? end - start : null);
-};
-var kha_arrays_ByteBuffer = {};
-kha_arrays_ByteBuffer.create = function(length) {
-	return kha_arrays_ByteBuffer._new(length);
-};
-kha_arrays_ByteBuffer._new = function(length) {
-	var this1 = new ArrayBuffer(length);
-	return this1;
-};
-var aura_utils_Pointer_$kha_$arrays_$Float32Array = function(value) {
-	this.value = value;
-};
-$hxClasses["aura.utils.Pointer_kha_arrays_Float32Array"] = aura_utils_Pointer_$kha_$arrays_$Float32Array;
-aura_utils_Pointer_$kha_$arrays_$Float32Array.__name__ = "aura.utils.Pointer_kha_arrays_Float32Array";
-aura_utils_Pointer_$kha_$arrays_$Float32Array.prototype = {
-	value: null
-	,set: function(value) {
-		this.value = value;
-	}
-	,get: function() {
-		return this.value;
-	}
-	,getSure: function() {
-		return this.value;
-	}
-	,__class__: aura_utils_Pointer_$kha_$arrays_$Float32Array
-};
-var aura_Aura = function() { };
-$hxClasses["aura.Aura"] = aura_Aura;
-aura_Aura.__name__ = "aura.Aura";
-aura_Aura.init = function(options) {
-	aura_Aura.sampleRate = kha_audio2_Audio.samplesPerSecond;
-	if(aura_Aura.sampleRate == 0) {
-		aura_utils_Assert.throwAssertionError("sampleRate != 0","sampleRate must not be 0!",{ fileName : "aura/Aura.hx", lineNumber : 54, className : "aura.Aura", methodName : "init"});
-	}
-	aura_Aura.options = aura_AuraOptions.addDefaults(options);
-	aura_channels_MixChannel.channelSize = aura_Aura.options.channelSize;
-	aura_Aura.listener = new aura_Listener();
-	var this1 = new Array(8);
-	aura_threading_BufferCache.treeBuffers = this1;
-	var _g = 0;
-	var _g1 = aura_threading_BufferCache.treeBuffers.length;
-	while(_g < _g1) {
-		var i = _g++;
-		aura_threading_BufferCache.treeBuffers[i] = new aura_utils_Pointer_$aura_$types_$AudioBuffer();
-	}
-	aura_threading_BufferCache.bufferConfigs = aura_threading_BufferType.createAllConfigs();
-	var name = "master";
-	if(name == null) {
-		name = "";
-	}
-	var handle = new aura_MixChannelHandle(new aura_channels_MixChannel());
-	if(name != "") {
-		aura_Aura.mixChannels.h[name] = handle;
-	}
-	aura_Aura.masterChannel = handle;
-	var name = "music";
-	if(name == null) {
-		name = "";
-	}
-	var handle = new aura_MixChannelHandle(new aura_channels_MixChannel());
-	if(name != "") {
-		aura_Aura.mixChannels.h[name] = handle;
-	}
-	handle.setMixChannel(aura_Aura.masterChannel);
-	var name = "fx";
-	if(name == null) {
-		name = "";
-	}
-	var handle = new aura_MixChannelHandle(new aura_channels_MixChannel());
-	if(name != "") {
-		aura_Aura.mixChannels.h[name] = handle;
-	}
-	handle.setMixChannel(aura_Aura.masterChannel);
-	if(kha_SystemImpl.mobile) {
-		kha_Scheduler.addTimeTask(($_=aura_Aura.masterChannel.channel,$bind($_,$_.synchronize)),0,0.0166666666666666664);
-	} else {
-		kha_audio2_Audio.audioCallback = aura_Aura.audioCallback;
-	}
-	kha_Scheduler.addBreakableTimeTask(function() {
-		if(kha_SystemImpl.mobileAudioPlaying) {
-			aura_channels_Html5StreamChannel.makeChannelsPhysical();
-			return false;
-		}
-		return true;
-	},0,0.0166666666666666664);
-	kha_System.notifyOnApplicationState(null,null,null,null,function() {
-	});
-};
-aura_Aura.loadAssets = function(loadConfig,done,failed) {
-	var length = loadConfig.compressed.length + loadConfig.uncompressed.length + loadConfig.hrtf.length;
-	var count = 0;
-	var _g = 0;
-	var _g1 = loadConfig.compressed;
+	var _g1 = stack;
 	while(_g < _g1.length) {
-		var soundName = [_g1[_g]];
+		var s = _g1[_g];
 		++_g;
-		if(Reflect.field(kha_Assets.sounds,soundName[0] + "Description") == null) {
-			aura_Aura.onLoadingError(null,failed,soundName[0]);
-			break;
-		}
-		kha_Assets.loadSound(soundName[0],(function(soundName) {
-			return function(sound) {
-				if(sound.compressedData == null) {
-					throw haxe_Exception.thrown("Cannot compress already uncompressed sound " + soundName[0] + "!");
-				}
-				if((count += 1) == length) {
-					done();
-					return;
-				}
-			};
-		})(soundName),(function(soundName) {
-			return function(error) {
-				aura_Aura.onLoadingError(error,failed,soundName[0]);
-			};
-		})(soundName),{ fileName : "aura/Aura.hx", lineNumber : 107, className : "aura.Aura", methodName : "loadAssets"});
+		b.b += "\nCalled from ";
+		haxe_CallStack.itemToString(b,s);
 	}
-	var _g = 0;
-	var _g1 = loadConfig.uncompressed;
-	while(_g < _g1.length) {
-		var soundName1 = [_g1[_g]];
-		++_g;
-		if(Reflect.field(kha_Assets.sounds,soundName1[0] + "Description") == null) {
-			aura_Aura.onLoadingError(null,failed,soundName1[0]);
-			break;
-		}
-		kha_Assets.loadSound(soundName1[0],(function() {
-			return function(sound) {
-				if(sound.uncompressedData == null) {
-					sound.uncompress((function() {
-						return function() {
-							if((count += 1) == length) {
-								done();
-								return;
-							}
-						};
-					})());
-				} else if((count += 1) == length) {
-					done();
-					return;
-				}
-			};
-		})(),(function(soundName) {
-			return function(error) {
-				aura_Aura.onLoadingError(error,failed,soundName[0]);
-			};
-		})(soundName1),{ fileName : "aura/Aura.hx", lineNumber : 126, className : "aura.Aura", methodName : "loadAssets"});
-	}
-	var _g = 0;
-	var _g1 = loadConfig.hrtf;
-	while(_g < _g1.length) {
-		var hrtfName = [_g1[_g]];
-		++_g;
-		if(Reflect.field(kha_Assets.blobs,hrtfName[0] + "Description") == null) {
-			aura_Aura.onLoadingError(null,failed,hrtfName[0]);
-			break;
-		}
-		kha_Assets.loadBlob(hrtfName[0],(function(hrtfName) {
-			return function(blob) {
-				var reader = new aura_format_mhr_MHRReader(blob.toBytes());
-				var hrtf;
-				try {
-					hrtf = reader.read();
-				} catch( _g ) {
-					var e = haxe_Exception.caught(_g);
-					haxe_Log.trace("Could not load hrtf " + hrtfName[0] + ": " + e.details(),{ fileName : "aura/Aura.hx", lineNumber : 156, className : "aura.Aura", methodName : "loadAssets"});
-					if(failed != null) {
-						failed();
-					}
-					return;
-				}
-				aura_Aura.hrtfs.h[hrtfName[0]] = hrtf;
-				if((count += 1) == length) {
-					done();
-					return;
-				}
-			};
-		})(hrtfName),(function(hrtfName) {
-			return function(error) {
-				aura_Aura.onLoadingError(error,failed,hrtfName[0]);
-			};
-		})(hrtfName),{ fileName : "aura/Aura.hx", lineNumber : 149, className : "aura.Aura", methodName : "loadAssets"});
-	}
+	return b.b;
 };
-aura_Aura.onLoadingError = function(error,failed,assetName) {
-	var errorInfo = error == null ? "" : "\nOriginal error: " + error.url + "..." + Std.string(error.error);
-	haxe_Log.trace("Could not load asset \"" + assetName + "\", make sure that all assets are named\n" + "  correctly and that they are included in the khafile.js." + errorInfo,{ fileName : "aura/Aura.hx", lineNumber : 174, className : "aura.Aura", methodName : "onLoadingError"});
-	if(failed != null) {
-		failed();
-	}
-};
-aura_Aura.doesSoundExist = function(soundName) {
-	return Reflect.field(kha_Assets.sounds,soundName + "Description") != null;
-};
-aura_Aura.doesBlobExist = function(blobName) {
-	return Reflect.field(kha_Assets.blobs,blobName + "Description") != null;
-};
-aura_Aura.getSound = function(soundName) {
-	return kha_Assets.sounds.get(soundName);
-};
-aura_Aura.getHRTF = function(hrtfName) {
-	return aura_Aura.hrtfs.h[hrtfName];
-};
-aura_Aura.createHandle = function(playMode,sound,loop,mixChannelHandle) {
-	if(loop == null) {
-		loop = false;
-	}
-	if(mixChannelHandle == null) {
-		mixChannelHandle = aura_Aura.masterChannel;
-	}
-	var newChannel;
-	switch(playMode) {
+haxe_CallStack.itemToString = function(b,s) {
+	switch(s._hx_index) {
 	case 0:
-		if(sound.uncompressedData == null) {
-			aura_utils_Assert.throwAssertionError("sound.uncompressedData != null","Cannot play a sound with no uncompressed data. Make sure to load it as 'uncompressed' in the AuraLoadConfig.",{ fileName : "aura/Aura.hx", lineNumber : 228, className : "aura.Aura", methodName : "createHandle"});
-		}
-		newChannel = new aura_channels_ResamplingAudioChannel(sound.uncompressedData,loop,sound.sampleRate);
+		b.b += "a C function";
 		break;
 	case 1:
-		if(sound.compressedData == null) {
-			aura_utils_Assert.throwAssertionError("sound.compressedData != null","Cannot stream a sound with no compressed data. Make sure to load it as 'compressed' in the AuraLoadConfig.",{ fileName : "aura/Aura.hx", lineNumber : 236, className : "aura.Aura", methodName : "createHandle"});
+		var m = s.m;
+		b.b += "module ";
+		b.b += m == null ? "null" : "" + m;
+		break;
+	case 2:
+		var s1 = s.s;
+		var file = s.file;
+		var line = s.line;
+		var col = s.column;
+		if(s1 != null) {
+			haxe_CallStack.itemToString(b,s1);
+			b.b += " (";
 		}
-		if(kha_SystemImpl.mobile) {
-			newChannel = new aura_channels_Html5MobileStreamChannel(sound,loop);
-		} else {
-			newChannel = new aura_channels_Html5StreamChannel(sound,loop);
+		b.b += file == null ? "null" : "" + file;
+		b.b += " line ";
+		b.b += line == null ? "null" : "" + line;
+		if(col != null) {
+			b.b += " column ";
+			b.b += col == null ? "null" : "" + col;
+		}
+		if(s1 != null) {
+			b.b += ")";
 		}
 		break;
-	}
-	var handle = new aura_Handle(newChannel);
-	var foundChannel = handle.setMixChannel(mixChannelHandle);
-	if(foundChannel) {
-		return handle;
-	} else {
-		return null;
-	}
-};
-aura_Aura.createMixChannel = function(name) {
-	if(name == null) {
-		name = "";
-	}
-	var handle = new aura_MixChannelHandle(new aura_channels_MixChannel());
-	if(name != "") {
-		aura_Aura.mixChannels.h[name] = handle;
-	}
-	return handle;
-};
-aura_Aura.audioCallback = function(samplesBox,buffer) {
-	aura_Time.delta = kha_Scheduler.realTime() - aura_Time.lastTime;
-	aura_Time.lastTime = kha_Scheduler.realTime();
-	aura_threading_BufferCache.lastAllocationTimer++;
-	if(aura_threading_BufferCache.lastAllocationTimer > 100) {
-		kha_audio2_Audio.disableGcInteractions = true;
-	}
-	var samplesRequested = samplesBox.value;
-	aura_Aura.lastBufferSize = samplesRequested;
-	aura_threading_BufferCache.getBuffer_kha_arrays_Float32Array(1,aura_Aura.p_samplesBuffer,1,samplesRequested);
-	var sampleCache = aura_Aura.p_samplesBuffer.value;
-	if(sampleCache == null) {
-		var _g = 0;
-		var _g1 = samplesRequested;
-		while(_g < _g1) {
-			var i = _g++;
-			buffer.data.setFloat32(buffer.writeLocation * 4,0,true);
-			buffer.writeLocation += 1;
-			if(buffer.writeLocation >= buffer.size) {
-				buffer.writeLocation = 0;
-			}
-		}
-		return;
-	}
-	var master = aura_Aura.masterChannel.channel;
-	master.synchronize();
-	var length = samplesRequested;
-	if(length == null) {
-		length = -1;
-	}
-	var length1 = length;
-	if(length1 == null) {
-		length1 = -1;
-	}
-	var _g = 0;
-	var _g1 = length1 == -1 ? sampleCache.byteLength >> 2 : length1;
-	while(_g < _g1) {
-		var i = _g++;
-		sampleCache.setFloat32(i * 4,0,true);
-	}
-	if(master != null) {
-		var samplesWritten = 0;
-		if(aura_Aura.blockBufPos != 0) {
-			var b = 1024 - aura_Aura.blockBufPos;
-			var samplesToWrite = samplesRequested < b ? samplesRequested : b;
-			var _this = aura_Aura.blockBuffer;
-			var sourceOffset = aura_Aura.blockBufPos / 2 | 0;
-			var targetOffset = 0;
-			var channelLength = samplesToWrite / 2 | 0;
-			if(channelLength == null) {
-				channelLength = 1;
-			}
-			if(targetOffset == null) {
-				targetOffset = 0;
-			}
-			if(sourceOffset == null) {
-				sourceOffset = 0;
-			}
-			var _g = 0;
-			var a = _this.channelLength;
-			var _g1 = a < channelLength ? a : channelLength;
-			while(_g < _g1) {
-				var i = _g++;
-				var _g2 = 0;
-				var _g3 = _this.numChannels;
-				while(_g2 < _g3) {
-					var c = _g2++;
-					var k = targetOffset + i * _this.numChannels + c;
-					var v = aura_types_AudioBufferChannelView.get(_this.channelViews[c],sourceOffset + i);
-					sampleCache.setFloat32(k * 4,v,true);
-				}
-			}
-			samplesWritten += samplesToWrite;
-			aura_Aura.blockBufPos += samplesToWrite;
-			if(aura_Aura.blockBufPos >= 1024) {
-				aura_Aura.blockBufPos = 0;
-			}
-		}
-		while(samplesWritten < samplesRequested) {
-			master.nextSamples(aura_Aura.blockBuffer,buffer.samplesPerSecond);
-			var a = samplesRequested - samplesWritten;
-			var samplesStillWritable = a < 1024 ? a : 1024;
-			var _this = aura_Aura.blockBuffer;
-			var sourceOffset = 0;
-			var targetOffset = samplesWritten;
-			var channelLength = samplesStillWritable / 2 | 0;
-			if(channelLength == null) {
-				channelLength = 1;
-			}
-			if(targetOffset == null) {
-				targetOffset = 0;
-			}
-			if(sourceOffset == null) {
-				sourceOffset = 0;
-			}
-			var _g = 0;
-			var a1 = _this.channelLength;
-			var _g1 = a1 < channelLength ? a1 : channelLength;
-			while(_g < _g1) {
-				var i = _g++;
-				var _g2 = 0;
-				var _g3 = _this.numChannels;
-				while(_g2 < _g3) {
-					var c = _g2++;
-					var k = targetOffset + i * _this.numChannels + c;
-					var v = aura_types_AudioBufferChannelView.get(_this.channelViews[c],sourceOffset + i);
-					sampleCache.setFloat32(k * 4,v,true);
-				}
-			}
-			samplesWritten += samplesStillWritable;
-			aura_Aura.blockBufPos += samplesStillWritable;
-			if(aura_Aura.blockBufPos >= 1024) {
-				aura_Aura.blockBufPos = 0;
-			}
-		}
-	}
-	var _g = 0;
-	var _g1 = samplesRequested;
-	while(_g < _g1) {
-		var i = _g++;
-		var a = sampleCache.getFloat32(i * 4,kha_arrays_ByteArray.LITTLE_ENDIAN);
-		var a1 = a < 1.0 ? a : 1.0;
-		var v = a1 > -1.0 ? a1 : -1.0;
-		buffer.data.setFloat32(buffer.writeLocation * 4,v,true);
-		buffer.writeLocation += 1;
-		if(buffer.writeLocation >= buffer.size) {
-			buffer.writeLocation = 0;
-		}
-	}
-};
-var aura_AuraLoadConfig = function(compressed,uncompressed,hrtf) {
-	this.hrtf = [];
-	this.uncompressed = [];
-	this.compressed = [];
-	if(compressed != null) {
-		this.compressed = compressed;
-	}
-	if(uncompressed != null) {
-		this.uncompressed = uncompressed;
-	}
-	if(hrtf != null) {
-		this.hrtf = hrtf;
-	}
-};
-$hxClasses["aura.AuraLoadConfig"] = aura_AuraLoadConfig;
-aura_AuraLoadConfig.__name__ = "aura.AuraLoadConfig";
-aura_AuraLoadConfig.prototype = {
-	compressed: null
-	,uncompressed: null
-	,hrtf: null
-	,getEntryCount: function() {
-		return this.compressed.length + this.uncompressed.length + this.hrtf.length;
-	}
-	,__class__: aura_AuraLoadConfig
-};
-var aura_AuraOptions = function(channelSize) {
-	this.channelSize = channelSize;
-};
-$hxClasses["aura.AuraOptions"] = aura_AuraOptions;
-aura_AuraOptions.__name__ = "aura.AuraOptions";
-aura_AuraOptions.addDefaults = function(options) {
-	if(options == null) {
-		options = new aura_AuraOptions(null);
-	}
-	if(options.channelSize == null) {
-		options.channelSize = 16;
-	}
-	return options;
-};
-aura_AuraOptions.prototype = {
-	channelSize: null
-	,__class__: aura_AuraOptions
-};
-var aura_Handle = function(channel) {
-	this._pitch = 1.0;
-	this._volume = 1.0;
-	this.parentHandle = null;
-	this.channel = channel;
-};
-$hxClasses["aura.Handle"] = aura_Handle;
-aura_Handle.__name__ = "aura.Handle";
-aura_Handle.prototype = {
-	get_paused: function() {
-		return this.channel.paused;
-	}
-	,get_finished: function() {
-		return this.channel.finished;
-	}
-	,panner: null
-	,get_panner: function() {
-		return this.channel.panner;
-	}
-	,channel: null
-	,parentHandle: null
-	,_volume: null
-	,_pitch: null
-	,play: function(retrigger) {
-		if(retrigger == null) {
-			retrigger = false;
-		}
-		var _this = this.channel;
-		var message = new aura_threading_Message(0,retrigger);
-		_this.messages.add(message);
-	}
-	,pause: function() {
-		var _this = this.channel;
-		var message = new aura_threading_Message(1,null);
-		_this.messages.add(message);
-	}
-	,stop: function() {
-		var _this = this.channel;
-		var message = new aura_threading_Message(2,null);
-		_this.messages.add(message);
-	}
-	,addInsert: function(insert) {
-		var _this = this.channel;
-		if(insert.inUse) {
-			aura_utils_Assert.throwAssertionError("!insert.inUse","DSP objects can only belong to one unique channel",{ fileName : "aura/channels/BaseChannel.hx", lineNumber : 59, className : "aura.channels.BaseChannel", methodName : "addInsert"});
-		}
-		insert.inUse = true;
-		_this.inserts.push(insert);
-		return insert;
-	}
-	,removeInsert: function(insert) {
-		var found = HxOverrides.remove(this.channel.inserts,insert);
-		if(found) {
-			insert.inUse = false;
-		}
-	}
-	,setMixChannel: function(mixChannelHandle) {
-		if(mixChannelHandle == this.parentHandle) {
-			return true;
-		}
-		if(this.parentHandle != null) {
-			this.parentHandle.channel.removeInputChannel(this.channel);
-			this.parentHandle = null;
-		}
-		if(mixChannelHandle == null) {
-			return true;
-		}
-		var curHandle = mixChannelHandle;
-		while(curHandle != null) {
-			if(curHandle == this) {
-				return false;
-			}
-			curHandle = curHandle.parentHandle;
-		}
-		var foundChannel = mixChannelHandle.channel.addInputChannel(this.channel);
-		var success = foundChannel;
-		if(success) {
-			this.parentHandle = mixChannelHandle;
-		} else {
-			this.parentHandle = null;
-		}
-		return success;
-	}
-	,setVolume: function(volume) {
-		if(!(volume >= 0)) {
-			aura_utils_Assert.throwAssertionError("volume >= 0","Volume value must not be a negative number!",{ fileName : "aura/Handle.hx", lineNumber : 113, className : "aura.Handle", methodName : "setVolume"});
-		}
-		var _this = this.channel;
-		var message = new aura_threading_Message(3,0.0 > volume ? 0.0 : volume);
-		_this.messages.add(message);
-		this._volume = volume;
-	}
-	,getVolume: function() {
-		return this._volume;
-	}
-	,setPitch: function(pitch) {
-		if(!(pitch > 0)) {
-			aura_utils_Assert.throwAssertionError("pitch > 0","Pitch value must be a positive number!",{ fileName : "aura/Handle.hx", lineNumber : 124, className : "aura.Handle", methodName : "setPitch"});
-		}
-		var _this = this.channel;
-		var message = new aura_threading_Message(4,0.0 > pitch ? 0.0 : pitch);
-		_this.messages.add(message);
-		this._pitch = pitch;
-	}
-	,getPitch: function() {
-		return this._pitch;
-	}
-	,__class__: aura_Handle
-	,__properties__: {get_panner:"get_panner",get_finished:"get_finished",get_paused:"get_paused"}
-};
-var aura_Listener = function() {
-	this.initializedLocation = false;
-	var x = 0;
-	var y = 0;
-	var z = 0;
-	if(z == null) {
-		z = 0.0;
-	}
-	if(y == null) {
-		y = 0.0;
-	}
-	if(x == null) {
-		x = 0.0;
-	}
-	var this1 = new kha_math_FastVector3(x,y,z);
-	this.location = this1;
-	var x = 0;
-	var y = 0;
-	var z = 0;
-	if(z == null) {
-		z = 0.0;
-	}
-	if(y == null) {
-		y = 0.0;
-	}
-	if(x == null) {
-		x = 0.0;
-	}
-	var this1 = new kha_math_FastVector3(x,y,z);
-	this.lastLocation = this1;
-	var x = 0;
-	var y = 0;
-	var z = 0;
-	if(z == null) {
-		z = 0.0;
-	}
-	if(y == null) {
-		y = 0.0;
-	}
-	if(x == null) {
-		x = 0.0;
-	}
-	var this1 = new kha_math_FastVector3(x,y,z);
-	this.velocity = this1;
-	var x = 0;
-	var y = 1;
-	var z = 0;
-	if(z == null) {
-		z = 0.0;
-	}
-	if(y == null) {
-		y = 0.0;
-	}
-	if(x == null) {
-		x = 0.0;
-	}
-	var this1 = new kha_math_FastVector3(x,y,z);
-	this.look = this1;
-	var x = 1;
-	var y = 0;
-	var z = 0;
-	if(z == null) {
-		z = 0.0;
-	}
-	if(y == null) {
-		y = 0.0;
-	}
-	if(x == null) {
-		x = 0.0;
-	}
-	var this1 = new kha_math_FastVector3(x,y,z);
-	this.right = this1;
-};
-$hxClasses["aura.Listener"] = aura_Listener;
-aura_Listener.__name__ = "aura.Listener";
-aura_Listener.prototype = {
-	location: null
-	,look: null
-	,right: null
-	,lastLocation: null
-	,velocity: null
-	,initializedLocation: null
-	,setViewDirection: function(look,right) {
-		var _this = this.look;
-		_this.x = look.x;
-		_this.y = look.y;
-		_this.z = look.z;
-		var _this = this.right;
-		_this.x = right.x;
-		_this.y = right.y;
-		_this.z = right.z;
-	}
-	,setLocation: function(location) {
-		if(!this.initializedLocation) {
-			this.initializedLocation = true;
-		} else {
-			var _this = this.velocity;
-			var _this1 = this.location;
-			var vec = this.lastLocation;
-			var x = _this1.x - vec.x;
-			var y = _this1.y - vec.y;
-			var z = _this1.z - vec.z;
-			if(z == null) {
-				z = 0;
-			}
-			if(y == null) {
-				y = 0;
-			}
-			if(x == null) {
-				x = 0;
-			}
-			var v_x = x;
-			var v_y = y;
-			var v_z = z;
-			_this.x = v_x;
-			_this.y = v_y;
-			_this.z = v_z;
-		}
-		var _this = this.lastLocation;
-		var v = this.location;
-		_this.x = v.x;
-		_this.y = v.y;
-		_this.z = v.z;
-		var _this = this.location;
-		_this.x = location.x;
-		_this.y = location.y;
-		_this.z = location.z;
-	}
-	,set: function(location,look,right) {
-		var _this = this.look;
-		_this.x = look.x;
-		_this.y = look.y;
-		_this.z = look.z;
-		var _this = this.right;
-		_this.x = right.x;
-		_this.y = right.y;
-		_this.z = right.z;
-		if(!this.initializedLocation) {
-			this.initializedLocation = true;
-		} else {
-			var _this = this.velocity;
-			var _this1 = this.location;
-			var vec = this.lastLocation;
-			var x = _this1.x - vec.x;
-			var y = _this1.y - vec.y;
-			var z = _this1.z - vec.z;
-			if(z == null) {
-				z = 0;
-			}
-			if(y == null) {
-				y = 0;
-			}
-			if(x == null) {
-				x = 0;
-			}
-			var v_x = x;
-			var v_y = y;
-			var v_z = z;
-			_this.x = v_x;
-			_this.y = v_y;
-			_this.z = v_z;
-		}
-		var _this = this.lastLocation;
-		var v = this.location;
-		_this.x = v.x;
-		_this.y = v.y;
-		_this.z = v.z;
-		var _this = this.location;
-		_this.x = location.x;
-		_this.y = location.y;
-		_this.z = location.z;
-	}
-	,reset: function() {
-		this.initializedLocation = false;
-		var _this = this.location;
-		var x = 0;
-		var y = 0;
-		var z = 0;
-		if(z == null) {
-			z = 0.0;
-		}
-		if(y == null) {
-			y = 0.0;
-		}
-		if(x == null) {
-			x = 0.0;
-		}
-		var x1 = x;
-		var y1 = y;
-		var z1 = z;
-		if(z1 == null) {
-			z1 = 0;
-		}
-		if(y1 == null) {
-			y1 = 0;
-		}
-		if(x1 == null) {
-			x1 = 0;
-		}
-		var v_x = x1;
-		var v_y = y1;
-		var v_z = z1;
-		_this.x = v_x;
-		_this.y = v_y;
-		_this.z = v_z;
-		var _this = this.lastLocation;
-		var x = 0;
-		var y = 0;
-		var z = 0;
-		if(z == null) {
-			z = 0.0;
-		}
-		if(y == null) {
-			y = 0.0;
-		}
-		if(x == null) {
-			x = 0.0;
-		}
-		var x1 = x;
-		var y1 = y;
-		var z1 = z;
-		if(z1 == null) {
-			z1 = 0;
-		}
-		if(y1 == null) {
-			y1 = 0;
-		}
-		if(x1 == null) {
-			x1 = 0;
-		}
-		var v_x = x1;
-		var v_y = y1;
-		var v_z = z1;
-		_this.x = v_x;
-		_this.y = v_y;
-		_this.z = v_z;
-		var _this = this.velocity;
-		var x = 0;
-		var y = 0;
-		var z = 0;
-		if(z == null) {
-			z = 0.0;
-		}
-		if(y == null) {
-			y = 0.0;
-		}
-		if(x == null) {
-			x = 0.0;
-		}
-		var x1 = x;
-		var y1 = y;
-		var z1 = z;
-		if(z1 == null) {
-			z1 = 0;
-		}
-		if(y1 == null) {
-			y1 = 0;
-		}
-		if(x1 == null) {
-			x1 = 0;
-		}
-		var v_x = x1;
-		var v_y = y1;
-		var v_z = z1;
-		_this.x = v_x;
-		_this.y = v_y;
-		_this.z = v_z;
-		var _this = this.look;
-		var x = 0;
-		var y = 1;
-		var z = 0;
-		if(z == null) {
-			z = 0.0;
-		}
-		if(y == null) {
-			y = 0.0;
-		}
-		if(x == null) {
-			x = 0.0;
-		}
-		var x1 = x;
-		var y1 = y;
-		var z1 = z;
-		if(z1 == null) {
-			z1 = 0;
-		}
-		if(y1 == null) {
-			y1 = 0;
-		}
-		if(x1 == null) {
-			x1 = 0;
-		}
-		var v_x = x1;
-		var v_y = y1;
-		var v_z = z1;
-		_this.x = v_x;
-		_this.y = v_y;
-		_this.z = v_z;
-		var _this = this.right;
-		var x = 1;
-		var y = 0;
-		var z = 0;
-		if(z == null) {
-			z = 0.0;
-		}
-		if(y == null) {
-			y = 0.0;
-		}
-		if(x == null) {
-			x = 0.0;
-		}
-		var x1 = x;
-		var y1 = y;
-		var z1 = z;
-		if(z1 == null) {
-			z1 = 0;
-		}
-		if(y1 == null) {
-			y1 = 0;
-		}
-		if(x1 == null) {
-			x1 = 0;
-		}
-		var v_x = x1;
-		var v_y = y1;
-		var v_z = z1;
-		_this.x = v_x;
-		_this.y = v_y;
-		_this.z = v_z;
-	}
-	,__class__: aura_Listener
-};
-var aura_MixChannelHandle = function(channel) {
-	aura_Handle.call(this,channel);
-};
-$hxClasses["aura.MixChannelHandle"] = aura_MixChannelHandle;
-aura_MixChannelHandle.__name__ = "aura.MixChannelHandle";
-aura_MixChannelHandle.__super__ = aura_Handle;
-aura_MixChannelHandle.prototype = $extend(aura_Handle.prototype,{
-	getNumInputs: function() {
-		return this.channel.numUsedInputs;
-	}
-	,addInputChannel: function(channelHandle) {
-		var foundChannel = this.channel.addInputChannel(channelHandle.channel);
-		return foundChannel;
-	}
-	,removeInputChannel: function(channelHandle) {
-		this.channel.removeInputChannel(channelHandle.channel);
-	}
-	,getMixChannel: function() {
-		return this.channel;
-	}
-	,__class__: aura_MixChannelHandle
-});
-var aura_Time = function() { };
-$hxClasses["aura.Time"] = aura_Time;
-aura_Time.__name__ = "aura.Time";
-aura_Time.update = function() {
-	aura_Time.delta = kha_Scheduler.realTime() - aura_Time.lastTime;
-	aura_Time.lastTime = kha_Scheduler.realTime();
-	aura_threading_BufferCache.lastAllocationTimer++;
-	if(aura_threading_BufferCache.lastAllocationTimer > 100) {
-		kha_audio2_Audio.disableGcInteractions = true;
-	}
-};
-var aura_Channels = {};
-aura_Channels.matches = function(this1,mask) {
-	return (this1 & mask) != 0;
-};
-aura_Channels.asInt = function(this1) {
-	return this1;
-};
-var aura_Balance = {};
-aura_Balance._new = function(value) {
-	var b = 1.0 < value ? 1.0 : value;
-	var this1 = 0.0 > b ? 0.0 : b;
-	return this1;
-};
-aura_Balance.fromAngle = function(angle) {
-	switch(angle._hx_index) {
-	case 0:
-		var deg = angle.deg;
-		return (deg + 90) / 180;
-	case 1:
-		var rad = angle.rad;
-		return (rad + Math.PI / 2) / Math.PI;
-	}
-};
-aura_Balance.invert = function(this1) {
-	return 1.0 - this1;
-};
-var aura_Angle = $hxEnums["aura.Angle"] = { __ename__:true,__constructs__:null
-	,Deg: ($_=function(deg) { return {_hx_index:0,deg:deg,__enum__:"aura.Angle",toString:$estr}; },$_._hx_name="Deg",$_.__params__ = ["deg"],$_)
-	,Rad: ($_=function(rad) { return {_hx_index:1,rad:rad,__enum__:"aura.Angle",toString:$estr}; },$_._hx_name="Rad",$_.__params__ = ["rad"],$_)
-};
-aura_Angle.__constructs__ = [aura_Angle.Deg,aura_Angle.Rad];
-var aura_channels_BaseChannel = function() {
-	this.finished = true;
-	this.paused = false;
-	this.treeLevel = 0;
-	this.pDstAttenuation = new aura_utils_LinearInterpolator(1.0);
-	this.pDopplerRatio = new aura_utils_LinearInterpolator(1.0);
-	this.pVolume = new aura_utils_LinearInterpolator(1.0);
-	this.panner = null;
-	this.inserts = [];
-	var this2 = new haxe_ds_List();
-	var this1 = this2;
-	this.messages = this1;
-};
-$hxClasses["aura.channels.BaseChannel"] = aura_channels_BaseChannel;
-aura_channels_BaseChannel.__name__ = "aura.channels.BaseChannel";
-aura_channels_BaseChannel.prototype = {
-	messages: null
-	,inserts: null
-	,panner: null
-	,pVolume: null
-	,pDopplerRatio: null
-	,pDstAttenuation: null
-	,treeLevel: null
-	,paused: null
-	,finished: null
-	,nextSamples: null
-	,play: null
-	,pause: null
-	,stop: null
-	,isPlayable: function() {
-		if(!this.paused) {
-			return !this.finished;
-		} else {
-			return false;
-		}
-	}
-	,setTreeLevel: function(level) {
-		this.treeLevel = level;
-	}
-	,processInserts: function(buffer) {
-		var _g = 0;
-		var _g1 = this.inserts;
-		while(_g < _g1.length) {
-			var insert = _g1[_g];
-			++_g;
-			if(insert.bypass) {
-				continue;
-			}
-			insert.process(buffer);
-		}
-		if(this.panner != null) {
-			this.panner.process(buffer);
-		}
-	}
-	,addInsert: function(insert) {
-		if(insert.inUse) {
-			aura_utils_Assert.throwAssertionError("!insert.inUse","DSP objects can only belong to one unique channel",{ fileName : "aura/channels/BaseChannel.hx", lineNumber : 59, className : "aura.channels.BaseChannel", methodName : "addInsert"});
-		}
-		insert.inUse = true;
-		this.inserts.push(insert);
-		return insert;
-	}
-	,removeInsert: function(insert) {
-		var found = HxOverrides.remove(this.inserts,insert);
-		if(found) {
-			insert.inUse = false;
-		}
-	}
-	,synchronize: function() {
-		var message;
-		while(true) {
-			message = this.messages.pop();
-			if(!(message != null)) {
-				break;
-			}
-			this.parseMessage(message);
-		}
-		var _g = 0;
-		var _g1 = this.inserts;
-		while(_g < _g1.length) {
-			var insert = _g1[_g];
-			++_g;
-			insert.synchronize();
-		}
-		if(this.panner != null) {
-			this.panner.synchronize();
-		}
-	}
-	,parseMessage: function(message) {
-		switch(message.id) {
-		case 0:
-			this.play(message.data);
-			break;
-		case 1:
-			this.pause();
-			break;
-		case 2:
-			this.stop();
-			break;
-		case 3:
-			this.pVolume.targetValue = message.data;
-			break;
-		case 5:
-			this.pDopplerRatio.targetValue = message.data;
-			break;
-		case 6:
-			this.pDstAttenuation.targetValue = message.data;
-			break;
-		default:
-		}
-	}
-	,sendMessage: function(message) {
-		this.messages.add(message);
-	}
-	,__class__: aura_channels_BaseChannel
-};
-var aura_channels_AudioChannel = function(data,looping) {
-	this.looping = false;
-	this.playbackPosition = 0;
-	aura_channels_BaseChannel.call(this);
-	this.data = new aura_types_AudioBuffer(2,(data.byteLength >> 2) / 2 | 0);
-	var _this = this.data;
-	var numChannels = 2;
-	if(numChannels == null) {
-		numChannels = 1;
-	}
-	var _g = 0;
-	var a = _this.channelLength;
-	var b = _this.channelLength;
-	var _g1 = a < b ? a : b;
-	while(_g < _g1) {
-		var i = _g++;
-		var _g2 = 0;
-		var _g3 = numChannels;
-		while(_g2 < _g3) {
-			var c = _g2++;
-			aura_types_AudioBufferChannelView.set(_this.channelViews[c],i,data.getFloat32((i * numChannels + c) * 4,kha_arrays_ByteArray.LITTLE_ENDIAN));
-		}
-	}
-	this.looping = looping;
-};
-$hxClasses["aura.channels.AudioChannel"] = aura_channels_AudioChannel;
-aura_channels_AudioChannel.__name__ = "aura.channels.AudioChannel";
-aura_channels_AudioChannel.__super__ = aura_channels_BaseChannel;
-aura_channels_AudioChannel.prototype = $extend(aura_channels_BaseChannel.prototype,{
-	playbackPosition: null
-	,looping: null
-	,data: null
-	,nextSamples: function(requestedSamples,sampleRate) {
-		if(requestedSamples.numChannels != this.data.numChannels) {
-			aura_utils_Assert.throwAssertionError("requestedSamples.numChannels == data.numChannels",null,{ fileName : "aura/channels/AudioChannel.hx", lineNumber : 25, className : "aura.channels.AudioChannel", methodName : "nextSamples"});
-		}
-		var _this = this.pDopplerRatio;
-		var stepDopplerRatio = (_this.targetValue - _this.lastValue) / requestedSamples.channelLength;
-		var _this = this.pDstAttenuation;
-		var stepDstAttenuation = (_this.targetValue - _this.lastValue) / requestedSamples.channelLength;
-		var _this = this.pVolume;
-		var stepVol = (_this.targetValue - _this.lastValue) / requestedSamples.channelLength;
-		var samplesWritten = 0;
-		while(samplesWritten < requestedSamples.channelLength) {
-			var a = this.data.channelLength - this.playbackPosition;
-			var b = requestedSamples.channelLength - samplesWritten;
-			var samplesToWrite = a < b ? a : b;
-			var _g = 0;
-			var _g1 = requestedSamples.numChannels;
-			while(_g < _g1) {
-				var c = _g++;
-				var outChannelView = requestedSamples.channelViews[c];
-				var dataChannelView = this.data.channelViews[c];
-				this.pDopplerRatio.currentValue = this.pDopplerRatio.lastValue;
-				this.pDstAttenuation.currentValue = this.pDstAttenuation.lastValue;
-				this.pVolume.currentValue = this.pVolume.lastValue;
-				var _g2 = 0;
-				var _g3 = samplesToWrite;
-				while(_g2 < _g3) {
-					var i = _g2++;
-					var value = aura_types_AudioBufferChannelView.get(dataChannelView,this.playbackPosition + i) * this.pVolume.currentValue * this.pDstAttenuation.currentValue;
-					aura_types_AudioBufferChannelView.set(outChannelView,samplesWritten + i,value);
-					this.pDopplerRatio.currentValue += stepDopplerRatio;
-					this.pDstAttenuation.currentValue += stepDstAttenuation;
-					this.pVolume.currentValue += stepVol;
-				}
-			}
-			samplesWritten += samplesToWrite;
-			this.playbackPosition += samplesToWrite;
-			if(this.playbackPosition >= this.data.channelLength) {
-				this.playbackPosition = 0;
-				if(!this.looping) {
-					this.finished = true;
-					break;
-				}
-			}
-		}
-		var _g = 0;
-		var _g1 = requestedSamples.numChannels;
-		while(_g < _g1) {
-			var c = _g++;
-			var channelView = requestedSamples.channelViews[c];
-			var _g2 = samplesWritten;
-			var _g3 = requestedSamples.channelLength;
-			while(_g2 < _g3) {
-				var i = _g2++;
-				aura_types_AudioBufferChannelView.set(channelView,i,0);
-			}
-		}
-		var _this = this.pDopplerRatio;
-		_this.lastValue = _this.currentValue = _this.targetValue;
-		var _this = this.pDstAttenuation;
-		_this.lastValue = _this.currentValue = _this.targetValue;
-		var _this = this.pVolume;
-		_this.lastValue = _this.currentValue = _this.targetValue;
-		var _g = 0;
-		var _g1 = this.inserts;
-		while(_g < _g1.length) {
-			var insert = _g1[_g];
-			++_g;
-			if(insert.bypass) {
-				continue;
-			}
-			insert.process(requestedSamples);
-		}
-		if(this.panner != null) {
-			this.panner.process(requestedSamples);
-		}
-	}
-	,play: function(retrigger) {
-		this.paused = false;
-		this.finished = false;
-		if(retrigger) {
-			this.playbackPosition = 0;
-		}
-	}
-	,pause: function() {
-		this.paused = true;
-	}
-	,stop: function() {
-		this.playbackPosition = 0;
-		this.finished = true;
-	}
-	,isFinished: function() {
-		return this.finished;
-	}
-	,getLength: function() {
-		return this.data.channelLength / kha_audio2_Audio.samplesPerSecond;
-	}
-	,getPlaybackPosition: function() {
-		return this.playbackPosition / kha_audio2_Audio.samplesPerSecond;
-	}
-	,setPlaybackPosition: function(value) {
-		this.playbackPosition = Math.round(value * kha_audio2_Audio.samplesPerSecond);
-		var val = this.playbackPosition;
-		var min = 0;
-		var max = this.data.channelLength;
-		if(max == null) {
-			max = 1;
-		}
-		if(min == null) {
-			min = 0;
-		}
-		var b = max < val ? max : val;
-		this.playbackPosition = min > b ? min : b;
-	}
-	,__class__: aura_channels_AudioChannel
-});
-var aura_channels_Html5StreamChannel = function(sound,loop) {
-	aura_channels_BaseChannel.call(this);
-	this.audioElement = window.document.createElement("audio");
-	var mimeType = "audio/mp4";
-	var blob = new Blob([sound.compressedData.b.bufferValue],{ type : mimeType});
-	this.audioElement.src = URL.createObjectURL(blob);
-	this.audioElement.loop = loop;
-	if(!kha_SystemImpl.mobileAudioPlaying) {
-		aura_channels_Html5StreamChannel.virtualChannels.push(this);
-	}
-};
-$hxClasses["aura.channels.Html5StreamChannel"] = aura_channels_Html5StreamChannel;
-aura_channels_Html5StreamChannel.__name__ = "aura.channels.Html5StreamChannel";
-aura_channels_Html5StreamChannel.makeChannelsPhysical = function() {
-	var _g = 0;
-	var _g1 = aura_channels_Html5StreamChannel.virtualChannels;
-	while(_g < _g1.length) {
-		var channel = _g1[_g];
-		++_g;
-		var now = kha_Scheduler.realTime();
-		if(channel.finished) {
-			channel.virtualPosition = 0;
-		} else if(!channel.paused) {
-			channel.virtualPosition += now - channel.lastUpdateTime;
-			while(channel.virtualPosition > channel.audioElement.duration) channel.virtualPosition -= channel.audioElement.duration;
-		}
-		channel.lastUpdateTime = now;
-		channel.audioElement.currentTime = channel.virtualPosition;
-		if(!channel.finished && !channel.paused) {
-			channel.audioElement.play();
-		}
-	}
-	aura_channels_Html5StreamChannel.virtualChannels.length = 0;
-};
-aura_channels_Html5StreamChannel.__super__ = aura_channels_BaseChannel;
-aura_channels_Html5StreamChannel.prototype = $extend(aura_channels_BaseChannel.prototype,{
-	audioElement: null
-	,virtualPosition: null
-	,lastUpdateTime: null
-	,isVirtual: function() {
-		return !kha_SystemImpl.mobileAudioPlaying;
-	}
-	,updateVirtualPosition: function() {
-		var now = kha_Scheduler.realTime();
-		if(this.finished) {
-			this.virtualPosition = 0;
-		} else if(!this.paused) {
-			this.virtualPosition += now - this.lastUpdateTime;
-			while(this.virtualPosition > this.audioElement.duration) this.virtualPosition -= this.audioElement.duration;
-		}
-		this.lastUpdateTime = now;
-	}
-	,play: function(retrigger) {
-		if(!kha_SystemImpl.mobileAudioPlaying) {
-			var now = kha_Scheduler.realTime();
-			if(this.finished) {
-				this.virtualPosition = 0;
-			} else if(!this.paused) {
-				this.virtualPosition += now - this.lastUpdateTime;
-				while(this.virtualPosition > this.audioElement.duration) this.virtualPosition -= this.audioElement.duration;
-			}
-			this.lastUpdateTime = now;
-			if(retrigger) {
-				this.virtualPosition = 0;
-			}
-		} else {
-			this.audioElement.play();
-			if(retrigger) {
-				this.audioElement.currentTime = 0;
-			}
-		}
-		this.paused = false;
-		this.finished = false;
-	}
-	,pause: function() {
-		if(!kha_SystemImpl.mobileAudioPlaying) {
-			var now = kha_Scheduler.realTime();
-			if(this.finished) {
-				this.virtualPosition = 0;
-			} else if(!this.paused) {
-				this.virtualPosition += now - this.lastUpdateTime;
-				while(this.virtualPosition > this.audioElement.duration) this.virtualPosition -= this.audioElement.duration;
-			}
-			this.lastUpdateTime = now;
-		} else {
-			this.audioElement.pause();
-		}
-		this.paused = true;
-	}
-	,stop: function() {
-		if(!kha_SystemImpl.mobileAudioPlaying) {
-			var now = kha_Scheduler.realTime();
-			if(this.finished) {
-				this.virtualPosition = 0;
-			} else if(!this.paused) {
-				this.virtualPosition += now - this.lastUpdateTime;
-				while(this.virtualPosition > this.audioElement.duration) this.virtualPosition -= this.audioElement.duration;
-			}
-			this.lastUpdateTime = now;
-		} else {
-			this.audioElement.pause();
-			this.audioElement.currentTime = 0;
-		}
-		this.finished = true;
-	}
-	,nextSamples: function(requestedSamples,sampleRate) {
-	}
-	,parseMessage: function(message) {
-		switch(message.id) {
-		case 3:
-			this.audioElement.volume = message.data;
-			break;
-		case 4:
-			break;
-		case 5:
-			break;
-		case 6:
-			break;
-		default:
-			aura_channels_BaseChannel.prototype.parseMessage.call(this,message);
-		}
-	}
-	,__class__: aura_channels_Html5StreamChannel
-});
-var aura_channels_Html5MobileStreamChannel = function(sound,loop) {
-	aura_channels_BaseChannel.call(this);
-	this.khaChannel = new kha_js_MobileWebAudioChannel(sound,loop);
-};
-$hxClasses["aura.channels.Html5MobileStreamChannel"] = aura_channels_Html5MobileStreamChannel;
-aura_channels_Html5MobileStreamChannel.__name__ = "aura.channels.Html5MobileStreamChannel";
-aura_channels_Html5MobileStreamChannel.__super__ = aura_channels_BaseChannel;
-aura_channels_Html5MobileStreamChannel.prototype = $extend(aura_channels_BaseChannel.prototype,{
-	khaChannel: null
-	,play: function(retrigger) {
-		if(retrigger) {
-			this.khaChannel.set_position(0);
-		}
-		this.khaChannel.play();
-		this.paused = false;
-		this.finished = false;
-	}
-	,pause: function() {
-		this.khaChannel.pause();
-		this.paused = true;
-	}
-	,stop: function() {
-		this.khaChannel.stop();
-		this.finished = true;
-	}
-	,nextSamples: function(requestedSamples,sampleRate) {
-	}
-	,parseMessage: function(message) {
-		switch(message.id) {
-		case 3:
-			this.khaChannel.set_volume(message.data);
-			break;
-		case 4:
-			break;
-		case 5:
-			break;
-		case 6:
-			break;
-		default:
-			aura_channels_BaseChannel.prototype.parseMessage.call(this,message);
-		}
-	}
-	,__class__: aura_channels_Html5MobileStreamChannel
-});
-var aura_channels_MixChannel = function() {
-	this.numUsedInputs = 0;
-	aura_channels_BaseChannel.call(this);
-	var this1 = new Array(aura_channels_MixChannel.channelSize);
-	this.inputChannels = this1;
-};
-$hxClasses["aura.channels.MixChannel"] = aura_channels_MixChannel;
-aura_channels_MixChannel.__name__ = "aura.channels.MixChannel";
-aura_channels_MixChannel.__super__ = aura_channels_BaseChannel;
-aura_channels_MixChannel.prototype = $extend(aura_channels_BaseChannel.prototype,{
-	inputChannels: null
-	,numUsedInputs: null
-	,inputChannelsCopy: null
-	,addInputChannel: function(channel) {
-		var foundChannel = false;
-		var _g = 0;
-		var _g1 = aura_channels_MixChannel.channelSize;
-		while(_g < _g1) {
-			var i = _g++;
-			if(this.inputChannels[i] == null) {
-				this.inputChannels[i] = channel;
-				this.numUsedInputs++;
-				channel.setTreeLevel(this.treeLevel + 1);
-				foundChannel = true;
-				break;
-			}
-		}
-		var this1 = this.inputChannels;
-		var this2 = new Array(this1.length);
-		var r = this2;
-		haxe_ds_Vector.blit(this1,0,r,0,this1.length);
-		this.inputChannelsCopy = r;
-		return foundChannel;
-	}
-	,removeInputChannel: function(channel) {
-		var _g = 0;
-		var _g1 = aura_channels_MixChannel.channelSize;
-		while(_g < _g1) {
-			var i = _g++;
-			if(this.inputChannels[i] == channel) {
-				this.inputChannels[i] = null;
-				this.numUsedInputs--;
-				break;
-			}
-		}
-		var this1 = this.inputChannels;
-		var this2 = new Array(this1.length);
-		var r = this2;
-		haxe_ds_Vector.blit(this1,0,r,0,this1.length);
-		this.inputChannelsCopy = r;
-	}
-	,getNumInputs: function() {
-		return this.numUsedInputs;
-	}
-	,updateChannelsCopy: function() {
-		var this1 = this.inputChannels;
-		var this2 = new Array(this1.length);
-		var r = this2;
-		haxe_ds_Vector.blit(this1,0,r,0,this1.length);
-		this.inputChannelsCopy = r;
-	}
-	,isPlayable: function() {
-		if(aura_channels_BaseChannel.prototype.isPlayable.call(this)) {
-			return this.numUsedInputs != 0;
-		} else {
-			return false;
-		}
-	}
-	,setTreeLevel: function(level) {
-		this.treeLevel = level;
-		var _g = 0;
-		var _g1 = this.inputChannels;
-		while(_g < _g1.length) {
-			var inputChannel = _g1[_g];
-			++_g;
-			if(inputChannel != null) {
-				inputChannel.setTreeLevel(level + 1);
-			}
-		}
-	}
-	,synchronize: function() {
-		var _g = 0;
-		var _g1 = this.inputChannels;
-		while(_g < _g1.length) {
-			var inputChannel = _g1[_g];
-			++_g;
-			if(inputChannel != null) {
-				inputChannel.synchronize();
-			}
-		}
-		aura_channels_BaseChannel.prototype.synchronize.call(this);
-	}
-	,nextSamples: function(requestedSamples,sampleRate) {
-		if(this.inputChannelsCopy == null) {
-			var _g = 0;
-			var _g1 = requestedSamples.rawData.byteLength >> 2;
-			while(_g < _g1) {
-				var i = _g++;
-				requestedSamples.rawData.setFloat32(i * 4,0,true);
-			}
-			return;
-		}
-		var inputBuffer = aura_threading_BufferCache.getTreeBuffer(this.treeLevel,requestedSamples.numChannels,requestedSamples.channelLength);
-		if(inputBuffer == null) {
-			var _g = 0;
-			var _g1 = requestedSamples.rawData.byteLength >> 2;
-			while(_g < _g1) {
-				var i = _g++;
-				requestedSamples.rawData.setFloat32(i * 4,0,true);
-			}
-			return;
-		}
-		var first = true;
-		var foundPlayableInput = false;
-		var _g = 0;
-		var _g1 = this.inputChannelsCopy;
-		while(_g < _g1.length) {
-			var channel = _g1[_g];
-			++_g;
-			if(channel == null || !channel.isPlayable()) {
-				continue;
-			}
-			foundPlayableInput = true;
-			channel.nextSamples(inputBuffer,sampleRate);
-			if(first) {
-				var _g2 = 0;
-				var _g3 = requestedSamples.rawData.byteLength >> 2;
-				while(_g2 < _g3) {
-					var i = _g2++;
-					var v = inputBuffer.rawData.getFloat32(i * 4,kha_arrays_ByteArray.LITTLE_ENDIAN);
-					requestedSamples.rawData.setFloat32(i * 4,v,true);
-				}
-				first = false;
-			} else {
-				var _g4 = 0;
-				var _g5 = requestedSamples.rawData.byteLength >> 2;
-				while(_g4 < _g5) {
-					var i1 = _g4++;
-					var _g6 = i1;
-					var _g7 = requestedSamples.rawData;
-					var v1 = _g7.getFloat32(_g6 * 4,kha_arrays_ByteArray.LITTLE_ENDIAN) + inputBuffer.rawData.getFloat32(i1 * 4,kha_arrays_ByteArray.LITTLE_ENDIAN);
-					_g7.setFloat32(_g6 * 4,v1,true);
-				}
-			}
-		}
-		if(!foundPlayableInput) {
-			var _g = 0;
-			var _g1 = requestedSamples.rawData.byteLength >> 2;
-			while(_g < _g1) {
-				var i = _g++;
-				requestedSamples.rawData.setFloat32(i * 4,0,true);
-			}
-			return;
-		}
-		var _this = this.pVolume;
-		var stepVol = (_this.targetValue - _this.lastValue) / requestedSamples.channelLength;
-		var _g = 0;
-		var _g1 = requestedSamples.numChannels;
-		while(_g < _g1) {
-			var c = _g++;
-			var channelView = requestedSamples.channelViews[c];
-			var _g2 = 0;
-			var _g3 = requestedSamples.channelLength;
-			while(_g2 < _g3) {
-				var i = _g2++;
-				var _g4 = i;
-				var _g5 = channelView;
-				aura_types_AudioBufferChannelView.set(_g5,_g4,aura_types_AudioBufferChannelView.get(_g5,_g4) * this.pVolume.currentValue);
-				this.pVolume.currentValue += stepVol;
-			}
-			this.pVolume.currentValue = this.pVolume.lastValue;
-		}
-		var _this = this.pVolume;
-		_this.lastValue = _this.currentValue = _this.targetValue;
-		var _g = 0;
-		var _g1 = this.inserts;
-		while(_g < _g1.length) {
-			var insert = _g1[_g];
-			++_g;
-			if(insert.bypass) {
-				continue;
-			}
-			insert.process(requestedSamples);
-		}
-		if(this.panner != null) {
-			this.panner.process(requestedSamples);
-		}
-	}
-	,play: function(retrigger) {
-		var _g = 0;
-		var _g1 = this.inputChannels;
-		while(_g < _g1.length) {
-			var inputChannel = _g1[_g];
-			++_g;
-			if(inputChannel != null) {
-				inputChannel.play(retrigger);
-			}
-		}
-	}
-	,pause: function() {
-		var _g = 0;
-		var _g1 = this.inputChannels;
-		while(_g < _g1.length) {
-			var inputChannel = _g1[_g];
-			++_g;
-			if(inputChannel != null) {
-				inputChannel.pause();
-			}
-		}
-	}
-	,stop: function() {
-		var _g = 0;
-		var _g1 = this.inputChannels;
-		while(_g < _g1.length) {
-			var inputChannel = _g1[_g];
-			++_g;
-			if(inputChannel != null) {
-				inputChannel.stop();
-			}
-		}
-	}
-	,__class__: aura_channels_MixChannel
-});
-var aura_channels_ResamplingAudioChannel = function(data,looping,sampleRate) {
-	this.pPitch = new aura_utils_LinearInterpolator(1.0);
-	this.floatPosition = 0.0;
-	aura_channels_AudioChannel.call(this,data,looping);
-	this.sampleRate = sampleRate;
-};
-$hxClasses["aura.channels.ResamplingAudioChannel"] = aura_channels_ResamplingAudioChannel;
-aura_channels_ResamplingAudioChannel.__name__ = "aura.channels.ResamplingAudioChannel";
-aura_channels_ResamplingAudioChannel.__super__ = aura_channels_AudioChannel;
-aura_channels_ResamplingAudioChannel.prototype = $extend(aura_channels_AudioChannel.prototype,{
-	sampleRate: null
-	,floatPosition: null
-	,pPitch: null
-	,nextSamples: function(requestedSamples,sampleRate) {
-		if(requestedSamples.numChannels != this.data.numChannels) {
-			aura_utils_Assert.throwAssertionError("requestedSamples.numChannels == data.numChannels",null,{ fileName : "aura/channels/ResamplingAudioChannel.hx", lineNumber : 31, className : "aura.channels.ResamplingAudioChannel", methodName : "nextSamples"});
-		}
-		var _this = this.pDopplerRatio;
-		var stepDopplerRatio = (_this.targetValue - _this.lastValue) / requestedSamples.channelLength;
-		var _this = this.pDstAttenuation;
-		var stepDstAttenuation = (_this.targetValue - _this.lastValue) / requestedSamples.channelLength;
-		var _this = this.pPitch;
-		var stepPitch = (_this.targetValue - _this.lastValue) / requestedSamples.channelLength;
-		var _this = this.pVolume;
-		var stepVol = (_this.targetValue - _this.lastValue) / requestedSamples.channelLength;
-		var resampleLength = Math.ceil(this.data.channelLength * (sampleRate / this.sampleRate));
-		var samplesWritten = 0;
-		var reachedEndOfData = false;
-		while(samplesWritten < requestedSamples.channelLength && !reachedEndOfData) {
-			var initialFloatPosition = this.floatPosition;
-			var a = resampleLength - this.playbackPosition;
-			var b = requestedSamples.channelLength - samplesWritten;
-			var samplesToWrite = a < b ? a : b;
-			var _g = 0;
-			var _g1 = requestedSamples.numChannels;
-			while(_g < _g1) {
-				var c = _g++;
-				var outChannelView = requestedSamples.channelViews[c];
-				this.pDopplerRatio.currentValue = this.pDopplerRatio.lastValue;
-				this.pDstAttenuation.currentValue = this.pDstAttenuation.lastValue;
-				this.pPitch.currentValue = this.pPitch.lastValue;
-				this.pVolume.currentValue = this.pVolume.lastValue;
-				this.floatPosition = initialFloatPosition;
-				var _g2 = 0;
-				var _g3 = samplesToWrite;
-				while(_g2 < _g3) {
-					var i = _g2++;
-					var sampledVal = aura_utils_Resampler.sampleAtTargetPositionLerp(this.data.channelViews[c],this.floatPosition,this.sampleRate,sampleRate);
-					aura_types_AudioBufferChannelView.set(outChannelView,samplesWritten + i,sampledVal * this.pVolume.currentValue * this.pDstAttenuation.currentValue);
-					this.floatPosition += this.pPitch.currentValue * this.pDopplerRatio.currentValue;
-					this.pDopplerRatio.currentValue += stepDopplerRatio;
-					this.pDstAttenuation.currentValue += stepDstAttenuation;
-					this.pPitch.currentValue += stepPitch;
-					this.pVolume.currentValue += stepVol;
-					if(this.floatPosition >= resampleLength) {
-						if(this.looping) {
-							while(this.floatPosition >= resampleLength) {
-								this.playbackPosition -= resampleLength;
-								this.floatPosition -= resampleLength;
-							}
-						} else {
-							this.stop();
-							reachedEndOfData = true;
-							break;
-						}
-					} else {
-						this.playbackPosition = this.floatPosition | 0;
-					}
-				}
-			}
-			samplesWritten += samplesToWrite;
-		}
-		var _g = 0;
-		var _g1 = requestedSamples.numChannels;
-		while(_g < _g1) {
-			var c = _g++;
-			var channelView = requestedSamples.channelViews[c];
-			var _g2 = samplesWritten;
-			var _g3 = requestedSamples.channelLength;
-			while(_g2 < _g3) {
-				var i = _g2++;
-				aura_types_AudioBufferChannelView.set(channelView,i,0);
-			}
-		}
-		var _this = this.pDopplerRatio;
-		_this.lastValue = _this.currentValue = _this.targetValue;
-		var _this = this.pDstAttenuation;
-		_this.lastValue = _this.currentValue = _this.targetValue;
-		var _this = this.pPitch;
-		_this.lastValue = _this.currentValue = _this.targetValue;
-		var _this = this.pVolume;
-		_this.lastValue = _this.currentValue = _this.targetValue;
-		var _g = 0;
-		var _g1 = this.inserts;
-		while(_g < _g1.length) {
-			var insert = _g1[_g];
-			++_g;
-			if(insert.bypass) {
-				continue;
-			}
-			insert.process(requestedSamples);
-		}
-		if(this.panner != null) {
-			this.panner.process(requestedSamples);
-		}
-	}
-	,play: function(retrigger) {
-		aura_channels_AudioChannel.prototype.play.call(this,retrigger);
-		if(retrigger) {
-			this.floatPosition = 0.0;
-		}
-	}
-	,stop: function() {
-		aura_channels_AudioChannel.prototype.stop.call(this);
-		this.floatPosition = 0.0;
-	}
-	,pause: function() {
-		aura_channels_AudioChannel.prototype.pause.call(this);
-		this.floatPosition = this.playbackPosition;
-	}
-	,parseMessage: function(message) {
-		if(message.id == 4) {
-			this.pPitch.targetValue = message.data;
-		} else {
-			aura_channels_AudioChannel.prototype.parseMessage.call(this,message);
-		}
-	}
-	,__class__: aura_channels_ResamplingAudioChannel
-});
-var aura_channels_StreamChannel = function(khaChannel) {
-	this.p_khaBuffer = new aura_utils_Pointer_$kha_$arrays_$Float32Array(null);
-	aura_channels_BaseChannel.call(this);
-	this.khaChannel = khaChannel;
-};
-$hxClasses["aura.channels.StreamChannel"] = aura_channels_StreamChannel;
-aura_channels_StreamChannel.__name__ = "aura.channels.StreamChannel";
-aura_channels_StreamChannel.__super__ = aura_channels_BaseChannel;
-aura_channels_StreamChannel.prototype = $extend(aura_channels_BaseChannel.prototype,{
-	khaChannel: null
-	,p_khaBuffer: null
-	,play: function(retrigger) {
-		this.paused = false;
-		this.finished = false;
-		this.khaChannel.play();
-		if(retrigger) {
-			this.khaChannel.set_position(0);
-		}
-	}
-	,pause: function() {
-		this.paused = true;
-		this.khaChannel.pause();
-	}
-	,stop: function() {
-		this.finished = true;
-		this.khaChannel.stop();
-	}
-	,nextSamples: function(requestedSamples,sampleRate) {
-		if(!aura_threading_BufferCache.getBuffer_kha_arrays_Float32Array(1,this.p_khaBuffer,1,requestedSamples.numChannels * requestedSamples.channelLength)) {
-			var _g = 0;
-			var _g1 = requestedSamples.rawData.byteLength >> 2;
-			while(_g < _g1) {
-				var i = _g++;
-				requestedSamples.rawData.setFloat32(i * 4,0,true);
-			}
-			return;
-		}
-		var khaBuffer = this.p_khaBuffer.value;
-		this.khaChannel.nextSamples(khaBuffer,requestedSamples.channelLength,sampleRate);
-		var numChannels = requestedSamples.numChannels;
-		if(numChannels == null) {
-			numChannels = 1;
-		}
-		var _g = 0;
-		var a = requestedSamples.channelLength;
-		var b = requestedSamples.channelLength;
-		var _g1 = a < b ? a : b;
-		while(_g < _g1) {
-			var i = _g++;
-			var _g2 = 0;
-			var _g3 = numChannels;
-			while(_g2 < _g3) {
-				var c = _g2++;
-				aura_types_AudioBufferChannelView.set(requestedSamples.channelViews[c],i,khaBuffer.getFloat32((i * numChannels + c) * 4,kha_arrays_ByteArray.LITTLE_ENDIAN));
-			}
-		}
-	}
-	,parseMessage: function(message) {
-		switch(message.id) {
-		case 3:
-			this.khaChannel.set_volume(message.data);
-			break;
-		case 4:
-			break;
-		case 5:
-			break;
-		case 6:
-			break;
-		default:
-			aura_channels_BaseChannel.prototype.parseMessage.call(this,message);
-		}
-	}
-	,__class__: aura_channels_StreamChannel
-});
-var aura_dsp_DSP = function() {
-	var this2 = new haxe_ds_List();
-	var this1 = this2;
-	this.messages = this1;
-	this.inUse = false;
-	this.bypass = false;
-};
-$hxClasses["aura.dsp.DSP"] = aura_dsp_DSP;
-aura_dsp_DSP.__name__ = "aura.dsp.DSP";
-aura_dsp_DSP.prototype = {
-	bypass: null
-	,inUse: null
-	,messages: null
-	,process: null
-	,synchronize: function() {
-		var message;
-		while(true) {
-			message = this.messages.pop();
-			if(!(message != null)) {
-				break;
-			}
-			this.parseMessage(message);
-		}
-	}
-	,parseMessage: function(message) {
-		switch(message.id) {
-		case 0:
-			break;
-		case 1:
-			break;
-		default:
-		}
-	}
-	,sendMessage: function(message) {
-		this.messages.add(message);
-	}
-	,__class__: aura_dsp_DSP
-};
-var aura_dsp_panner_Panner = function(handle) {
-	var x = 0;
-	var y = 0;
-	var z = 0;
-	if(z == null) {
-		z = 0.0;
-	}
-	if(y == null) {
-		y = 0.0;
-	}
-	if(x == null) {
-		x = 0.0;
-	}
-	var this1 = new kha_math_FastVector3(x,y,z);
-	this.velocity = this1;
-	this.initializedLocation = false;
-	var x = 0;
-	var y = 0;
-	var z = 0;
-	if(z == null) {
-		z = 0.0;
-	}
-	if(y == null) {
-		y = 0.0;
-	}
-	if(x == null) {
-		x = 0.0;
-	}
-	var this1 = new kha_math_FastVector3(x,y,z);
-	this.lastLocation = this1;
-	var x = 0;
-	var y = 0;
-	var z = 0;
-	if(z == null) {
-		z = 0.0;
-	}
-	if(y == null) {
-		y = 0.0;
-	}
-	if(x == null) {
-		x = 0.0;
-	}
-	var this1 = new kha_math_FastVector3(x,y,z);
-	this.location = this1;
-	this.maxDistance = 10.0;
-	this.attenuationFactor = 1.0;
-	this.attenuationMode = 1;
-	this.dopplerFactor = 1.0;
-	aura_dsp_DSP.call(this);
-	this.inUse = true;
-	this.handle = handle;
-	this.handle.channel.panner = this;
-};
-$hxClasses["aura.dsp.panner.Panner"] = aura_dsp_panner_Panner;
-aura_dsp_panner_Panner.__name__ = "aura.dsp.panner.Panner";
-aura_dsp_panner_Panner.__super__ = aura_dsp_DSP;
-aura_dsp_panner_Panner.prototype = $extend(aura_dsp_DSP.prototype,{
-	dopplerFactor: null
-	,attenuationMode: null
-	,attenuationFactor: null
-	,maxDistance: null
-	,handle: null
-	,location: null
-	,lastLocation: null
-	,initializedLocation: null
-	,velocity: null
-	,setHandle: function(handle) {
-		if(this.handle != null) {
-			this.handle.channel.panner = null;
-		}
-		this.reset3D();
-		this.handle = handle;
-		this.handle.channel.panner = this;
-	}
-	,update3D: function() {
-		var _this = this.location;
-		var vec = aura_Aura.listener.location;
-		var dirToChannel = new kha_math_FastVector3(_this.x - vec.x,_this.y - vec.y,_this.z - vec.z);
-		this.calculateAttenuation(dirToChannel);
-		this.calculateDoppler();
-	}
-	,reset3D: function() {
-		var _this = this.handle.channel;
-		var message = new aura_threading_Message(5,1.0);
-		_this.messages.add(message);
-		var _this = this.handle.channel;
-		var message = new aura_threading_Message(6,1.0);
-		_this.messages.add(message);
-	}
-	,setLocation: function(location) {
-		var _this = this.lastLocation;
-		var v = this.location;
-		_this.x = v.x;
-		_this.y = v.y;
-		_this.z = v.z;
-		this.location = location;
-		if(!this.initializedLocation) {
-			this.initializedLocation = true;
-		} else {
-			var _this = this.location;
-			var vec = this.lastLocation;
-			this.velocity = new kha_math_FastVector3(_this.x - vec.x,_this.y - vec.y,_this.z - vec.z);
-		}
-	}
-	,calculateAttenuation: function(dirToChannel) {
-		var b = Math.sqrt(dirToChannel.x * dirToChannel.x + dirToChannel.y * dirToChannel.y + dirToChannel.z * dirToChannel.z);
-		var dst = 1.0 > b ? 1.0 : b;
-		var dstAttenuation;
-		switch(this.attenuationMode) {
-		case 0:
-			dstAttenuation = 1 - this.attenuationFactor * (dst - 1.0) / (this.maxDistance - 1.0);
-			break;
-		case 1:
-			dstAttenuation = 1.0 / (1.0 + this.attenuationFactor * (dst - 1.0));
-			break;
-		case 2:
-			dstAttenuation = Math.pow(dst / 1.0,-this.attenuationFactor);
-			break;
-		}
-		var _this = this.handle.channel;
-		var message = new aura_threading_Message(6,dstAttenuation);
-		_this.messages.add(message);
-	}
-	,calculateDoppler: function() {
-		var listener = aura_Aura.listener;
-		var dopplerRatio = 1.0;
-		var tmp;
-		if(this.dopplerFactor != 0.0) {
-			var _this = listener.velocity;
-			if(Math.sqrt(_this.x * _this.x + _this.y * _this.y + _this.z * _this.z) == 0) {
-				var _this = this.velocity;
-				tmp = Math.sqrt(_this.x * _this.x + _this.y * _this.y + _this.z * _this.z) != 0;
-			} else {
-				tmp = true;
-			}
-		} else {
-			tmp = false;
-		}
-		if(tmp) {
-			var soundSpeed = 343.4 * aura_Time.delta;
-			var speedBound = soundSpeed - 0.0001;
-			var _this = this.location;
-			var vec = listener.location;
-			var x = _this.x - vec.x;
-			var y = _this.y - vec.y;
-			var z = _this.z - vec.z;
-			if(z == null) {
-				z = 0;
-			}
-			if(y == null) {
-				y = 0;
-			}
-			if(x == null) {
-				x = 0;
-			}
-			var displacementToSource_x = x;
-			var displacementToSource_y = y;
-			var displacementToSource_z = z;
-			var dist = Math.sqrt(displacementToSource_x * displacementToSource_x + displacementToSource_y * displacementToSource_y + displacementToSource_z * displacementToSource_z);
-			if(dist == 0) {
-				var _this = this.handle.channel;
-				var message = new aura_threading_Message(5,1.0);
-				_this.messages.add(message);
-				return;
-			}
-			var _this = listener.velocity;
-			var val = (_this.x * displacementToSource_x + _this.y * displacementToSource_y + _this.z * displacementToSource_z) / dist;
-			var min = -speedBound;
-			var max = speedBound;
-			if(max == null) {
-				max = 1.0;
-			}
-			if(min == null) {
-				min = 0.0;
-			}
-			var b = max < val ? max : val;
-			var vr = min > b ? min : b;
-			var _this = this.velocity;
-			var val = (_this.x * displacementToSource_x + _this.y * displacementToSource_y + _this.z * displacementToSource_z) / dist;
-			var min = -speedBound;
-			var max = speedBound;
-			if(max == null) {
-				max = 1.0;
-			}
-			if(min == null) {
-				min = 0.0;
-			}
-			var b = max < val ? max : val;
-			var vs = min > b ? min : b;
-			dopplerRatio = (soundSpeed + vr) / (soundSpeed + vs);
-			dopplerRatio = Math.pow(dopplerRatio,this.dopplerFactor);
-		}
-		var _this = this.handle.channel;
-		var message = new aura_threading_Message(5,dopplerRatio);
-		_this.messages.add(message);
-	}
-	,__class__: aura_dsp_panner_Panner
-});
-function aura_format_InputExtension_readInt64(inp) {
-	var first = inp.readInt32();
-	var second = inp.readInt32();
-	if(inp.bigEndian) {
-		var this1 = new haxe__$Int64__$_$_$Int64(first,second);
-		return this1;
-	} else {
-		var this1 = new haxe__$Int64__$_$_$Int64(second,first);
-		return this1;
-	}
-}
-function aura_format_InputExtension_readUInt32(inp) {
-	var this1 = new haxe__$Int64__$_$_$Int64(0,0);
-	var out = this1;
-	var x = inp.readByte();
-	var a_high = x >> 31;
-	var a_low = x;
-	var b = (inp.bigEndian ? 3 : 0) * 8;
-	b &= 63;
-	var b1;
-	if(b == 0) {
-		var this1 = new haxe__$Int64__$_$_$Int64(a_high,a_low);
-		b1 = this1;
-	} else if(b < 32) {
-		var this1 = new haxe__$Int64__$_$_$Int64(a_high << b | a_low >>> 32 - b,a_low << b);
-		b1 = this1;
-	} else {
-		var this1 = new haxe__$Int64__$_$_$Int64(a_low << b - 32,0);
-		b1 = this1;
-	}
-	var high = out.high + b1.high | 0;
-	var low = out.low + b1.low | 0;
-	if(haxe_Int32.ucompare(low,out.low) < 0) {
-		var ret = high++;
-		high = high | 0;
-	}
-	var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-	out = this1;
-	var x = inp.readByte();
-	var a_high = x >> 31;
-	var a_low = x;
-	var b = (inp.bigEndian ? 2 : 1) * 8;
-	b &= 63;
-	var b1;
-	if(b == 0) {
-		var this1 = new haxe__$Int64__$_$_$Int64(a_high,a_low);
-		b1 = this1;
-	} else if(b < 32) {
-		var this1 = new haxe__$Int64__$_$_$Int64(a_high << b | a_low >>> 32 - b,a_low << b);
-		b1 = this1;
-	} else {
-		var this1 = new haxe__$Int64__$_$_$Int64(a_low << b - 32,0);
-		b1 = this1;
-	}
-	var high = out.high + b1.high | 0;
-	var low = out.low + b1.low | 0;
-	if(haxe_Int32.ucompare(low,out.low) < 0) {
-		var ret = high++;
-		high = high | 0;
-	}
-	var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-	out = this1;
-	var x = inp.readByte();
-	var a_high = x >> 31;
-	var a_low = x;
-	var b = (inp.bigEndian ? 1 : 2) * 8;
-	b &= 63;
-	var b1;
-	if(b == 0) {
-		var this1 = new haxe__$Int64__$_$_$Int64(a_high,a_low);
-		b1 = this1;
-	} else if(b < 32) {
-		var this1 = new haxe__$Int64__$_$_$Int64(a_high << b | a_low >>> 32 - b,a_low << b);
-		b1 = this1;
-	} else {
-		var this1 = new haxe__$Int64__$_$_$Int64(a_low << b - 32,0);
-		b1 = this1;
-	}
-	var high = out.high + b1.high | 0;
-	var low = out.low + b1.low | 0;
-	if(haxe_Int32.ucompare(low,out.low) < 0) {
-		var ret = high++;
-		high = high | 0;
-	}
-	var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-	out = this1;
-	var x = inp.readByte();
-	var a_high = x >> 31;
-	var a_low = x;
-	var b = (inp.bigEndian ? 0 : 3) * 8;
-	b &= 63;
-	var b1;
-	if(b == 0) {
-		var this1 = new haxe__$Int64__$_$_$Int64(a_high,a_low);
-		b1 = this1;
-	} else if(b < 32) {
-		var this1 = new haxe__$Int64__$_$_$Int64(a_high << b | a_low >>> 32 - b,a_low << b);
-		b1 = this1;
-	} else {
-		var this1 = new haxe__$Int64__$_$_$Int64(a_low << b - 32,0);
-		b1 = this1;
-	}
-	var high = out.high + b1.high | 0;
-	var low = out.low + b1.low | 0;
-	if(haxe_Int32.ucompare(low,out.low) < 0) {
-		var ret = high++;
-		high = high | 0;
-	}
-	var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-	out = this1;
-	return out;
-}
-var aura_format_mhr_MHRReader = function(bytes) {
-	this.inp = new haxe_io_BytesInput(bytes);
-	this.inp.set_bigEndian(false);
-};
-$hxClasses["aura.format.mhr.MHRReader"] = aura_format_mhr_MHRReader;
-aura_format_mhr_MHRReader.__name__ = "aura.format.mhr.MHRReader";
-aura_format_mhr_MHRReader.prototype = {
-	inp: null
-	,read: function() {
-		var magic = this.inp.readString(8,haxe_io_Encoding.UTF8);
-		var version;
-		switch(magic) {
-		case "MinPHR01":
-			version = 1;
-			break;
-		case "MinPHR02":
-			version = 2;
-			break;
-		case "MinPHR03":
-			version = 3;
-			break;
-		default:
-			throw haxe_Exception.thrown("File is not an MHR HRTF file! Unknown magic string \"" + magic + "\".");
-		}
-		var inp = this.inp;
-		var this1 = new haxe__$Int64__$_$_$Int64(0,0);
-		var out = this1;
-		var x = inp.readByte();
-		var a_high = x >> 31;
-		var a_low = x;
-		var b = (inp.bigEndian ? 3 : 0) * 8;
-		b &= 63;
-		var b1;
-		if(b == 0) {
-			var this1 = new haxe__$Int64__$_$_$Int64(a_high,a_low);
-			b1 = this1;
-		} else if(b < 32) {
-			var this1 = new haxe__$Int64__$_$_$Int64(a_high << b | a_low >>> 32 - b,a_low << b);
-			b1 = this1;
-		} else {
-			var this1 = new haxe__$Int64__$_$_$Int64(a_low << b - 32,0);
-			b1 = this1;
-		}
-		var high = out.high + b1.high | 0;
-		var low = out.low + b1.low | 0;
-		if(haxe_Int32.ucompare(low,out.low) < 0) {
-			var ret = high++;
-			high = high | 0;
-		}
-		var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-		out = this1;
-		var x = inp.readByte();
-		var a_high = x >> 31;
-		var a_low = x;
-		var b = (inp.bigEndian ? 2 : 1) * 8;
-		b &= 63;
-		var b1;
-		if(b == 0) {
-			var this1 = new haxe__$Int64__$_$_$Int64(a_high,a_low);
-			b1 = this1;
-		} else if(b < 32) {
-			var this1 = new haxe__$Int64__$_$_$Int64(a_high << b | a_low >>> 32 - b,a_low << b);
-			b1 = this1;
-		} else {
-			var this1 = new haxe__$Int64__$_$_$Int64(a_low << b - 32,0);
-			b1 = this1;
-		}
-		var high = out.high + b1.high | 0;
-		var low = out.low + b1.low | 0;
-		if(haxe_Int32.ucompare(low,out.low) < 0) {
-			var ret = high++;
-			high = high | 0;
-		}
-		var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-		out = this1;
-		var x = inp.readByte();
-		var a_high = x >> 31;
-		var a_low = x;
-		var b = (inp.bigEndian ? 1 : 2) * 8;
-		b &= 63;
-		var b1;
-		if(b == 0) {
-			var this1 = new haxe__$Int64__$_$_$Int64(a_high,a_low);
-			b1 = this1;
-		} else if(b < 32) {
-			var this1 = new haxe__$Int64__$_$_$Int64(a_high << b | a_low >>> 32 - b,a_low << b);
-			b1 = this1;
-		} else {
-			var this1 = new haxe__$Int64__$_$_$Int64(a_low << b - 32,0);
-			b1 = this1;
-		}
-		var high = out.high + b1.high | 0;
-		var low = out.low + b1.low | 0;
-		if(haxe_Int32.ucompare(low,out.low) < 0) {
-			var ret = high++;
-			high = high | 0;
-		}
-		var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-		out = this1;
-		var x = inp.readByte();
-		var a_high = x >> 31;
-		var a_low = x;
-		var b = (inp.bigEndian ? 0 : 3) * 8;
-		b &= 63;
-		var b1;
-		if(b == 0) {
-			var this1 = new haxe__$Int64__$_$_$Int64(a_high,a_low);
-			b1 = this1;
-		} else if(b < 32) {
-			var this1 = new haxe__$Int64__$_$_$Int64(a_high << b | a_low >>> 32 - b,a_low << b);
-			b1 = this1;
-		} else {
-			var this1 = new haxe__$Int64__$_$_$Int64(a_low << b - 32,0);
-			b1 = this1;
-		}
-		var high = out.high + b1.high | 0;
-		var low = out.low + b1.low | 0;
-		if(haxe_Int32.ucompare(low,out.low) < 0) {
-			var ret = high++;
-			high = high | 0;
-		}
-		var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-		out = this1;
-		var x = out;
-		if(x.high != x.low >> 31) {
-			throw haxe_Exception.thrown("Overflow");
-		}
-		var sampleRate = x.low;
-		var sampleType;
-		switch(version) {
-		case 1:
-			sampleType = 0;
-			break;
-		case 2:
-			sampleType = this.inp.readByte();
-			break;
-		case 3:
-			sampleType = 1;
-			break;
-		}
-		var channelType;
-		switch(version) {
-		case 1:
-			channelType = 0;
-			break;
-		case 2:case 3:
-			channelType = this.inp.readByte();
-			break;
-		}
-		var channels = channelType + 1;
-		var hrirSize = this.inp.readByte();
-		var fieldCount = version == 1 ? 1 : this.inp.readByte();
-		var this1 = new Array(fieldCount);
-		var fields = this1;
-		var totalHRIRCount = 0;
-		var _g = 0;
-		var _g1 = fieldCount;
-		while(_g < _g1) {
-			var i = _g++;
-			var field = new aura_types_Field();
-			field.distance = version == 1 ? 1000 : this.inp.readUInt16();
-			field.evCount = this.inp.readByte();
-			var this1 = new Array(field.evCount);
-			field.azCount = this1;
-			var this2 = new Array(field.evCount);
-			field.evHRIROffsets = this2;
-			var fieldHrirCount = 0;
-			var _g2 = 0;
-			var _g3 = field.evCount;
-			while(_g2 < _g3) {
-				var j = _g2++;
-				field.evHRIROffsets[j] = fieldHrirCount;
-				field.azCount[j] = this.inp.readByte();
-				fieldHrirCount += field.azCount[j];
-			}
-			field.hrirCount = fieldHrirCount;
-			totalHRIRCount += fieldHrirCount;
-			fields[i] = field;
-		}
-		var _g = 0;
-		var _g1 = fieldCount;
-		while(_g < _g1) {
-			var i = _g++;
-			var field = fields[i];
-			var this1 = new Array(field.hrirCount);
-			var hrirs = this1;
-			field.hrirs = hrirs;
-			var _g2 = 0;
-			var _g3 = field.hrirCount;
-			while(_g2 < _g3) {
-				var j = _g2++;
-				var hrir = hrirs[j] = new aura_types_HRIR();
-				hrir.coeffs = kha_arrays_Float32Array._new(hrirSize * channels);
-				switch(sampleType) {
-				case 0:
-					var _g4 = 0;
-					var _g5 = hrirSize;
-					while(_g4 < _g5) {
-						var s = _g4++;
-						var coeff = this.inp.readInt16();
-						var v = coeff / (coeff < 0 ? 32768.0 : 32767.0);
-						hrir.coeffs.setFloat32(s * 4,v,true);
-					}
-					break;
-				case 1:
-					var _g6 = 0;
-					var _g7 = hrirSize;
-					while(_g6 < _g7) {
-						var s1 = _g6++;
-						var coeff1 = this.inp.readInt24();
-						var v1 = coeff1 / (coeff1 < 0 ? 8388608.0 : 8388607.0);
-						hrir.coeffs.setFloat32(s1 * 4,v1,true);
-					}
-					break;
-				}
-			}
-		}
-		var maxDelayLength = 0.0;
-		var _g = 0;
-		var _g1 = fieldCount;
-		while(_g < _g1) {
-			var i = _g++;
-			var field = fields[i];
-			var _g2 = 0;
-			var _g3 = field.hrirCount;
-			while(_g2 < _g3) {
-				var j = _g2++;
-				var hrir = field.hrirs[j];
-				var this1 = new Array(channels);
-				hrir.delays = this1;
-				var _g4 = 0;
-				var _g5 = channels;
-				while(_g4 < _g5) {
-					var ch = _g4++;
-					var delayRaw = this.inp.readByte();
-					var delayIntPart = delayRaw >> 2;
-					var delayFloatPart = ((delayRaw & 2) == 0 ? 0 : 1) * 0.5 + ((delayRaw & 1) == 0 ? 0 : 1) * 0.25;
-					var delay = delayIntPart + delayFloatPart;
-					hrir.delays[ch] = delay;
-					if(delay > maxDelayLength) {
-						maxDelayLength = delay;
-					}
-				}
-			}
-		}
-		return new aura_types_HRTF(sampleRate,channels,hrirSize,totalHRIRCount,fields,maxDelayLength);
-	}
-	,isBitSet: function(byte,position) {
-		if((byte & 1 << position) == 0) {
-			return 0;
-		} else {
-			return 1;
-		}
-	}
-	,__class__: aura_format_mhr_MHRReader
-};
-function aura_format_mhr_MHRReader_versionFromMagic(magic) {
-	switch(magic) {
-	case "MinPHR01":
-		return 1;
-	case "MinPHR02":
-		return 2;
-	case "MinPHR03":
-		return 3;
-	default:
-		throw haxe_Exception.thrown("File is not an MHR HRTF file! Unknown magic string \"" + magic + "\".");
-	}
-}
-var aura_math_Vec3 = {};
-aura_math_Vec3._new = function(x,y,z) {
-	if(z == null) {
-		z = 0.0;
-	}
-	if(y == null) {
-		y = 0.0;
-	}
-	if(x == null) {
-		x = 0.0;
-	}
-	var this1 = new kha_math_FastVector3(x,y,z);
-	return this1;
-};
-aura_math_Vec3.fromKhaVec3 = function(v) {
-	return new kha_math_FastVector3(v.x,v.y,v.z);
-};
-aura_math_Vec3.fromKhaVec4 = function(v) {
-	return new kha_math_FastVector3(v.x,v.y,v.z);
-};
-aura_math_Vec3.toKhaVec3 = function(this1) {
-	return new kha_math_FastVector3(this1.x,this1.y,this1.z);
-};
-aura_math_Vec3.toKhaVec4 = function(this1) {
-	return new kha_math_FastVector4(this1.x,this1.y,this1.z);
-};
-var aura_threading_BufferCache = function() { };
-$hxClasses["aura.threading.BufferCache"] = aura_threading_BufferCache;
-aura_threading_BufferCache.__name__ = "aura.threading.BufferCache";
-aura_threading_BufferCache.getBuffer_kha_arrays_Float32Array = function(bufferType,p_buffer,numChannels,channelLength) {
-	var bufferCfg = aura_threading_BufferCache.bufferConfigs[bufferType];
-	var buffer = p_buffer.get();
-	var currentNumChannels = buffer == null ? 0 : bufferCfg.getNumChannels(buffer);
-	var currentChannelLength = buffer == null ? 0 : bufferCfg.getChannelLength(buffer);
-	if(buffer != null && currentNumChannels >= numChannels && currentChannelLength >= channelLength) {
-		return true;
-	}
-	if(kha_audio2_Audio.disableGcInteractions) {
-		haxe_Log.trace("Unexpected allocation request in audio thread.",{ fileName : "aura/threading/BufferCache.hx", lineNumber : 90, className : "aura.threading.BufferCache", methodName : "getBuffer"});
-		var haveMsgNumC = buffer == null ? "no buffer" : "" + currentNumChannels;
-		var haveMsgen = buffer == null ? "no buffer" : "" + currentChannelLength;
-		haxe_Log.trace("  wanted amount of channels: " + numChannels + " (have: " + haveMsgNumC + ")",{ fileName : "aura/threading/BufferCache.hx", lineNumber : 93, className : "aura.threading.BufferCache", methodName : "getBuffer"});
-		haxe_Log.trace("  wanted channel length: " + channelLength + " (have: " + haveMsgen + ")",{ fileName : "aura/threading/BufferCache.hx", lineNumber : 94, className : "aura.threading.BufferCache", methodName : "getBuffer"});
-		aura_threading_BufferCache.lastAllocationTimer = 0;
-		kha_audio2_Audio.disableGcInteractions = false;
-		return false;
-	}
-	buffer = bufferCfg.construct(numChannels,buffer == null ? channelLength : channelLength * 2);
-	p_buffer.set(buffer);
-	aura_threading_BufferCache.lastAllocationTimer = 0;
-	return true;
-};
-aura_threading_BufferCache.getBuffer_aura_types_AudioBuffer = function(bufferType,p_buffer,numChannels,channelLength) {
-	var bufferCfg = aura_threading_BufferCache.bufferConfigs[bufferType];
-	var buffer = p_buffer.get();
-	var currentNumChannels = buffer == null ? 0 : bufferCfg.getNumChannels(buffer);
-	var currentChannelLength = buffer == null ? 0 : bufferCfg.getChannelLength(buffer);
-	if(buffer != null && currentNumChannels >= numChannels && currentChannelLength >= channelLength) {
-		return true;
-	}
-	if(kha_audio2_Audio.disableGcInteractions) {
-		haxe_Log.trace("Unexpected allocation request in audio thread.",{ fileName : "aura/threading/BufferCache.hx", lineNumber : 90, className : "aura.threading.BufferCache", methodName : "getBuffer"});
-		var haveMsgNumC = buffer == null ? "no buffer" : "" + currentNumChannels;
-		var haveMsgen = buffer == null ? "no buffer" : "" + currentChannelLength;
-		haxe_Log.trace("  wanted amount of channels: " + numChannels + " (have: " + haveMsgNumC + ")",{ fileName : "aura/threading/BufferCache.hx", lineNumber : 93, className : "aura.threading.BufferCache", methodName : "getBuffer"});
-		haxe_Log.trace("  wanted channel length: " + channelLength + " (have: " + haveMsgen + ")",{ fileName : "aura/threading/BufferCache.hx", lineNumber : 94, className : "aura.threading.BufferCache", methodName : "getBuffer"});
-		aura_threading_BufferCache.lastAllocationTimer = 0;
-		kha_audio2_Audio.disableGcInteractions = false;
-		return false;
-	}
-	buffer = bufferCfg.construct(numChannels,buffer == null ? channelLength : channelLength * 2);
-	p_buffer.set(buffer);
-	aura_threading_BufferCache.lastAllocationTimer = 0;
-	return true;
-};
-aura_threading_BufferCache.init = function() {
-	var this1 = new Array(8);
-	aura_threading_BufferCache.treeBuffers = this1;
-	var _g = 0;
-	var _g1 = aura_threading_BufferCache.treeBuffers.length;
-	while(_g < _g1) {
-		var i = _g++;
-		aura_threading_BufferCache.treeBuffers[i] = new aura_utils_Pointer_$aura_$types_$AudioBuffer();
-	}
-	aura_threading_BufferCache.bufferConfigs = aura_threading_BufferType.createAllConfigs();
-};
-aura_threading_BufferCache.updateTimer = function() {
-	aura_threading_BufferCache.lastAllocationTimer++;
-	if(aura_threading_BufferCache.lastAllocationTimer > 100) {
-		kha_audio2_Audio.disableGcInteractions = true;
-	}
-};
-aura_threading_BufferCache.getTreeBuffer = function(treeLevel,numChannels,channelLength) {
-	var p_buffer = aura_threading_BufferCache.treeBuffers[treeLevel];
-	if(!aura_threading_BufferCache.getBuffer_aura_types_AudioBuffer(0,p_buffer,numChannels,channelLength)) {
-		haxe_Log.trace("  treeLevel: " + treeLevel,{ fileName : "aura/threading/BufferCache.hx", lineNumber : 62, className : "aura.threading.BufferCache", methodName : "getTreeBuffer"});
-		return null;
-	}
-	return p_buffer.value;
-};
-var aura_threading_BufferConfig = function(construct,getNumChannels,getChannelLength) {
-	this.construct = construct;
-	this.getNumChannels = getNumChannels;
-	this.getChannelLength = getChannelLength;
-};
-$hxClasses["aura.threading.BufferConfig"] = aura_threading_BufferConfig;
-aura_threading_BufferConfig.__name__ = "aura.threading.BufferConfig";
-aura_threading_BufferConfig.prototype = {
-	construct: null
-	,getNumChannels: null
-	,getChannelLength: null
-	,__class__: aura_threading_BufferConfig
-};
-var aura_threading_BufferType = {};
-aura_threading_BufferType.createAllConfigs = function() {
-	var this1 = new Array(4);
-	var out = this1;
-	out[0] = new aura_threading_BufferConfig(function(numChannels,channelLength) {
-		return new aura_types_AudioBuffer(numChannels,channelLength);
-	},function(buffer) {
-		return buffer.numChannels;
-	},function(buffer) {
-		return buffer.channelLength;
-	});
-	out[1] = new aura_threading_BufferConfig(function(numChannels,channelLength) {
-		return kha_arrays_Float32Array._new(channelLength);
-	},function(buffer) {
-		return 1;
-	},function(buffer) {
-		return buffer.byteLength >> 2;
-	});
-	out[2] = new aura_threading_BufferConfig(function(numChannels,channelLength) {
-		var v = [];
-		v.length = channelLength;
-		return v;
-	},function(buffer) {
-		return 1;
-	},function(buffer) {
-		return buffer.length;
-	});
-	out[3] = new aura_threading_BufferConfig(function(numChannels,channelLength) {
-		var buffer = new ArrayBuffer(channelLength * 2 * 4);
-		var this1 = new DataView(buffer,0,buffer.byteLength);
-		var this2 = this1;
-		return this2;
-	},function(buffer) {
-		return 1;
-	},function(buffer) {
-		return buffer.byteLength >>> 3;
-	});
-	return out;
-};
-var aura_threading_Fifo = {};
-aura_threading_Fifo._new = function() {
-	var this1 = new haxe_ds_List();
-	var this2 = this1;
-	return this2;
-};
-aura_threading_Fifo.tryPop = function(this1) {
-	return this1.pop();
-};
-var aura_threading__$Fifo_FifoImpl = {};
-aura_threading__$Fifo_FifoImpl._new = function() {
-	var this1 = new haxe_ds_List();
-	return this1;
-};
-aura_threading__$Fifo_FifoImpl.pop = function(this1,block) {
-	return this1.pop();
-};
-var aura_threading_Message = function(id,data) {
-	this.id = id;
-	this.data = data;
-};
-$hxClasses["aura.threading.Message"] = aura_threading_Message;
-aura_threading_Message.__name__ = "aura.threading.Message";
-aura_threading_Message.prototype = {
-	id: null
-	,data: null
-	,__class__: aura_threading_Message
-};
-var aura_threading_MessageID = function() { };
-$hxClasses["aura.threading.MessageID"] = aura_threading_MessageID;
-aura_threading_MessageID.__name__ = "aura.threading.MessageID";
-var aura_threading_ChannelMessageID = function() { };
-$hxClasses["aura.threading.ChannelMessageID"] = aura_threading_ChannelMessageID;
-aura_threading_ChannelMessageID.__name__ = "aura.threading.ChannelMessageID";
-aura_threading_ChannelMessageID.__super__ = aura_threading_MessageID;
-aura_threading_ChannelMessageID.prototype = $extend(aura_threading_MessageID.prototype,{
-	__class__: aura_threading_ChannelMessageID
-});
-var aura_threading_DSPMessageID = function() { };
-$hxClasses["aura.threading.DSPMessageID"] = aura_threading_DSPMessageID;
-aura_threading_DSPMessageID.__name__ = "aura.threading.DSPMessageID";
-aura_threading_DSPMessageID.__super__ = aura_threading_MessageID;
-aura_threading_DSPMessageID.prototype = $extend(aura_threading_MessageID.prototype,{
-	__class__: aura_threading_DSPMessageID
-});
-var aura_types_AudioBufferChannelView = {};
-aura_types_AudioBufferChannelView._new = function(size) {
-	var this1 = kha_arrays_Float32Array._new(size);
-	return this1;
-};
-aura_types_AudioBufferChannelView.get = function(this1,index) {
-	return this1.getFloat32(index * 4,kha_arrays_ByteArray.LITTLE_ENDIAN);
-};
-aura_types_AudioBufferChannelView.set = function(this1,index,value) {
-	this1.setFloat32(index * 4,value,true);
-	return value;
-};
-var aura_types_Complex = {};
-aura_types_Complex._new = function(real,imag) {
-	var this1 = new aura_types__$Complex_ComplexImpl(real,imag);
-	return this1;
-};
-aura_types_Complex.fromReal = function(real) {
-	var this1 = new aura_types__$Complex_ComplexImpl(real,0.0);
-	return this1;
-};
-aura_types_Complex.newZero = function() {
-	var this1 = new aura_types__$Complex_ComplexImpl(0.0,0.0);
-	return this1;
-};
-aura_types_Complex.copy = function(this1) {
-	var this2 = new aura_types__$Complex_ComplexImpl(this1.real,this1.imag);
-	return this2;
-};
-aura_types_Complex.setZero = function(this1) {
-	this1.real = this1.imag = 0.0;
-};
-aura_types_Complex.setFrom = function(this1,other) {
-	this1.real = other.real;
-	this1.imag = other.imag;
-};
-aura_types_Complex.scale = function(this1,s) {
-	var this2 = new aura_types__$Complex_ComplexImpl(this1.real * s,this1.imag * s);
-	return this2;
-};
-aura_types_Complex.exp = function(w) {
-	var this1 = new aura_types__$Complex_ComplexImpl(Math.cos(w),Math.sin(w));
-	return this1;
-};
-aura_types_Complex.add = function(this1,other) {
-	var this2 = new aura_types__$Complex_ComplexImpl(this1.real + other.real,this1.imag + other.imag);
-	return this2;
-};
-aura_types_Complex.sub = function(this1,other) {
-	var this2 = new aura_types__$Complex_ComplexImpl(this1.real - other.real,this1.imag - other.imag);
-	return this2;
-};
-aura_types_Complex.mult = function(this1,other) {
-	var this2 = new aura_types__$Complex_ComplexImpl(this1.real * other.real - this1.imag * other.imag,this1.real * other.imag + this1.imag * other.real);
-	return this2;
-};
-aura_types_Complex.multWithI = function(this1) {
-	var this2 = new aura_types__$Complex_ComplexImpl(-this1.imag,this1.real);
-	return this2;
-};
-aura_types_Complex.conj = function(this1) {
-	var this2 = new aura_types__$Complex_ComplexImpl(this1.real,-this1.imag);
-	return this2;
-};
-aura_types_Complex.equals = function(this1,other) {
-	if(this1.real == other.real) {
-		return this1.imag == other.imag;
-	} else {
-		return false;
-	}
-};
-var aura_types__$Complex_ComplexImpl = function(real,imag) {
-	this.real = real;
-	this.imag = imag;
-};
-$hxClasses["aura.types._Complex.ComplexImpl"] = aura_types__$Complex_ComplexImpl;
-aura_types__$Complex_ComplexImpl.__name__ = "aura.types._Complex.ComplexImpl";
-aura_types__$Complex_ComplexImpl.prototype = {
-	real: null
-	,imag: null
-	,__class__: aura_types__$Complex_ComplexImpl
-};
-var aura_types_ComplexArray = {};
-aura_types_ComplexArray._new = function(length) {
-	var buffer = new ArrayBuffer(length * 2 * 4);
-	var this1 = new DataView(buffer,0,buffer.byteLength);
-	var this2 = this1;
-	return this2;
-};
-aura_types_ComplexArray.get = function(this1,index) {
-	var this2 = new aura_types__$Complex_ComplexImpl(this1.getFloat32(index * 4 * 2),this1.getFloat32((index * 2 + 1) * 4));
-	return this2;
-};
-aura_types_ComplexArray.set = function(this1,index,value) {
-	this1.setFloat32(index * 2 * 4,value.real);
-	this1.setFloat32((index * 2 + 1) * 4,value.imag);
-	return value;
-};
-aura_types_ComplexArray.subarray = function(this1,offset,length) {
-	return new DataView(this1.buffer,offset * 2 * 4,length != null ? length * 2 * 4 : null);
-};
-aura_types_ComplexArray.copy = function(this1) {
-	var buffer = new ArrayBuffer((this1.byteLength >>> 3) * 2 * 4);
-	var this2 = new DataView(buffer,0,buffer.byteLength);
-	var this3 = this2;
-	var ret = this3;
-	var _g = 0;
-	var _g1 = this1.byteLength >>> 3;
-	while(_g < _g1) {
-		var i = _g++;
-		var this1 = new aura_types__$Complex_ComplexImpl(ret.getFloat32(i * 4 * 2),ret.getFloat32((i * 2 + 1) * 4));
-		var value = this1;
-		ret.setFloat32(i * 2 * 4,value.real);
-		ret.setFloat32((i * 2 + 1) * 4,value.imag);
-	}
-	return ret;
-};
-var aura_types__$ComplexArray_JS_$ComplexArrayImpl = {};
-aura_types__$ComplexArray_JS_$ComplexArrayImpl.__properties__ = {get_length:"get_length"};
-aura_types__$ComplexArray_JS_$ComplexArrayImpl.get_length = function(this1) {
-	return this1.byteLength >>> 3;
-};
-aura_types__$ComplexArray_JS_$ComplexArrayImpl._new = function(length) {
-	var buffer = new ArrayBuffer(length * 2 * 4);
-	var this1 = new DataView(buffer,0,buffer.byteLength);
-	return this1;
-};
-aura_types__$ComplexArray_JS_$ComplexArrayImpl.get = function(impl,index) {
-	var this1 = new aura_types__$Complex_ComplexImpl(impl.getFloat32(index * 4 * 2),impl.getFloat32((index * 2 + 1) * 4));
-	return this1;
-};
-aura_types__$ComplexArray_JS_$ComplexArrayImpl.set = function(impl,index,value) {
-	impl.setFloat32(index * 2 * 4,value.real);
-	impl.setFloat32((index * 2 + 1) * 4,value.imag);
-	return value;
-};
-aura_types__$ComplexArray_JS_$ComplexArrayImpl.subarray = function(this1,offset,length) {
-	return new DataView(this1.buffer,offset * 2 * 4,length != null ? length * 2 * 4 : null);
-};
-var aura_types_HRTF = function(sampleRate,numChannels,hrirSize,hrirCount,fields,maxDelayLength) {
-	this.sampleRate = sampleRate;
-	this.numChannels = numChannels;
-	this.hrirSize = hrirSize;
-	this.hrirCount = hrirCount;
-	this.fields = fields;
-	this.maxDelayLength = maxDelayLength;
-};
-$hxClasses["aura.types.HRTF"] = aura_types_HRTF;
-aura_types_HRTF.__name__ = "aura.types.HRTF";
-aura_types_HRTF.prototype = {
-	sampleRate: null
-	,numChannels: null
-	,hrirSize: null
-	,hrirCount: null
-	,fields: null
-	,maxDelayLength: null
-	,getInterpolatedHRIR: function(elevation,azimuth,outputBuf,outImpulseLength,outDelay) {
-		var length = -1;
-		if(length == null) {
-			length = -1;
-		}
-		var _g = 0;
-		var _g1 = length == -1 ? outputBuf.byteLength >> 2 : length;
-		while(_g < _g1) {
-			var i = _g++;
-			outputBuf.setFloat32(i * 4,0,true);
-		}
-		if(azimuth == 360) {
-			azimuth = 0;
-		}
-		var field = this.fields[this.fields.length - 1];
-		var elevationStep = 180 / (field.evCount - 1);
-		var elevationIndexLow = elevation / elevationStep | 0;
-		var a = elevationIndexLow + 1;
-		var b = field.evCount - 1;
-		var elevationIndexHigh = a < b ? a : b;
-		var elevationWeight = elevation % elevationStep / elevationStep;
-		var elevationHRIROffsetLow = field.evHRIROffsets[elevationIndexLow];
-		var elevationHRIROffsetHigh = field.evHRIROffsets[elevationIndexHigh];
-		var delay = 0.0;
-		var hrirLength = 0;
-		var _g = 0;
-		while(_g < 2) {
-			var ev = _g++;
-			var elevationIndex = ev == 0 ? elevationIndexLow : elevationIndexHigh;
-			var elevationHRIROffset = ev == 0 ? elevationHRIROffsetLow : elevationHRIROffsetHigh;
-			var azimuthStep = 360 / field.azCount[elevationIndex];
-			var azimuthIndexLeft = azimuth / azimuthStep | 0;
-			var azimuthIndexRight = azimuthIndexLeft + 1;
-			if(azimuthIndexRight == field.azCount[elevationIndex]) {
-				azimuthIndexRight = 0;
-			}
-			var azimuthWeight = azimuth % azimuthStep / azimuthStep;
-			var hrirLeft = field.hrirs[elevationHRIROffset + azimuthIndexLeft];
-			var hrirRight = field.hrirs[elevationHRIROffset + azimuthIndexRight];
-			var evWeight = ev == 0 ? 1 - elevationWeight : elevationWeight;
-			delay += (hrirLeft.delays[0] * (1 - azimuthWeight) + hrirRight.delays[0] * azimuthWeight) * evWeight;
-			var invWeight = 1 - azimuthWeight;
-			var _g1 = 0;
-			var _g2 = outputBuf.byteLength >> 2;
-			while(_g1 < _g2) {
-				var i = _g1++;
-				var leftCoeff = i < hrirLeft.coeffs.byteLength >> 2 ? hrirLeft.coeffs.getFloat32(i * 4,kha_arrays_ByteArray.LITTLE_ENDIAN) * invWeight : 0.0;
-				var rightCoeff = i < hrirRight.coeffs.byteLength >> 2 ? hrirRight.coeffs.getFloat32(i * 4,kha_arrays_ByteArray.LITTLE_ENDIAN) * azimuthWeight : 0.0;
-				var _g3 = i;
-				var _g4 = outputBuf;
-				var v = _g4.getFloat32(_g3 * 4,kha_arrays_ByteArray.LITTLE_ENDIAN) + (leftCoeff + rightCoeff) * evWeight;
-				_g4.setFloat32(_g3 * 4,v,true);
-			}
-			var a = hrirLeft.coeffs.byteLength >> 2;
-			var b = hrirRight.coeffs.byteLength >> 2;
-			var maxLength = a > b ? a : b;
-			if(maxLength > hrirLength) {
-				hrirLength = maxLength;
-			}
-		}
-		var sampleRateFactor = this.sampleRate / aura_Aura.sampleRate;
-		outDelay.value = Math.round(delay * sampleRateFactor);
-		outImpulseLength.value = hrirLength;
-	}
-	,__class__: aura_types_HRTF
-};
-var aura_types_Field = function() {
-};
-$hxClasses["aura.types.Field"] = aura_types_Field;
-aura_types_Field.__name__ = "aura.types.Field";
-aura_types_Field.prototype = {
-	distance: null
-	,hrirCount: null
-	,evCount: null
-	,azCount: null
-	,evHRIROffsets: null
-	,hrirs: null
-	,__class__: aura_types_Field
-};
-var aura_types_HRIR = function() {
-};
-$hxClasses["aura.types.HRIR"] = aura_types_HRIR;
-aura_types_HRIR.__name__ = "aura.types.HRIR";
-aura_types_HRIR.prototype = {
-	coeffs: null
-	,delays: null
-	,__class__: aura_types_HRIR
-};
-var aura_utils_Assert = function() { };
-$hxClasses["aura.utils.Assert"] = aura_utils_Assert;
-aura_utils_Assert.__name__ = "aura.utils.Assert";
-aura_utils_Assert.throwAssertionError = function(exprString,message,pos) {
-	throw new aura_utils_AuraAssertionException(exprString,message,null,pos);
+	case 3:
+		var cname = s.classname;
+		var meth = s.method;
+		b.b += Std.string(cname == null ? "<unknown>" : cname);
+		b.b += ".";
+		b.b += meth == null ? "null" : "" + meth;
+		break;
+	case 4:
+		var n = s.v;
+		b.b += "local function #";
+		b.b += n == null ? "null" : "" + n;
+		break;
+	}
+};
+var haxe_IMap = function() { };
+$hxClasses["haxe.IMap"] = haxe_IMap;
+haxe_IMap.__name__ = "haxe.IMap";
+haxe_IMap.__isInterface__ = true;
+haxe_IMap.prototype = {
+	get: null
+	,set: null
+	,exists: null
+	,remove: null
+	,keys: null
+	,keyValueIterator: null
+	,clear: null
+	,__class__: haxe_IMap
 };
 var haxe_Exception = function(message,previous,native) {
 	Error.call(this,message);
@@ -7408,38 +4515,11 @@ haxe_Exception.prototype = $extend(Error.prototype,{
 	,toString: function() {
 		return this.get_message();
 	}
-	,details: function() {
-		if(this.get_previous() == null) {
-			var tmp = "Exception: " + this.toString();
-			var tmp1 = this.get_stack();
-			return tmp + (tmp1 == null ? "null" : haxe_CallStack.toString(tmp1));
-		} else {
-			var result = "";
-			var e = this;
-			var prev = null;
-			while(e != null) {
-				if(prev == null) {
-					var result1 = "Exception: " + e.get_message();
-					var tmp = e.get_stack();
-					result = result1 + (tmp == null ? "null" : haxe_CallStack.toString(tmp)) + result;
-				} else {
-					var prevStack = haxe_CallStack.subtract(e.get_stack(),prev.get_stack());
-					result = "Exception: " + e.get_message() + (prevStack == null ? "null" : haxe_CallStack.toString(prevStack)) + "\n\nNext " + result;
-				}
-				prev = e;
-				e = e.get_previous();
-			}
-			return result;
-		}
-	}
 	,__shiftStack: function() {
 		this.__skipStack++;
 	}
 	,get_message: function() {
 		return this.message;
-	}
-	,get_previous: function() {
-		return this.__previousException;
 	}
 	,get_native: function() {
 		return this.__nativeException;
@@ -7463,684 +4543,8 @@ haxe_Exception.prototype = $extend(Error.prototype,{
 		}
 	}
 	,__class__: haxe_Exception
-	,__properties__: {get_native:"get_native",get_previous:"get_previous",get_stack:"get_stack",get_message:"get_message"}
+	,__properties__: {get_native:"get_native",get_stack:"get_stack",get_message:"get_message"}
 });
-var haxe_exceptions_PosException = function(message,previous,pos) {
-	haxe_Exception.call(this,message,previous);
-	if(pos == null) {
-		this.posInfos = { fileName : "(unknown)", lineNumber : 0, className : "(unknown)", methodName : "(unknown)"};
-	} else {
-		this.posInfos = pos;
-	}
-	this.__skipStack++;
-};
-$hxClasses["haxe.exceptions.PosException"] = haxe_exceptions_PosException;
-haxe_exceptions_PosException.__name__ = "haxe.exceptions.PosException";
-haxe_exceptions_PosException.__super__ = haxe_Exception;
-haxe_exceptions_PosException.prototype = $extend(haxe_Exception.prototype,{
-	posInfos: null
-	,toString: function() {
-		return "" + haxe_Exception.prototype.toString.call(this) + " in " + this.posInfos.className + "." + this.posInfos.methodName + " at " + this.posInfos.fileName + ":" + this.posInfos.lineNumber;
-	}
-	,__class__: haxe_exceptions_PosException
-});
-var aura_utils_AuraAssertionException = function(exprString,message,previous,pos) {
-	var optMsg = message != "" ? "\n\tMessage: " + message : "";
-	haxe_exceptions_PosException.call(this,"\n[Aura] Failed assertion:" + optMsg + "\n\tExpression: (" + exprString + ")",previous,pos);
-	this.__skipStack++;
-};
-$hxClasses["aura.utils.AuraAssertionException"] = aura_utils_AuraAssertionException;
-aura_utils_AuraAssertionException.__name__ = "aura.utils.AuraAssertionException";
-aura_utils_AuraAssertionException.__super__ = haxe_exceptions_PosException;
-aura_utils_AuraAssertionException.prototype = $extend(haxe_exceptions_PosException.prototype,{
-	__class__: aura_utils_AuraAssertionException
-});
-var aura_utils_AssertLevel = {};
-aura_utils_AssertLevel.fromExpr = function(e) {
-	var _g = e.expr;
-	if(_g._hx_index == 0) {
-		var _g1 = _g.c;
-		if(_g1._hx_index == 3) {
-			var v = _g1.s;
-			return aura_utils_AssertLevel.fromString(v);
-		} else {
-			throw new haxe_Exception("Unsupported expression: " + Std.string(e));
-		}
-	} else {
-		throw new haxe_Exception("Unsupported expression: " + Std.string(e));
-	}
-};
-aura_utils_AssertLevel.fromString = function(s) {
-	if(s == null) {
-		return 3;
-	} else {
-		switch(s) {
-		case "Critical":
-			return 3;
-		case "Debug":
-			return 0;
-		case "Error":
-			return 2;
-		case "NoAssertions":
-			return 4;
-		case "Warning":
-			return 1;
-		default:
-			throw haxe_Exception.thrown("Could not convert \"" + s + "\" to AssertLevel");
-		}
-	}
-};
-function aura_utils_BufferUtils_fillBuffer(buffer,value,length) {
-	if(length == null) {
-		length = -1;
-	}
-	var _g = 0;
-	var _g1 = length == -1 ? buffer.byteLength >> 2 : length;
-	while(_g < _g1) {
-		var i = _g++;
-		buffer.setFloat32(i * 4,value,true);
-	}
-}
-function aura_utils_BufferUtils_clearBuffer(buffer,length) {
-	if(length == null) {
-		length = -1;
-	}
-	var length1 = length;
-	if(length1 == null) {
-		length1 = -1;
-	}
-	var _g = 0;
-	var _g1 = length1 == -1 ? buffer.byteLength >> 2 : length1;
-	while(_g < _g1) {
-		var i = _g++;
-		buffer.setFloat32(i * 4,0,true);
-	}
-}
-function aura_utils_BufferUtils_initZeroesI(vector) {
-	var _g = 0;
-	var _g1 = vector.length;
-	while(_g < _g1) {
-		var i = _g++;
-		vector[i] = 0;
-	}
-}
-function aura_utils_BufferUtils_initZeroesF64(vector) {
-	var _g = 0;
-	var _g1 = vector.length;
-	while(_g < _g1) {
-		var i = _g++;
-		vector[i] = 0.0;
-	}
-}
-function aura_utils_BufferUtils_initZeroesF32(vector) {
-	var _g = 0;
-	var _g1 = vector.length;
-	while(_g < _g1) {
-		var i = _g++;
-		vector[i] = 0.0;
-	}
-}
-function aura_utils_BufferUtils_createEmptyVecI(length) {
-	var this1 = new Array(length);
-	var vec = this1;
-	var _g = 0;
-	var _g1 = vec.length;
-	while(_g < _g1) {
-		var i = _g++;
-		vec[i] = 0;
-	}
-	return vec;
-}
-function aura_utils_BufferUtils_createEmptyVecF64(length) {
-	var this1 = new Array(length);
-	var vec = this1;
-	var _g = 0;
-	var _g1 = vec.length;
-	while(_g < _g1) {
-		var i = _g++;
-		vec[i] = 0.0;
-	}
-	return vec;
-}
-function aura_utils_BufferUtils_createEmptyVecF32(length) {
-	var this1 = new Array(length);
-	var vec = this1;
-	var _g = 0;
-	var _g1 = vec.length;
-	while(_g < _g1) {
-		var i = _g++;
-		vec[i] = 0.0;
-	}
-	return vec;
-}
-function aura_utils_BufferUtils_createEmptyF32Array(length) {
-	var out = kha_arrays_Float32Array._new(length);
-	var length = -1;
-	if(length == null) {
-		length = -1;
-	}
-	var _g = 0;
-	var _g1 = length == -1 ? out.byteLength >> 2 : length;
-	while(_g < _g1) {
-		var i = _g++;
-		out.setFloat32(i * 4,0,true);
-	}
-	return out;
-}
-var aura_utils_LinearInterpolator = function(targetValue) {
-	this.targetValue = this.currentValue = this.lastValue = targetValue;
-};
-$hxClasses["aura.utils.LinearInterpolator"] = aura_utils_LinearInterpolator;
-aura_utils_LinearInterpolator.__name__ = "aura.utils.LinearInterpolator";
-aura_utils_LinearInterpolator.prototype = {
-	lastValue: null
-	,targetValue: null
-	,currentValue: null
-	,updateLast: function() {
-		this.lastValue = this.currentValue = this.targetValue;
-	}
-	,getLerpStepSize: function(numSteps) {
-		return (this.targetValue - this.lastValue) / numSteps;
-	}
-	,getLerpStepSizes32x4: function(numSteps) {
-		var stepSize = (this.targetValue - this.lastValue) / numSteps;
-		var a__0 = stepSize;
-		var a__1 = stepSize;
-		var a__2 = stepSize;
-		var a__3 = stepSize;
-		var b__0 = 1.0;
-		var b__1 = 2.0;
-		var b__2 = 3.0;
-		var b__3 = 4.0;
-		return new kha_simd_Float32x4(a__0 * b__0,a__1 * b__1,a__2 * b__2,a__3 * b__3);
-	}
-	,applySIMD32x4: function(samples,i,stepSizes32x4) {
-		var t = this.currentValue;
-		var a__0 = t;
-		var a__1 = t;
-		var a__2 = t;
-		var a__3 = t;
-		var rampValues__0 = a__0 + stepSizes32x4._0;
-		var rampValues__1 = a__1 + stepSizes32x4._1;
-		var rampValues__2 = a__2 + stepSizes32x4._2;
-		var rampValues__3 = a__3 + stepSizes32x4._3;
-		var value = 0;
-		value = rampValues__3;
-		this.currentValue = value;
-		var signalValues__0 = aura_types_AudioBufferChannelView.get(samples,i);
-		var signalValues__1 = aura_types_AudioBufferChannelView.get(samples,i + 1);
-		var signalValues__2 = aura_types_AudioBufferChannelView.get(samples,i + 2);
-		var signalValues__3 = aura_types_AudioBufferChannelView.get(samples,i + 3);
-		var res__0 = signalValues__0 * rampValues__0;
-		var res__1 = signalValues__1 * rampValues__1;
-		var res__2 = signalValues__2 * rampValues__2;
-		var res__3 = signalValues__3 * rampValues__3;
-		var value = 0;
-		value = res__0;
-		aura_types_AudioBufferChannelView.set(samples,i,value);
-		var value = 0;
-		value = res__1;
-		aura_types_AudioBufferChannelView.set(samples,i + 1,value);
-		var value = 0;
-		value = res__2;
-		aura_types_AudioBufferChannelView.set(samples,i + 2,value);
-		var value = 0;
-		value = res__3;
-		aura_types_AudioBufferChannelView.set(samples,i + 3,value);
-	}
-	,__class__: aura_utils_LinearInterpolator
-};
-function aura_utils_MathUtils_maxI(a,b) {
-	if(a > b) {
-		return a;
-	} else {
-		return b;
-	}
-}
-function aura_utils_MathUtils_minI(a,b) {
-	if(a < b) {
-		return a;
-	} else {
-		return b;
-	}
-}
-function aura_utils_MathUtils_maxF(a,b) {
-	if(a > b) {
-		return a;
-	} else {
-		return b;
-	}
-}
-function aura_utils_MathUtils_minF(a,b) {
-	if(a < b) {
-		return a;
-	} else {
-		return b;
-	}
-}
-function aura_utils_MathUtils_lerp(valA,valB,fac) {
-	return valA * (1 - fac) + valB * fac;
-}
-function aura_utils_MathUtils_clampI(val,min,max) {
-	if(max == null) {
-		max = 1;
-	}
-	if(min == null) {
-		min = 0;
-	}
-	var b = max < val ? max : val;
-	if(min > b) {
-		return min;
-	} else {
-		return b;
-	}
-}
-function aura_utils_MathUtils_clampF(val,min,max) {
-	if(max == null) {
-		max = 1.0;
-	}
-	if(min == null) {
-		min = 0.0;
-	}
-	var b = max < val ? max : val;
-	if(min > b) {
-		return min;
-	} else {
-		return b;
-	}
-}
-function aura_utils_MathUtils_log10(v) {
-	return Math.log(v) * 0.43429448190325181666793241674895398318767547607421875;
-}
-function aura_utils_MathUtils_getFullAngleDegrees(vecBase,vecOther,vecNormal) {
-	var dot = vecBase.x * vecOther.x + vecBase.y * vecOther.y + vecBase.z * vecOther.z;
-	var det = vecBase.x * vecOther.y * vecNormal.z + vecOther.x * vecNormal.y * vecBase.z + vecNormal.x * vecBase.y * vecOther.z - vecBase.z * vecOther.y * vecNormal.x - vecOther.z * vecNormal.y * vecBase.x - vecNormal.z * vecBase.y * vecOther.x;
-	var radians = Math.atan2(det,dot);
-	if(radians < 0) {
-		radians += 2 * Math.PI;
-	}
-	return radians * 180 / Math.PI;
-}
-function aura_utils_MathUtils_determinant3x3(col1,col2,col3) {
-	return col1.x * col2.y * col3.z + col2.x * col3.y * col1.z + col3.x * col1.y * col2.z - col1.z * col2.y * col3.x - col2.z * col3.y * col1.x - col3.z * col1.y * col2.x;
-}
-function aura_utils_MathUtils_projectPointOntoPlane(point,planeNormal) {
-	var value = planeNormal.x * point.x + planeNormal.y * point.y + planeNormal.z * point.z;
-	var x = planeNormal.x * value;
-	var y = planeNormal.y * value;
-	var z = planeNormal.z * value;
-	if(z == null) {
-		z = 0;
-	}
-	if(y == null) {
-		y = 0;
-	}
-	if(x == null) {
-		x = 0;
-	}
-	var vec_x = x;
-	var vec_y = y;
-	var vec_z = z;
-	return new kha_math_FastVector3(point.x - vec_x,point.y - vec_y,point.z - vec_z);
-}
-function aura_utils_MathUtils_isPowerOf2(val) {
-	return (val & val - 1) == 0;
-}
-function aura_utils_MathUtils_getNearestIndexF(value,stepSize) {
-	var quotient = value / stepSize | 0;
-	var remainder = value % stepSize;
-	if(remainder > stepSize / 2) {
-		return quotient + 1;
-	} else {
-		return quotient;
-	}
-}
-function aura_utils_MathUtils_log2Unsigned(n) {
-	var res = 0;
-	var tmp = n >>> 1;
-	while(tmp != 0) {
-		++res;
-		tmp >>>= 1;
-	}
-	return res;
-}
-function aura_utils_MathUtils_exp2(n) {
-	return 1 << n;
-}
-function aura_utils_MathUtils_div4(n) {
-	return n >>> 2;
-}
-function aura_utils_MathUtils_mod4(n) {
-	return n & 3;
-}
-var aura_utils_Pointer = function(value) {
-	this.value = value;
-};
-$hxClasses["aura.utils.Pointer"] = aura_utils_Pointer;
-aura_utils_Pointer.__name__ = "aura.utils.Pointer";
-aura_utils_Pointer.prototype = {
-	value: null
-	,set: function(value) {
-		this.value = value;
-	}
-	,get: function() {
-		return this.value;
-	}
-	,getSure: function() {
-		return this.value;
-	}
-	,__class__: aura_utils_Pointer
-};
-var aura_utils_Pointer_$Int = function(value) {
-	this.value = value;
-};
-$hxClasses["aura.utils.Pointer_Int"] = aura_utils_Pointer_$Int;
-aura_utils_Pointer_$Int.__name__ = "aura.utils.Pointer_Int";
-aura_utils_Pointer_$Int.prototype = {
-	value: null
-	,set: function(value) {
-		this.value = value;
-	}
-	,get: function() {
-		return this.value;
-	}
-	,getSure: function() {
-		return this.value;
-	}
-	,__class__: aura_utils_Pointer_$Int
-};
-var aura_utils_Pointer_$aura_$types_$AudioBuffer = function(value) {
-	this.value = value;
-};
-$hxClasses["aura.utils.Pointer_aura_types_AudioBuffer"] = aura_utils_Pointer_$aura_$types_$AudioBuffer;
-aura_utils_Pointer_$aura_$types_$AudioBuffer.__name__ = "aura.utils.Pointer_aura_types_AudioBuffer";
-aura_utils_Pointer_$aura_$types_$AudioBuffer.prototype = {
-	value: null
-	,set: function(value) {
-		this.value = value;
-	}
-	,get: function() {
-		return this.value;
-	}
-	,getSure: function() {
-		return this.value;
-	}
-	,__class__: aura_utils_Pointer_$aura_$types_$AudioBuffer
-};
-var aura_utils_Profiler = function() { };
-$hxClasses["aura.utils.Profiler"] = aura_utils_Profiler;
-aura_utils_Profiler.__name__ = "aura.utils.Profiler";
-aura_utils_Profiler.frame = function(threadName) {
-};
-aura_utils_Profiler.event = function() {
-};
-aura_utils_Profiler.shutdown = function() {
-};
-var aura_utils_Resampler = function() { };
-$hxClasses["aura.utils.Resampler"] = aura_utils_Resampler;
-aura_utils_Resampler.__name__ = "aura.utils.Resampler";
-aura_utils_Resampler.getResampleLength = function(sourceDataLength,sourceSampleRate,targetSampleRate) {
-	return Math.ceil(sourceDataLength * (targetSampleRate / sourceSampleRate));
-};
-aura_utils_Resampler.sourceSamplePosToTargetPos = function(sourceSamplePos,sourceSampleRate,targetSampleRate) {
-	return sourceSamplePos * (targetSampleRate / sourceSampleRate);
-};
-aura_utils_Resampler.targetSamplePosToSourcePos = function(targetSamplePos,sourceSampleRate,targetSampleRate) {
-	return targetSamplePos * (sourceSampleRate / targetSampleRate);
-};
-aura_utils_Resampler.resampleFloat32Array = function(sourceData,sourceSampleRate,targetData,targetSampleRate) {
-	var _g = 0;
-	var _g1 = targetData.byteLength >> 2;
-	while(_g < _g1) {
-		var i = _g++;
-		var v = aura_utils_Resampler.sampleAtTargetPositionLerp(sourceData,i,sourceSampleRate,targetSampleRate);
-		targetData.setFloat32(i * 4,v,true);
-	}
-};
-aura_utils_Resampler.sampleAtTargetPositionLerp = function(sourceData,targetSamplePos,sourceSampleRate,targetSampleRate) {
-	if(!(targetSamplePos >= 0.0)) {
-		aura_utils_Assert.throwAssertionError("targetSamplePos >= 0.0",null,{ fileName : "aura/utils/Resampler.hx", lineNumber : 66, className : "aura.utils.Resampler", methodName : "sampleAtTargetPositionLerp"});
-	}
-	var sourceSamplePos = targetSamplePos * (sourceSampleRate / targetSampleRate);
-	var maxPos = (sourceData.byteLength >> 2) - 1;
-	var pos1 = Math.floor(sourceSamplePos);
-	var pos2 = pos1 + 1;
-	var value1 = pos1 > maxPos ? sourceData.getFloat32(maxPos * 4,kha_arrays_ByteArray.LITTLE_ENDIAN) : sourceData.getFloat32(pos1 * 4,kha_arrays_ByteArray.LITTLE_ENDIAN);
-	var value2 = pos2 > maxPos ? sourceData.getFloat32(maxPos * 4,kha_arrays_ByteArray.LITTLE_ENDIAN) : sourceData.getFloat32(pos2 * 4,kha_arrays_ByteArray.LITTLE_ENDIAN);
-	var fac = sourceSamplePos - Math.floor(sourceSamplePos);
-	return value1 * (1 - fac) + value2 * fac;
-};
-var aura_utils__$ReverseIterator_ReverseIterator = function(start,end,step) {
-	this.currentIndex = start;
-	this.end = end;
-	this.step = step;
-};
-$hxClasses["aura.utils._ReverseIterator.ReverseIterator"] = aura_utils__$ReverseIterator_ReverseIterator;
-aura_utils__$ReverseIterator_ReverseIterator.__name__ = "aura.utils._ReverseIterator.ReverseIterator";
-aura_utils__$ReverseIterator_ReverseIterator.prototype = {
-	currentIndex: null
-	,end: null
-	,step: null
-	,hasNext: function() {
-		return this.currentIndex > this.end;
-	}
-	,next: function() {
-		var tmp = this;
-		return (tmp.currentIndex -= this.step) + this.step;
-	}
-	,__class__: aura_utils__$ReverseIterator_ReverseIterator
-};
-function aura_utils_ReverseIterator_reversed(iter,step) {
-	if(step == null) {
-		step = 1;
-	}
-	return new aura_utils__$ReverseIterator_ReverseIterator(iter.min,iter.max,step);
-}
-var haxe_StackItem = $hxEnums["haxe.StackItem"] = { __ename__:true,__constructs__:null
-	,CFunction: {_hx_name:"CFunction",_hx_index:0,__enum__:"haxe.StackItem",toString:$estr}
-	,Module: ($_=function(m) { return {_hx_index:1,m:m,__enum__:"haxe.StackItem",toString:$estr}; },$_._hx_name="Module",$_.__params__ = ["m"],$_)
-	,FilePos: ($_=function(s,file,line,column) { return {_hx_index:2,s:s,file:file,line:line,column:column,__enum__:"haxe.StackItem",toString:$estr}; },$_._hx_name="FilePos",$_.__params__ = ["s","file","line","column"],$_)
-	,Method: ($_=function(classname,method) { return {_hx_index:3,classname:classname,method:method,__enum__:"haxe.StackItem",toString:$estr}; },$_._hx_name="Method",$_.__params__ = ["classname","method"],$_)
-	,LocalFunction: ($_=function(v) { return {_hx_index:4,v:v,__enum__:"haxe.StackItem",toString:$estr}; },$_._hx_name="LocalFunction",$_.__params__ = ["v"],$_)
-};
-haxe_StackItem.__constructs__ = [haxe_StackItem.CFunction,haxe_StackItem.Module,haxe_StackItem.FilePos,haxe_StackItem.Method,haxe_StackItem.LocalFunction];
-var haxe_CallStack = {};
-haxe_CallStack.toString = function(stack) {
-	var b = new StringBuf();
-	var _g = 0;
-	var _g1 = stack;
-	while(_g < _g1.length) {
-		var s = _g1[_g];
-		++_g;
-		b.b += "\nCalled from ";
-		haxe_CallStack.itemToString(b,s);
-	}
-	return b.b;
-};
-haxe_CallStack.subtract = function(this1,stack) {
-	var startIndex = -1;
-	var i = -1;
-	while(++i < this1.length) {
-		var _g = 0;
-		var _g1 = stack.length;
-		while(_g < _g1) {
-			var j = _g++;
-			if(haxe_CallStack.equalItems(this1[i],stack[j])) {
-				if(startIndex < 0) {
-					startIndex = i;
-				}
-				++i;
-				if(i >= this1.length) {
-					break;
-				}
-			} else {
-				startIndex = -1;
-			}
-		}
-		if(startIndex >= 0) {
-			break;
-		}
-	}
-	if(startIndex >= 0) {
-		return this1.slice(0,startIndex);
-	} else {
-		return this1;
-	}
-};
-haxe_CallStack.equalItems = function(item1,item2) {
-	if(item1 == null) {
-		if(item2 == null) {
-			return true;
-		} else {
-			return false;
-		}
-	} else {
-		switch(item1._hx_index) {
-		case 0:
-			if(item2 == null) {
-				return false;
-			} else if(item2._hx_index == 0) {
-				return true;
-			} else {
-				return false;
-			}
-			break;
-		case 1:
-			if(item2 == null) {
-				return false;
-			} else if(item2._hx_index == 1) {
-				var m2 = item2.m;
-				var m1 = item1.m;
-				return m1 == m2;
-			} else {
-				return false;
-			}
-			break;
-		case 2:
-			if(item2 == null) {
-				return false;
-			} else if(item2._hx_index == 2) {
-				var item21 = item2.s;
-				var file2 = item2.file;
-				var line2 = item2.line;
-				var col2 = item2.column;
-				var col1 = item1.column;
-				var line1 = item1.line;
-				var file1 = item1.file;
-				var item11 = item1.s;
-				if(file1 == file2 && line1 == line2 && col1 == col2) {
-					return haxe_CallStack.equalItems(item11,item21);
-				} else {
-					return false;
-				}
-			} else {
-				return false;
-			}
-			break;
-		case 3:
-			if(item2 == null) {
-				return false;
-			} else if(item2._hx_index == 3) {
-				var class2 = item2.classname;
-				var method2 = item2.method;
-				var method1 = item1.method;
-				var class1 = item1.classname;
-				if(class1 == class2) {
-					return method1 == method2;
-				} else {
-					return false;
-				}
-			} else {
-				return false;
-			}
-			break;
-		case 4:
-			if(item2 == null) {
-				return false;
-			} else if(item2._hx_index == 4) {
-				var v2 = item2.v;
-				var v1 = item1.v;
-				return v1 == v2;
-			} else {
-				return false;
-			}
-			break;
-		}
-	}
-};
-haxe_CallStack.itemToString = function(b,s) {
-	switch(s._hx_index) {
-	case 0:
-		b.b += "a C function";
-		break;
-	case 1:
-		var m = s.m;
-		b.b += "module ";
-		b.b += m == null ? "null" : "" + m;
-		break;
-	case 2:
-		var s1 = s.s;
-		var file = s.file;
-		var line = s.line;
-		var col = s.column;
-		if(s1 != null) {
-			haxe_CallStack.itemToString(b,s1);
-			b.b += " (";
-		}
-		b.b += file == null ? "null" : "" + file;
-		b.b += " line ";
-		b.b += line == null ? "null" : "" + line;
-		if(col != null) {
-			b.b += " column ";
-			b.b += col == null ? "null" : "" + col;
-		}
-		if(s1 != null) {
-			b.b += ")";
-		}
-		break;
-	case 3:
-		var cname = s.classname;
-		var meth = s.method;
-		b.b += Std.string(cname == null ? "<unknown>" : cname);
-		b.b += ".";
-		b.b += meth == null ? "null" : "" + meth;
-		break;
-	case 4:
-		var n = s.v;
-		b.b += "local function #";
-		b.b += n == null ? "null" : "" + n;
-		break;
-	}
-};
-var haxe_IMap = function() { };
-$hxClasses["haxe.IMap"] = haxe_IMap;
-haxe_IMap.__name__ = "haxe.IMap";
-haxe_IMap.__isInterface__ = true;
-haxe_IMap.prototype = {
-	get: null
-	,set: null
-	,exists: null
-	,remove: null
-	,keys: null
-	,keyValueIterator: null
-	,clear: null
-	,__class__: haxe_IMap
-};
-var haxe_Int32 = {};
-haxe_Int32.ucompare = function(a,b) {
-	if(a < 0) {
-		if(b < 0) {
-			return ~b - ~a | 0;
-		} else {
-			return 1;
-		}
-	}
-	if(b < 0) {
-		return -1;
-	} else {
-		return a - b | 0;
-	}
-};
 var haxe__$Int64__$_$_$Int64 = function(high,low) {
 	this.high = high;
 	this.low = low;
@@ -9729,41 +6133,25 @@ haxe_ds__$StringMap_StringMapKeyValueIterator.prototype = {
 	}
 	,__class__: haxe_ds__$StringMap_StringMapKeyValueIterator
 };
-var haxe_ds_Vector = {};
-haxe_ds_Vector.blit = function(src,srcPos,dest,destPos,len) {
-	if(src == dest) {
-		if(srcPos < destPos) {
-			var i = srcPos + len;
-			var j = destPos + len;
-			var _g = 0;
-			var _g1 = len;
-			while(_g < _g1) {
-				var k = _g++;
-				--i;
-				--j;
-				src[j] = src[i];
-			}
-		} else if(srcPos > destPos) {
-			var i = srcPos;
-			var j = destPos;
-			var _g = 0;
-			var _g1 = len;
-			while(_g < _g1) {
-				var k = _g++;
-				src[j] = src[i];
-				++i;
-				++j;
-			}
-		}
+var haxe_exceptions_PosException = function(message,previous,pos) {
+	haxe_Exception.call(this,message,previous);
+	if(pos == null) {
+		this.posInfos = { fileName : "(unknown)", lineNumber : 0, className : "(unknown)", methodName : "(unknown)"};
 	} else {
-		var _g = 0;
-		var _g1 = len;
-		while(_g < _g1) {
-			var i = _g++;
-			dest[destPos + i] = src[srcPos + i];
-		}
+		this.posInfos = pos;
 	}
+	this.__skipStack++;
 };
+$hxClasses["haxe.exceptions.PosException"] = haxe_exceptions_PosException;
+haxe_exceptions_PosException.__name__ = "haxe.exceptions.PosException";
+haxe_exceptions_PosException.__super__ = haxe_Exception;
+haxe_exceptions_PosException.prototype = $extend(haxe_Exception.prototype,{
+	posInfos: null
+	,toString: function() {
+		return "" + haxe_Exception.prototype.toString.call(this) + " in " + this.posInfos.className + "." + this.posInfos.methodName + " at " + this.posInfos.fileName + ":" + this.posInfos.lineNumber;
+	}
+	,__class__: haxe_exceptions_PosException
+});
 var haxe_exceptions_NotImplementedException = function(message,previous,pos) {
 	if(message == null) {
 		message = "Not implemented";
@@ -10130,16 +6518,6 @@ haxe_io_Input.prototype = {
 			return ch1 | ch2 << 8;
 		}
 	}
-	,readInt24: function() {
-		var ch1 = this.readByte();
-		var ch2 = this.readByte();
-		var ch3 = this.readByte();
-		var n = this.bigEndian ? ch3 | ch2 << 8 | ch1 << 16 : ch1 | ch2 << 8 | ch3 << 16;
-		if((n & 8388608) != 0) {
-			return n - 16777216;
-		}
-		return n;
-	}
 	,readInt32: function() {
 		var ch1 = this.readByte();
 		var ch2 = this.readByte();
@@ -10401,125 +6779,6 @@ haxe_iterators_MapKeyValueIterator.prototype = {
 	}
 	,__class__: haxe_iterators_MapKeyValueIterator
 };
-var haxe_macro_StringLiteralKind = $hxEnums["haxe.macro.StringLiteralKind"] = { __ename__:true,__constructs__:null
-	,DoubleQuotes: {_hx_name:"DoubleQuotes",_hx_index:0,__enum__:"haxe.macro.StringLiteralKind",toString:$estr}
-	,SingleQuotes: {_hx_name:"SingleQuotes",_hx_index:1,__enum__:"haxe.macro.StringLiteralKind",toString:$estr}
-};
-haxe_macro_StringLiteralKind.__constructs__ = [haxe_macro_StringLiteralKind.DoubleQuotes,haxe_macro_StringLiteralKind.SingleQuotes];
-var haxe_macro_Constant = $hxEnums["haxe.macro.Constant"] = { __ename__:true,__constructs__:null
-	,CInt: ($_=function(v) { return {_hx_index:0,v:v,__enum__:"haxe.macro.Constant",toString:$estr}; },$_._hx_name="CInt",$_.__params__ = ["v"],$_)
-	,CFloat: ($_=function(f) { return {_hx_index:1,f:f,__enum__:"haxe.macro.Constant",toString:$estr}; },$_._hx_name="CFloat",$_.__params__ = ["f"],$_)
-	,CString: ($_=function(s,kind) { return {_hx_index:2,s:s,kind:kind,__enum__:"haxe.macro.Constant",toString:$estr}; },$_._hx_name="CString",$_.__params__ = ["s","kind"],$_)
-	,CIdent: ($_=function(s) { return {_hx_index:3,s:s,__enum__:"haxe.macro.Constant",toString:$estr}; },$_._hx_name="CIdent",$_.__params__ = ["s"],$_)
-	,CRegexp: ($_=function(r,opt) { return {_hx_index:4,r:r,opt:opt,__enum__:"haxe.macro.Constant",toString:$estr}; },$_._hx_name="CRegexp",$_.__params__ = ["r","opt"],$_)
-};
-haxe_macro_Constant.__constructs__ = [haxe_macro_Constant.CInt,haxe_macro_Constant.CFloat,haxe_macro_Constant.CString,haxe_macro_Constant.CIdent,haxe_macro_Constant.CRegexp];
-var haxe_macro_Binop = $hxEnums["haxe.macro.Binop"] = { __ename__:true,__constructs__:null
-	,OpAdd: {_hx_name:"OpAdd",_hx_index:0,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpMult: {_hx_name:"OpMult",_hx_index:1,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpDiv: {_hx_name:"OpDiv",_hx_index:2,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpSub: {_hx_name:"OpSub",_hx_index:3,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpAssign: {_hx_name:"OpAssign",_hx_index:4,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpEq: {_hx_name:"OpEq",_hx_index:5,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpNotEq: {_hx_name:"OpNotEq",_hx_index:6,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpGt: {_hx_name:"OpGt",_hx_index:7,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpGte: {_hx_name:"OpGte",_hx_index:8,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpLt: {_hx_name:"OpLt",_hx_index:9,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpLte: {_hx_name:"OpLte",_hx_index:10,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpAnd: {_hx_name:"OpAnd",_hx_index:11,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpOr: {_hx_name:"OpOr",_hx_index:12,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpXor: {_hx_name:"OpXor",_hx_index:13,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpBoolAnd: {_hx_name:"OpBoolAnd",_hx_index:14,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpBoolOr: {_hx_name:"OpBoolOr",_hx_index:15,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpShl: {_hx_name:"OpShl",_hx_index:16,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpShr: {_hx_name:"OpShr",_hx_index:17,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpUShr: {_hx_name:"OpUShr",_hx_index:18,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpMod: {_hx_name:"OpMod",_hx_index:19,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpAssignOp: ($_=function(op) { return {_hx_index:20,op:op,__enum__:"haxe.macro.Binop",toString:$estr}; },$_._hx_name="OpAssignOp",$_.__params__ = ["op"],$_)
-	,OpInterval: {_hx_name:"OpInterval",_hx_index:21,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpArrow: {_hx_name:"OpArrow",_hx_index:22,__enum__:"haxe.macro.Binop",toString:$estr}
-	,OpIn: {_hx_name:"OpIn",_hx_index:23,__enum__:"haxe.macro.Binop",toString:$estr}
-};
-haxe_macro_Binop.__constructs__ = [haxe_macro_Binop.OpAdd,haxe_macro_Binop.OpMult,haxe_macro_Binop.OpDiv,haxe_macro_Binop.OpSub,haxe_macro_Binop.OpAssign,haxe_macro_Binop.OpEq,haxe_macro_Binop.OpNotEq,haxe_macro_Binop.OpGt,haxe_macro_Binop.OpGte,haxe_macro_Binop.OpLt,haxe_macro_Binop.OpLte,haxe_macro_Binop.OpAnd,haxe_macro_Binop.OpOr,haxe_macro_Binop.OpXor,haxe_macro_Binop.OpBoolAnd,haxe_macro_Binop.OpBoolOr,haxe_macro_Binop.OpShl,haxe_macro_Binop.OpShr,haxe_macro_Binop.OpUShr,haxe_macro_Binop.OpMod,haxe_macro_Binop.OpAssignOp,haxe_macro_Binop.OpInterval,haxe_macro_Binop.OpArrow,haxe_macro_Binop.OpIn];
-var haxe_macro_Unop = $hxEnums["haxe.macro.Unop"] = { __ename__:true,__constructs__:null
-	,OpIncrement: {_hx_name:"OpIncrement",_hx_index:0,__enum__:"haxe.macro.Unop",toString:$estr}
-	,OpDecrement: {_hx_name:"OpDecrement",_hx_index:1,__enum__:"haxe.macro.Unop",toString:$estr}
-	,OpNot: {_hx_name:"OpNot",_hx_index:2,__enum__:"haxe.macro.Unop",toString:$estr}
-	,OpNeg: {_hx_name:"OpNeg",_hx_index:3,__enum__:"haxe.macro.Unop",toString:$estr}
-	,OpNegBits: {_hx_name:"OpNegBits",_hx_index:4,__enum__:"haxe.macro.Unop",toString:$estr}
-	,OpSpread: {_hx_name:"OpSpread",_hx_index:5,__enum__:"haxe.macro.Unop",toString:$estr}
-};
-haxe_macro_Unop.__constructs__ = [haxe_macro_Unop.OpIncrement,haxe_macro_Unop.OpDecrement,haxe_macro_Unop.OpNot,haxe_macro_Unop.OpNeg,haxe_macro_Unop.OpNegBits,haxe_macro_Unop.OpSpread];
-var haxe_macro_FunctionKind = $hxEnums["haxe.macro.FunctionKind"] = { __ename__:true,__constructs__:null
-	,FAnonymous: {_hx_name:"FAnonymous",_hx_index:0,__enum__:"haxe.macro.FunctionKind",toString:$estr}
-	,FNamed: ($_=function(name,inlined) { return {_hx_index:1,name:name,inlined:inlined,__enum__:"haxe.macro.FunctionKind",toString:$estr}; },$_._hx_name="FNamed",$_.__params__ = ["name","inlined"],$_)
-	,FArrow: {_hx_name:"FArrow",_hx_index:2,__enum__:"haxe.macro.FunctionKind",toString:$estr}
-};
-haxe_macro_FunctionKind.__constructs__ = [haxe_macro_FunctionKind.FAnonymous,haxe_macro_FunctionKind.FNamed,haxe_macro_FunctionKind.FArrow];
-var haxe_macro_ExprDef = $hxEnums["haxe.macro.ExprDef"] = { __ename__:true,__constructs__:null
-	,EConst: ($_=function(c) { return {_hx_index:0,c:c,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EConst",$_.__params__ = ["c"],$_)
-	,EArray: ($_=function(e1,e2) { return {_hx_index:1,e1:e1,e2:e2,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EArray",$_.__params__ = ["e1","e2"],$_)
-	,EBinop: ($_=function(op,e1,e2) { return {_hx_index:2,op:op,e1:e1,e2:e2,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EBinop",$_.__params__ = ["op","e1","e2"],$_)
-	,EField: ($_=function(e,field) { return {_hx_index:3,e:e,field:field,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EField",$_.__params__ = ["e","field"],$_)
-	,EParenthesis: ($_=function(e) { return {_hx_index:4,e:e,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EParenthesis",$_.__params__ = ["e"],$_)
-	,EObjectDecl: ($_=function(fields) { return {_hx_index:5,fields:fields,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EObjectDecl",$_.__params__ = ["fields"],$_)
-	,EArrayDecl: ($_=function(values) { return {_hx_index:6,values:values,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EArrayDecl",$_.__params__ = ["values"],$_)
-	,ECall: ($_=function(e,params) { return {_hx_index:7,e:e,params:params,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="ECall",$_.__params__ = ["e","params"],$_)
-	,ENew: ($_=function(t,params) { return {_hx_index:8,t:t,params:params,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="ENew",$_.__params__ = ["t","params"],$_)
-	,EUnop: ($_=function(op,postFix,e) { return {_hx_index:9,op:op,postFix:postFix,e:e,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EUnop",$_.__params__ = ["op","postFix","e"],$_)
-	,EVars: ($_=function(vars) { return {_hx_index:10,vars:vars,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EVars",$_.__params__ = ["vars"],$_)
-	,EFunction: ($_=function(kind,f) { return {_hx_index:11,kind:kind,f:f,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EFunction",$_.__params__ = ["kind","f"],$_)
-	,EBlock: ($_=function(exprs) { return {_hx_index:12,exprs:exprs,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EBlock",$_.__params__ = ["exprs"],$_)
-	,EFor: ($_=function(it,expr) { return {_hx_index:13,it:it,expr:expr,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EFor",$_.__params__ = ["it","expr"],$_)
-	,EIf: ($_=function(econd,eif,eelse) { return {_hx_index:14,econd:econd,eif:eif,eelse:eelse,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EIf",$_.__params__ = ["econd","eif","eelse"],$_)
-	,EWhile: ($_=function(econd,e,normalWhile) { return {_hx_index:15,econd:econd,e:e,normalWhile:normalWhile,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EWhile",$_.__params__ = ["econd","e","normalWhile"],$_)
-	,ESwitch: ($_=function(e,cases,edef) { return {_hx_index:16,e:e,cases:cases,edef:edef,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="ESwitch",$_.__params__ = ["e","cases","edef"],$_)
-	,ETry: ($_=function(e,catches) { return {_hx_index:17,e:e,catches:catches,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="ETry",$_.__params__ = ["e","catches"],$_)
-	,EReturn: ($_=function(e) { return {_hx_index:18,e:e,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EReturn",$_.__params__ = ["e"],$_)
-	,EBreak: {_hx_name:"EBreak",_hx_index:19,__enum__:"haxe.macro.ExprDef",toString:$estr}
-	,EContinue: {_hx_name:"EContinue",_hx_index:20,__enum__:"haxe.macro.ExprDef",toString:$estr}
-	,EUntyped: ($_=function(e) { return {_hx_index:21,e:e,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EUntyped",$_.__params__ = ["e"],$_)
-	,EThrow: ($_=function(e) { return {_hx_index:22,e:e,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EThrow",$_.__params__ = ["e"],$_)
-	,ECast: ($_=function(e,t) { return {_hx_index:23,e:e,t:t,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="ECast",$_.__params__ = ["e","t"],$_)
-	,EDisplay: ($_=function(e,displayKind) { return {_hx_index:24,e:e,displayKind:displayKind,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EDisplay",$_.__params__ = ["e","displayKind"],$_)
-	,EDisplayNew: ($_=function(t) { return {_hx_index:25,t:t,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EDisplayNew",$_.__params__ = ["t"],$_)
-	,ETernary: ($_=function(econd,eif,eelse) { return {_hx_index:26,econd:econd,eif:eif,eelse:eelse,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="ETernary",$_.__params__ = ["econd","eif","eelse"],$_)
-	,ECheckType: ($_=function(e,t) { return {_hx_index:27,e:e,t:t,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="ECheckType",$_.__params__ = ["e","t"],$_)
-	,EMeta: ($_=function(s,e) { return {_hx_index:28,s:s,e:e,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EMeta",$_.__params__ = ["s","e"],$_)
-	,EIs: ($_=function(e,t) { return {_hx_index:29,e:e,t:t,__enum__:"haxe.macro.ExprDef",toString:$estr}; },$_._hx_name="EIs",$_.__params__ = ["e","t"],$_)
-};
-haxe_macro_ExprDef.__constructs__ = [haxe_macro_ExprDef.EConst,haxe_macro_ExprDef.EArray,haxe_macro_ExprDef.EBinop,haxe_macro_ExprDef.EField,haxe_macro_ExprDef.EParenthesis,haxe_macro_ExprDef.EObjectDecl,haxe_macro_ExprDef.EArrayDecl,haxe_macro_ExprDef.ECall,haxe_macro_ExprDef.ENew,haxe_macro_ExprDef.EUnop,haxe_macro_ExprDef.EVars,haxe_macro_ExprDef.EFunction,haxe_macro_ExprDef.EBlock,haxe_macro_ExprDef.EFor,haxe_macro_ExprDef.EIf,haxe_macro_ExprDef.EWhile,haxe_macro_ExprDef.ESwitch,haxe_macro_ExprDef.ETry,haxe_macro_ExprDef.EReturn,haxe_macro_ExprDef.EBreak,haxe_macro_ExprDef.EContinue,haxe_macro_ExprDef.EUntyped,haxe_macro_ExprDef.EThrow,haxe_macro_ExprDef.ECast,haxe_macro_ExprDef.EDisplay,haxe_macro_ExprDef.EDisplayNew,haxe_macro_ExprDef.ETernary,haxe_macro_ExprDef.ECheckType,haxe_macro_ExprDef.EMeta,haxe_macro_ExprDef.EIs];
-var haxe_macro_DisplayKind = $hxEnums["haxe.macro.DisplayKind"] = { __ename__:true,__constructs__:null
-	,DKCall: {_hx_name:"DKCall",_hx_index:0,__enum__:"haxe.macro.DisplayKind",toString:$estr}
-	,DKDot: {_hx_name:"DKDot",_hx_index:1,__enum__:"haxe.macro.DisplayKind",toString:$estr}
-	,DKStructure: {_hx_name:"DKStructure",_hx_index:2,__enum__:"haxe.macro.DisplayKind",toString:$estr}
-	,DKMarked: {_hx_name:"DKMarked",_hx_index:3,__enum__:"haxe.macro.DisplayKind",toString:$estr}
-	,DKPattern: ($_=function(outermost) { return {_hx_index:4,outermost:outermost,__enum__:"haxe.macro.DisplayKind",toString:$estr}; },$_._hx_name="DKPattern",$_.__params__ = ["outermost"],$_)
-};
-haxe_macro_DisplayKind.__constructs__ = [haxe_macro_DisplayKind.DKCall,haxe_macro_DisplayKind.DKDot,haxe_macro_DisplayKind.DKStructure,haxe_macro_DisplayKind.DKMarked,haxe_macro_DisplayKind.DKPattern];
-var haxe_macro_ComplexType = $hxEnums["haxe.macro.ComplexType"] = { __ename__:true,__constructs__:null
-	,TPath: ($_=function(p) { return {_hx_index:0,p:p,__enum__:"haxe.macro.ComplexType",toString:$estr}; },$_._hx_name="TPath",$_.__params__ = ["p"],$_)
-	,TFunction: ($_=function(args,ret) { return {_hx_index:1,args:args,ret:ret,__enum__:"haxe.macro.ComplexType",toString:$estr}; },$_._hx_name="TFunction",$_.__params__ = ["args","ret"],$_)
-	,TAnonymous: ($_=function(fields) { return {_hx_index:2,fields:fields,__enum__:"haxe.macro.ComplexType",toString:$estr}; },$_._hx_name="TAnonymous",$_.__params__ = ["fields"],$_)
-	,TParent: ($_=function(t) { return {_hx_index:3,t:t,__enum__:"haxe.macro.ComplexType",toString:$estr}; },$_._hx_name="TParent",$_.__params__ = ["t"],$_)
-	,TExtend: ($_=function(p,fields) { return {_hx_index:4,p:p,fields:fields,__enum__:"haxe.macro.ComplexType",toString:$estr}; },$_._hx_name="TExtend",$_.__params__ = ["p","fields"],$_)
-	,TOptional: ($_=function(t) { return {_hx_index:5,t:t,__enum__:"haxe.macro.ComplexType",toString:$estr}; },$_._hx_name="TOptional",$_.__params__ = ["t"],$_)
-	,TNamed: ($_=function(n,t) { return {_hx_index:6,n:n,t:t,__enum__:"haxe.macro.ComplexType",toString:$estr}; },$_._hx_name="TNamed",$_.__params__ = ["n","t"],$_)
-	,TIntersection: ($_=function(tl) { return {_hx_index:7,tl:tl,__enum__:"haxe.macro.ComplexType",toString:$estr}; },$_._hx_name="TIntersection",$_.__params__ = ["tl"],$_)
-};
-haxe_macro_ComplexType.__constructs__ = [haxe_macro_ComplexType.TPath,haxe_macro_ComplexType.TFunction,haxe_macro_ComplexType.TAnonymous,haxe_macro_ComplexType.TParent,haxe_macro_ComplexType.TExtend,haxe_macro_ComplexType.TOptional,haxe_macro_ComplexType.TNamed,haxe_macro_ComplexType.TIntersection];
-var haxe_macro_Error = function(message,pos,previous) {
-	haxe_Exception.call(this,message,previous);
-	this.pos = pos;
-	this.__skipStack++;
-};
-$hxClasses["haxe.macro.Error"] = haxe_macro_Error;
-haxe_macro_Error.__name__ = "haxe.macro.Error";
-haxe_macro_Error.__super__ = haxe_Exception;
-haxe_macro_Error.prototype = $extend(haxe_Exception.prototype,{
-	pos: null
-	,__class__: haxe_macro_Error
-});
 var haxe_net_ReadyState = $hxEnums["haxe.net.ReadyState"] = { __ename__:true,__constructs__:null
 	,Connecting: {_hx_name:"Connecting",_hx_index:0,__enum__:"haxe.net.ReadyState",toString:$estr}
 	,Open: {_hx_name:"Open",_hx_index:1,__enum__:"haxe.net.ReadyState",toString:$estr}
@@ -13697,30 +9956,13 @@ kha__$Assets_ImageList.prototype = {
 	,__class__: kha__$Assets_ImageList
 };
 var kha__$Assets_SoundList = function() {
-	this.names = ["sound"];
-	this.soundSize = 1724017;
-	this.soundDescription = { name : "sound", file_sizes : [1724017], files : ["sound"], type : "sound"};
-	this.soundName = "sound";
-	this.sound = null;
+	this.names = [];
 };
 $hxClasses["kha._Assets.SoundList"] = kha__$Assets_SoundList;
 kha__$Assets_SoundList.__name__ = "kha._Assets.SoundList";
 kha__$Assets_SoundList.prototype = {
 	get: function(name) {
 		return Reflect.field(this,name);
-	}
-	,sound: null
-	,soundName: null
-	,soundDescription: null
-	,soundSize: null
-	,soundLoad: function(done,failure) {
-		kha_Assets.loadSound("sound",function(sound) {
-			done();
-		},failure,{ fileName : "kha/internal/AssetsBuilder.hx", lineNumber : 147, className : "kha._Assets.SoundList", methodName : "soundLoad"});
-	}
-	,soundUnload: function() {
-		this.sound.unload();
-		this.sound = null;
 	}
 	,names: null
 	,__class__: kha__$Assets_SoundList
@@ -18272,6 +14514,170 @@ kha_WindowOptions.prototype = {
 	,windowFeatures: null
 	,mode: null
 	,__class__: kha_WindowOptions
+};
+var kha_arrays_ByteArray = {};
+kha_arrays_ByteArray.__properties__ = {get_buffer:"get_buffer"};
+kha_arrays_ByteArray.get_buffer = function(this1) {
+	return this1.buffer;
+};
+kha_arrays_ByteArray._new = function(buffer,byteOffset,byteLength) {
+	var this1 = new DataView(buffer,byteOffset,byteLength);
+	return this1;
+};
+kha_arrays_ByteArray.make = function(byteLength) {
+	return kha_arrays_ByteArray._new(kha_arrays_ByteBuffer.create(byteLength));
+};
+kha_arrays_ByteArray.getInt8 = function(this1,byteOffset) {
+	return this1.getInt8(byteOffset);
+};
+kha_arrays_ByteArray.getUint8 = function(this1,byteOffset) {
+	return this1.getUint8(byteOffset);
+};
+kha_arrays_ByteArray.getInt16 = function(this1,byteOffset) {
+	return this1.getInt16(byteOffset,kha_arrays_ByteArray.LITTLE_ENDIAN);
+};
+kha_arrays_ByteArray.getUint16 = function(this1,byteOffset) {
+	return this1.getUint16(byteOffset,kha_arrays_ByteArray.LITTLE_ENDIAN);
+};
+kha_arrays_ByteArray.getInt32 = function(this1,byteOffset) {
+	return this1.getInt32(byteOffset,kha_arrays_ByteArray.LITTLE_ENDIAN);
+};
+kha_arrays_ByteArray.getUint32 = function(this1,byteOffset) {
+	return this1.getUint32(byteOffset,kha_arrays_ByteArray.LITTLE_ENDIAN);
+};
+kha_arrays_ByteArray.getFloat32 = function(this1,byteOffset) {
+	return this1.getFloat32(byteOffset,kha_arrays_ByteArray.LITTLE_ENDIAN);
+};
+kha_arrays_ByteArray.getFloat64 = function(this1,byteOffset) {
+	return this1.getFloat64(byteOffset,kha_arrays_ByteArray.LITTLE_ENDIAN);
+};
+kha_arrays_ByteArray.setInt8 = function(this1,byteOffset,value) {
+	this1.setInt8(byteOffset,value);
+};
+kha_arrays_ByteArray.setUint8 = function(this1,byteOffset,value) {
+	this1.setUint8(byteOffset,value);
+};
+kha_arrays_ByteArray.setInt16 = function(this1,byteOffset,value) {
+	this1.setInt16(byteOffset,value,kha_arrays_ByteArray.LITTLE_ENDIAN);
+};
+kha_arrays_ByteArray.setUint16 = function(this1,byteOffset,value) {
+	this1.setUint16(byteOffset,value,kha_arrays_ByteArray.LITTLE_ENDIAN);
+};
+kha_arrays_ByteArray.setInt32 = function(this1,byteOffset,value) {
+	this1.setInt32(byteOffset,value,kha_arrays_ByteArray.LITTLE_ENDIAN);
+};
+kha_arrays_ByteArray.setUint32 = function(this1,byteOffset,value) {
+	this1.setUint32(byteOffset,value,kha_arrays_ByteArray.LITTLE_ENDIAN);
+};
+kha_arrays_ByteArray.setFloat32 = function(this1,byteOffset,value) {
+	this1.setFloat32(byteOffset,value,true);
+};
+kha_arrays_ByteArray.setFloat64 = function(this1,byteOffset,value) {
+	this1.setFloat64(byteOffset,value,kha_arrays_ByteArray.LITTLE_ENDIAN);
+};
+kha_arrays_ByteArray.getInt16LE = function(this1,byteOffset) {
+	return this1.getInt16(byteOffset,true);
+};
+kha_arrays_ByteArray.getUint16LE = function(this1,byteOffset) {
+	return this1.getUint16(byteOffset,true);
+};
+kha_arrays_ByteArray.getInt32LE = function(this1,byteOffset) {
+	return this1.getInt32(byteOffset,true);
+};
+kha_arrays_ByteArray.getUint32LE = function(this1,byteOffset) {
+	return this1.getUint32(byteOffset,true);
+};
+kha_arrays_ByteArray.getFloat32LE = function(this1,byteOffset) {
+	return this1.getFloat32(byteOffset,true);
+};
+kha_arrays_ByteArray.getFloat64LE = function(this1,byteOffset) {
+	return this1.getFloat64(byteOffset,true);
+};
+kha_arrays_ByteArray.setInt16LE = function(this1,byteOffset,value) {
+	this1.setInt16(byteOffset,value,true);
+};
+kha_arrays_ByteArray.setUint16LE = function(this1,byteOffset,value) {
+	this1.setUint16(byteOffset,value,true);
+};
+kha_arrays_ByteArray.setInt32LE = function(this1,byteOffset,value) {
+	this1.setInt32(byteOffset,value,true);
+};
+kha_arrays_ByteArray.setUint32LE = function(this1,byteOffset,value) {
+	this1.setUint32(byteOffset,value,true);
+};
+kha_arrays_ByteArray.setFloat32LE = function(this1,byteOffset,value) {
+	this1.setFloat32(byteOffset,value,true);
+};
+kha_arrays_ByteArray.setFloat64LE = function(this1,byteOffset,value) {
+	this1.setFloat64(byteOffset,value,true);
+};
+kha_arrays_ByteArray.getInt16BE = function(this1,byteOffset) {
+	return this1.getInt16(byteOffset);
+};
+kha_arrays_ByteArray.getUint16BE = function(this1,byteOffset) {
+	return this1.getUint16(byteOffset);
+};
+kha_arrays_ByteArray.getInt32BE = function(this1,byteOffset) {
+	return this1.getInt32(byteOffset);
+};
+kha_arrays_ByteArray.getUint32BE = function(this1,byteOffset) {
+	return this1.getUint32(byteOffset);
+};
+kha_arrays_ByteArray.getFloat32BE = function(this1,byteOffset) {
+	return this1.getFloat32(byteOffset);
+};
+kha_arrays_ByteArray.getFloat64BE = function(this1,byteOffset) {
+	return this1.getFloat64(byteOffset);
+};
+kha_arrays_ByteArray.setInt16BE = function(this1,byteOffset,value) {
+	this1.setInt16(byteOffset,value);
+};
+kha_arrays_ByteArray.setUint16BE = function(this1,byteOffset,value) {
+	this1.setUint16(byteOffset,value);
+};
+kha_arrays_ByteArray.setInt32BE = function(this1,byteOffset,value) {
+	this1.setInt32(byteOffset,value);
+};
+kha_arrays_ByteArray.setUint32BE = function(this1,byteOffset,value) {
+	this1.setUint32(byteOffset,value);
+};
+kha_arrays_ByteArray.setFloat32BE = function(this1,byteOffset,value) {
+	this1.setFloat32(byteOffset,value);
+};
+kha_arrays_ByteArray.setFloat64BE = function(this1,byteOffset,value) {
+	this1.setFloat64(byteOffset,value);
+};
+kha_arrays_ByteArray.subarray = function(this1,start,end) {
+	return kha_arrays_ByteArray._new(this1.buffer,start,end != null ? end - start : null);
+};
+var kha_arrays_ByteBuffer = {};
+kha_arrays_ByteBuffer.create = function(length) {
+	return kha_arrays_ByteBuffer._new(length);
+};
+kha_arrays_ByteBuffer._new = function(length) {
+	var this1 = new ArrayBuffer(length);
+	return this1;
+};
+var kha_arrays_Float32Array = {};
+kha_arrays_Float32Array.__properties__ = {get_length:"get_length"};
+kha_arrays_Float32Array.get_length = function(this1) {
+	return this1.byteLength >> 2;
+};
+kha_arrays_Float32Array._new = function(elements) {
+	var this1 = kha_arrays_ByteArray.make(elements * 4);
+	return this1;
+};
+kha_arrays_Float32Array.get = function(this1,k) {
+	return this1.getFloat32(k * 4,kha_arrays_ByteArray.LITTLE_ENDIAN);
+};
+kha_arrays_Float32Array.set = function(this1,k,v) {
+	this1.setFloat32(k * 4,v,true);
+	return v;
+};
+kha_arrays_Float32Array.subarray = function(this1,start,end) {
+	var start1 = start * 4;
+	var end1 = end != null ? end * 4 : end;
+	return kha_arrays_ByteArray._new(this1.buffer,start1,end1 != null ? end1 - start1 : null);
 };
 var kha_arrays_Int32Array = {};
 kha_arrays_Int32Array.__properties__ = {get_length:"get_length"};
@@ -53600,56 +50006,6 @@ js_Boot.__toStr = ({ }).toString;
 if(ArrayBuffer.prototype.slice == null) {
 	ArrayBuffer.prototype.slice = js_lib__$ArrayBuffer_ArrayBufferCompat.sliceImpl;
 }
-kha_arrays_ByteArray.LITTLE_ENDIAN = new Uint8Array(new Uint32Array([0x12345678]).buffer)[0] === 0x78;
-aura_Aura.lastBufferSize = 0;
-aura_Aura.mixChannels = new haxe_ds_StringMap();
-aura_Aura.BLOCK_SIZE = 1024;
-aura_Aura.NUM_OUTPUT_CHANNELS = 2;
-aura_Aura.BLOCK_CHANNEL_SIZE = 512;
-aura_Aura.p_samplesBuffer = new aura_utils_Pointer_$kha_$arrays_$Float32Array(null);
-aura_Aura.blockBuffer = new aura_types_AudioBuffer(2,512);
-aura_Aura.blockBufPos = 0;
-aura_Aura.hrtfs = new haxe_ds_StringMap();
-aura_Time.lastTime = 0.0;
-aura_Time.delta = 0.0;
-aura_Channels.Left = 1;
-aura_Channels.Right = 2;
-aura_Channels.All = -1;
-aura_Balance.LEFT = 0.0;
-aura_Balance.CENTER = 0.5;
-aura_Balance.RIGHT = 1.0;
-aura_channels_AudioChannel.NUM_CHANNELS = 2;
-aura_channels_Html5StreamChannel.virtualChannels = [];
-aura_dsp_panner_Panner.REFERENCE_DST = 1.0;
-aura_dsp_panner_Panner.SPEED_OF_SOUND = 343.4;
-aura_threading_BufferCache.MAX_TREE_HEIGHT = 8;
-aura_threading_BufferCache.lastAllocationTimer = 0;
-aura_threading_BufferType.TAudioBuffer = 0;
-aura_threading_BufferType.TFloat32Array = 1;
-aura_threading_BufferType.TArrayFloat = 2;
-aura_threading_BufferType.TArrayComplex = 3;
-aura_threading_BufferType.enumSize = 4;
-aura_threading_MessageID._SubtypeOffset = 0;
-aura_threading_ChannelMessageID.Play = 0;
-aura_threading_ChannelMessageID.Pause = 1;
-aura_threading_ChannelMessageID.Stop = 2;
-aura_threading_ChannelMessageID.PVolume = 3;
-aura_threading_ChannelMessageID.PPitch = 4;
-aura_threading_ChannelMessageID.PDopplerRatio = 5;
-aura_threading_ChannelMessageID.PDstAttenuation = 6;
-aura_threading_ChannelMessageID._SubtypeOffset = 7;
-aura_threading_DSPMessageID.BypassEnable = 0;
-aura_threading_DSPMessageID.BypassDisable = 1;
-aura_threading_DSPMessageID.SwapBufferReady = 2;
-aura_threading_DSPMessageID.SetDelays = 3;
-aura_threading_DSPMessageID._SubtypeOffset = 4;
-aura_utils_AssertLevel.Debug = 0;
-aura_utils_AssertLevel.Warning = 1;
-aura_utils_AssertLevel.Error = 2;
-aura_utils_AssertLevel.Critical = 3;
-aura_utils_AssertLevel.NoAssertions = 4;
-var aura_utils_MathUtils_LN10_INV_DOUBLE = 0.43429448190325181666793241674895398318767547607421875;
-var aura_utils_MathUtils_LN10_INV_SINGLE = 0.4342944920063018798828125;
 haxe_Template.splitter = new EReg("(::[A-Za-z0-9_ ()&|!+=/><*.\"-]+::|\\$\\$([A-Za-z0-9_-]+)\\()","");
 haxe_Template.expr_splitter = new EReg("(\\(|\\)|[ \r\n\t]*\"[^\"]*\"[ \r\n\t]*|[!+=/><*.&|-]+)","");
 haxe_Template.expr_trim = new EReg("^[ ]*([^ ]+)[ ]*$","");
@@ -53806,6 +50162,7 @@ kha_WindowFeatures.FeatureMinimizable = 2;
 kha_WindowFeatures.FeatureMaximizable = 4;
 kha_WindowFeatures.FeatureBorderless = 8;
 kha_WindowFeatures.FeatureOnTop = 16;
+kha_arrays_ByteArray.LITTLE_ENDIAN = new Uint8Array(new Uint32Array([0x12345678]).buffer)[0] === 0x78;
 kha_audio2_Audio.disableGcInteractions = false;
 kha_audio2_Audio.intBox = new kha_internal_IntBox(0);
 kha_audio2_Audio.virtualChannels = [];
