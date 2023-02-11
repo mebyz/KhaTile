@@ -7,6 +7,7 @@ import js.Browser;
 import kha.WindowOptions;
 import kha.Canvas;
 import kha.Image;
+import kha.Framebuffer;
 import kha.Scheduler;
 import kha.System;
 import koui.Koui;
@@ -14,7 +15,7 @@ import koui.events.MouseEvent;
 import koui.elements.*;
 import io.colyseus.Client;
 import io.colyseus.Room;
-import aura.Aura;
+//import aura.Aura;
 
 class Main {
 
@@ -26,14 +27,14 @@ class Main {
 		
 		System.start({title: "PlaneInstance"}, function(_) {
 
-			var loadConfig: AuraLoadConfig = {
+			/*var loadConfig: AuraLoadConfig = {
 					
 				uncompressed: ["sound"],
-			};
+			};*/
 
-			Aura.init();
+			//Aura.init();
 			
-			Aura.loadAssets(loadConfig, () -> {
+			//Aura.loadAssets(loadConfig, () -> {
 			Koui.init(() -> {
 
 
@@ -54,7 +55,7 @@ class Main {
 						button.addEventListener(MouseClickEvent, function(e: MouseClickEvent) {
 							switch (e.getState()) {
 								case ClickStart:
-									Aura.createHandle(Play, Aura.getSound("sound")).play();
+									//Aura.createHandle(Play, Aura.getSound("sound")).play();
 								case ClickEnd:
 										button.visible = false;
 								default:
@@ -89,10 +90,11 @@ class Main {
 				}, 0, 1 / 50);
 				System.notifyOnFrames(function(f) {
 					game.render(f);
+
 				});
             });
 			
-		});
+		//});
 
 				
 		});

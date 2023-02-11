@@ -1,4 +1,5 @@
 package;
+import VectorMath.inverse;
 import koui.Koui;
 import koui.elements.*;
 
@@ -21,6 +22,7 @@ class PlaneInstance {
 	var planes2:Array<PlaneModel>;
 	var sky: SkyCubeModel;
 	var mvp:FastMatrix4;
+	var invmvp:FastMatrix4;
 
 	var model:FastMatrix4;
 	var view:FastMatrix4;
@@ -48,9 +50,9 @@ class PlaneInstance {
 
 	var lastPosition:FastVector3;
 
-	var gridSize = 3;
-	var tilePx :Int = 100;
-	var tileSize :Int = 10000;
+	var gridSize = 6;
+	var tilePx :Int = 50;
+	var tileSize :Int = 5000;
 	public var nt:Dynamic;
 
 	public function new() {
@@ -102,8 +104,8 @@ class PlaneInstance {
 
 	public function update() {
 		if (position != lastPosition) {
-			var xx = Std.int(position.z/tilePx);
-			var zz = Std.int(position.x/tilePx);
+			var xx = Std.int(position.z/tilePx/2);
+			var zz = Std.int(position.x/tilePx/2);
 			//trace("x:"+xx+" Y:"+NoiseTile.getHeight(xx,zz)+" z:"+zz);
 			
 			//trace("index: "+ (zz*tilePx+xx));
@@ -170,7 +172,22 @@ class PlaneInstance {
 			look, // and looks here : at the same position, plus "direction"
 			up // Head is up (set to (0, -1, 0) to look upside-down)
 		);
+		
+		var invView = FastMatrix4.lookAt(new FastVector3(position.x,-position.y,position.z), // Camera is here
+			look, // and looks here : at the same position, plus "direction"
+			up // Head is up (set to (0, -1, 0) to look upside-down)
+		);
 
+		
+		// Update model-view-projection matrix
+		invmvp = FastMatrix4.identity();
+		if (projection != null)
+			invmvp = invmvp.multmat(projection);
+		if (invView != null)
+			invmvp = invmvp.multmat(invView);
+		if (model != null)
+			invmvp = invmvp.multmat(model);
+		
 		// Update model-view-projection matrix
 		mvp = FastMatrix4.identity();
 		if (projection != null)
@@ -228,10 +245,30 @@ class PlaneInstance {
 	}
 
 	public function render(frames:Array<Framebuffer>) {
+/*
+		var g4 = new kha.js.graphics4.Graphics();
+		var fbo = new Framebuffer(0, null, null, g4);
+		fbo.init(new kha.graphics2.Graphics1(fbo), new kha.graphics4.Graphics2(fbo), g4);
+		var a =new Array<Framebuffer>();
+		a.insert(0,fbo);
+		var g = fbo.g4;
+		g.begin();
+		//g.clear(Color.Black);
+
+		if (planes != null)
+			for (plane in planes)
+				plane.drawPlane(fbo, invmvp);
+
+		if (sky != null)
+			sky.render(a, invmvp);
+
+		g.end();
+
+		*/
 		var frame = frames[0];
 		var g = frame.g4;
 		g.begin();
-		//g.clear(Color.Black);
+		//g.clear(Color.Black),;
 
 		if (planes != null)
 			for (plane in planes)
@@ -239,7 +276,7 @@ class PlaneInstance {
 
 		if (planes2!=null)
 				for (plane in planes2)
-					plane.drawPlane(frame,mvp);
+					plane.drawPlane(frame,mvp/*,fbo*/);
 
 		if (sky != null)
 			sky.render(frames, mvp);
@@ -250,5 +287,6 @@ class PlaneInstance {
 
 		g.end();
 		Koui.render(frame.g2);
+		
 	}
 }
