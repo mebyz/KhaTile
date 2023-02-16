@@ -12,6 +12,7 @@ project.addAssets('Libraries/instances/Sources/Assets/**');
 project.addDefine('kha_html5_disable_automatic_size_adjust');
 await project.addProject("Subprojects/koui");
 await project.addProject("Subprojects/aura");
+project.addParameter('-dce full');
 if (process.argv.includes("--watch")) { // run only in watch mode
 	project.targetOptions.html5.unsafeEval = true; // allow eval in electron
 	let libPath = project.addLibrary('hotml'); // client code for code-patching
