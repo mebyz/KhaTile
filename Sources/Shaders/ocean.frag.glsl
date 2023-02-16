@@ -3,6 +3,7 @@ precision highp float;
 
 in vec2 v_textureCoordinates;
 out vec4 outColor;
+uniform sampler2D render_texture;
 uniform sampler2D s_texture;
 uniform sampler2D s_normals;
 
@@ -27,6 +28,8 @@ uniform sampler2D gColor;
 void main() {
     
     const float pi = 3.14285714286;
+    vec3 rtex = texture(render_texture, v_textureCoordinates/10000.0).rgb;
+
     vec3 tex1 = texture(s_texture, v_textureCoordinates/10.0).rgb;
 
     vec3 normal = texture(s_normals, v_textureCoordinates).rgb * sin( pi * v_time);
@@ -54,6 +57,6 @@ void main() {
 
    finalColor = mix(fogColor, lightColor, fogFactor)*2.0;
 
-  outColor = vec4(mix(tex1,finalColor,0.5), 1.0);
-
+//  outColor = vec4(mix(tex1,finalColor,0.5), 1.0);
+outColor= vec4(rtex,1.0);
 }
