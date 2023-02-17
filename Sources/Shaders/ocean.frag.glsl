@@ -28,12 +28,12 @@ uniform sampler2D gColor;
 void main() {
     
     const float pi = 3.14285714286;
-    vec3 rtex = texture(render_texture, v_textureCoordinates/10000.0).rgb;
+    vec3 rtex = texture(render_texture, v_textureCoordinates).rgb;
 
-    vec3 tex1 = texture(s_texture, v_textureCoordinates/10.0).rgb;
+    vec3 tex1 = texture(s_texture, v_textureCoordinates).rgb;
 
-    vec3 normal = texture(s_normals, v_textureCoordinates).rgb * sin( pi * v_time);
-    normal = normalize(normal * 2.0 - 1.0)/10.0;   
+    vec3 normal = texture(s_normals, v_textureCoordinates).rgb * sin( pi * v_time/10.0);
+    normal = normalize(normal * 2.0 - 1.0);   
     vec3 L = normalize( light_position - world_pos);
     vec3 V = normalize( eye_position - world_pos);
 
@@ -43,7 +43,7 @@ void main() {
     rim = smoothstep(0.6, 1.0, rim);
     vec3 finalRim = RimColor * vec3(rim, rim, rim);
  
-    vec3 lightColor = /*finalRim + diffuse + */tex1;
+    vec3 lightColor = finalRim + diffuse + tex1;
 
     vec3 finalColor = vec3(0.0, 0.0, 0.0);
 
@@ -57,6 +57,6 @@ void main() {
 
    finalColor = mix(fogColor, lightColor, fogFactor)*2.0;
 
-//  outColor = vec4(mix(tex1,finalColor,0.5), 1.0);
-outColor= vec4(tex1,1.0);
+  outColor = vec4(mix(mix(mix(tex1,finalColor,0.5),rtex,0.5),normal,0.005), 1.0);
+
 }

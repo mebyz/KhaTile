@@ -3,6 +3,7 @@ precision highp float;
 
 uniform mat4 MVP;
 uniform sampler2D s_texture;
+//in vec2 a_texcoord;
 
 in vec2 uv;
 in vec3 in_normal;
@@ -20,8 +21,10 @@ out float v_time;
 const float pi = 3.14285714286;
 
 void main() {
+    //v_textureCoordinates = a_texcoord;
     v_time = time;
     vec4 vertexCoord = a_position;
+    
     float distance = length(vertexCoord);
     vertexCoord.y += sin( pi * distance + time) * 10.0;
     v_textureCoordinates = uv;

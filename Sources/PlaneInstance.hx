@@ -57,7 +57,7 @@ class PlaneInstance {
 
 	var lastPosition:FastVector3;
 
-	var gridSize = 4;
+	var gridSize = 6;
 	var tilePx :Int = 50;
 	var tileSize :Int = 5000;
 	public var nt:Dynamic;
@@ -79,11 +79,10 @@ class PlaneInstance {
 					x: tilePx,
 					y: tilePx
 				}));
-				//trace(nt.t.normals[i + j * gridSize]);
 			}
 
 		// water & sky
-		 planes2.push(new PlaneModel(0,0,{ w:800, h:800, x:2, y:2 }));
+		 planes2.push(new PlaneModel(0,0,{ w:90000, h:90000, x:2, y:2 }));
 		 sky = new SkyCubeModel(40000,40000,40000);
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
@@ -113,35 +112,27 @@ class PlaneInstance {
 		if (position != lastPosition) {
 			var xx = Std.int(position.z/tilePx/2);
 			var zz = Std.int(position.x/tilePx/2);
-			//trace("x:"+xx+" Y:"+NoiseTile.getHeight(xx,zz)+" z:"+zz);
-			
-			//trace("index: "+ (zz*tilePx+xx));
-			//trace(nt.t.tiles[0][0][zz*tilePx+xx]);
 			
 			var h = 150+NoiseTile.getHeight(xx,zz);//5000+ nt.t.tiles[0][0][zz*tilePx+xx]; //+NoiseTile.getHeight(Std.int(-position.x/tileSize*tilePx),Std.int(-position.z/tileSize*tilePx));
 
 			if (h < 150)
 				h=150;
-			// h=500;
-
-			// DISABLING stick to ground for now
-			// if (h<-300) h= -300;
 			position.y = h;
-			// trace(position);
 		}
 		lastPosition = position;
 
 		/*if (instancesCollection != null)
 			instancesCollection.updateAll(); */
+		
 		// Compute time difference between current and last frame
 		var deltaTime = Scheduler.time() - lastTime;
 		lastTime = Scheduler.time();
 
 		// Compute new orientation
-		// if (isMouseDown) {
-		horizontalAngle += mouseSpeed * mouseDeltaX * -1;
-		verticalAngle += mouseSpeed * mouseDeltaY * -1;
-		// }
+		if (isMouseDown) {
+			horizontalAngle += mouseSpeed * mouseDeltaX * -1;
+			verticalAngle += mouseSpeed * mouseDeltaY * -1;
+		}
 
 		// Direction : Spherical coordinates to Cartesian coordinates conversion
 		var direction = new FastVector3(Math.cos(verticalAngle) * Math.sin(horizontalAngle), Math.sin(verticalAngle),
@@ -226,8 +217,7 @@ class PlaneInstance {
 
 	// Create callback functions for when keys are pressed
 	public function onKeyDown(key:kha.input.KeyCode):Void {
-		//trace(key + " down");
-
+		
 		if (key == KeyCode.Up)
 			this.moveForward = true;
 		else if (key == KeyCode.Down)
@@ -239,8 +229,7 @@ class PlaneInstance {
 	}
 
 	public function onKeyUp(key:kha.input.KeyCode):Void {
-		//trace(key + " up");
-
+		
 		if (key == KeyCode.Up)
 			moveForward = false;
 		else if (key == KeyCode.Down)
@@ -262,8 +251,8 @@ class PlaneInstance {
 			
 	var gl = SystemImpl.gl;
 	// Create a texture to render to
-	var targetTextureWidth = 256;
-	var targetTextureHeight = 256;
+	var targetTextureWidth = 128;
+	var targetTextureHeight = 128;
 	var targetTexture = gl.createTexture();
 	gl.bindTexture(GL.TEXTURE_2D, targetTexture);
 
@@ -349,6 +338,5 @@ class PlaneInstance {
 
 		Koui.render(frame.g2);
 
-		
 	}
 }
