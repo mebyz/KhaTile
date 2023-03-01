@@ -249,11 +249,11 @@ var PlaneInstance = function() {
 $hxClasses["PlaneInstance"] = PlaneInstance;
 PlaneInstance.__name__ = "PlaneInstance";
 PlaneInstance.prototype = {
-	planes: null
-	,planes2: null
+	terrainMesh: null
+	,waterMesh: null
 	,sky: null
-	,mvp: null
-	,reflectionmvp: null
+	,modelViewProjectionMatrix: null
+	,reflectionModelViewProjectionMatrix: null
 	,model: null
 	,view: null
 	,reflectionView: null
@@ -284,8 +284,8 @@ PlaneInstance.prototype = {
 	,nt: null
 	,loadingFinished: function() {
 		this.nt = new noisetile_NoiseTile(this.gridSize,this.gridSize,this.tilePx);
-		this.planes = [];
-		this.planes2 = [];
+		this.terrainMesh = [];
+		this.waterMesh = [];
 		var _g = 0;
 		var _g1 = this.gridSize;
 		while(_g < _g1) {
@@ -294,10 +294,10 @@ PlaneInstance.prototype = {
 			var _g3 = this.gridSize;
 			while(_g2 < _g3) {
 				var i = _g2++;
-				this.planes.push(new primitive_TerrainModel(this.nt.t.tiles[i + j * this.gridSize],this.nt.t.normals[i + j * this.gridSize],i,j,{ w : this.tileSize, h : this.tileSize, x : this.tilePx, y : this.tilePx}));
+				this.terrainMesh.push(new primitive_TerrainModel(this.nt.t.tiles[i + j * this.gridSize],this.nt.t.normals[i + j * this.gridSize],i,j,{ w : this.tileSize, h : this.tileSize, x : this.tilePx, y : this.tilePx}));
 			}
 		}
-		this.planes2.push(new primitive_PlaneModel(0,0,{ w : 10000, h : 10000, x : 2, y : 2}));
+		this.waterMesh.push(new primitive_PlaneModel(0,0,{ w : 10000, h : 10000, x : 2, y : 2}));
 		this.sky = new primitive_SkyCubeModel(40000,40000,40000);
 		var uh = 1.0 / Math.tan(22.5);
 		var uw = uh / 1.33333333333333326;
@@ -444,16 +444,17 @@ PlaneInstance.prototype = {
 		var yaxis_z = z;
 		this.view = new kha_math_FastMatrix4(xaxis_x,xaxis_y,xaxis_z,-(xaxis_x * eye_x + xaxis_y * eye_y + xaxis_z * eye_z),yaxis_x,yaxis_y,yaxis_z,-(yaxis_x * eye_x + yaxis_y * eye_y + yaxis_z * eye_z),-zaxis_x,-zaxis_y,-zaxis_z,zaxis_x * eye_x + zaxis_y * eye_y + zaxis_z * eye_z,0,0,0,1);
 		this.model = new kha_math_FastMatrix4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
-		this.mvp = new kha_math_FastMatrix4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
-		var _this = this.mvp;
+		this.modelViewProjectionMatrix = new kha_math_FastMatrix4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+		var _this = this.modelViewProjectionMatrix;
 		var m = this.projection;
-		this.mvp = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
-		var _this = this.mvp;
+		this.modelViewProjectionMatrix = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
+		var _this = this.modelViewProjectionMatrix;
 		var m = this.view;
-		this.mvp = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
-		var _this = this.mvp;
+		this.modelViewProjectionMatrix = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
+		var _this = this.modelViewProjectionMatrix;
 		var m = this.model;
-		this.mvp = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
+		this.modelViewProjectionMatrix = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
+		this.instancesCollection = new instances_Instances("grass",10,10,this.model,this.view,this.projection,this.modelViewProjectionMatrix);
 		kha_input_Mouse.get().notify($bind(this,this.onMouseDown),$bind(this,this.onMouseUp),$bind(this,this.onMouseMove),null);
 		kha_input_Keyboard.get().notify($bind(this,this.onKeyDown),$bind(this,this.onKeyUp));
 		this.lastTime = kha_Scheduler.time();
@@ -469,6 +470,9 @@ PlaneInstance.prototype = {
 			this.position.y = h;
 		}
 		this.lastPosition = this.position;
+		if(this.instancesCollection != null) {
+			this.instancesCollection.updateAll();
+		}
 		var deltaTime = kha_Scheduler.time() - this.lastTime;
 		this.lastTime = kha_Scheduler.time();
 		if(this.isMouseDown) {
@@ -859,37 +863,37 @@ PlaneInstance.prototype = {
 		var yaxis_y = y;
 		var yaxis_z = z;
 		this.reflectionView = new kha_math_FastMatrix4(xaxis_x,xaxis_y,xaxis_z,-(xaxis_x * underwaterPosition_x + xaxis_y * underwaterPosition_y + xaxis_z * underwaterPosition_z),yaxis_x,yaxis_y,yaxis_z,-(yaxis_x * underwaterPosition_x + yaxis_y * underwaterPosition_y + yaxis_z * underwaterPosition_z),-zaxis_x,-zaxis_y,-zaxis_z,zaxis_x * underwaterPosition_x + zaxis_y * underwaterPosition_y + zaxis_z * underwaterPosition_z,0,0,0,1);
-		this.mvp = new kha_math_FastMatrix4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+		this.modelViewProjectionMatrix = new kha_math_FastMatrix4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
 		if(this.projection != null) {
-			var _this = this.mvp;
+			var _this = this.modelViewProjectionMatrix;
 			var m = this.projection;
-			this.mvp = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
+			this.modelViewProjectionMatrix = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
 		}
 		if(this.view != null) {
-			var _this = this.mvp;
+			var _this = this.modelViewProjectionMatrix;
 			var m = this.view;
-			this.mvp = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
+			this.modelViewProjectionMatrix = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
 		}
 		if(this.model != null) {
-			var _this = this.mvp;
+			var _this = this.modelViewProjectionMatrix;
 			var m = this.model;
-			this.mvp = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
+			this.modelViewProjectionMatrix = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
 		}
-		this.reflectionmvp = new kha_math_FastMatrix4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+		this.reflectionModelViewProjectionMatrix = new kha_math_FastMatrix4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
 		if(this.projection != null) {
-			var _this = this.reflectionmvp;
+			var _this = this.reflectionModelViewProjectionMatrix;
 			var m = this.projection;
-			this.reflectionmvp = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
+			this.reflectionModelViewProjectionMatrix = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
 		}
 		if(this.reflectionView != null) {
-			var _this = this.reflectionmvp;
+			var _this = this.reflectionModelViewProjectionMatrix;
 			var m = this.reflectionView;
-			this.reflectionmvp = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
+			this.reflectionModelViewProjectionMatrix = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
 		}
 		if(this.model != null) {
-			var _this = this.reflectionmvp;
+			var _this = this.reflectionModelViewProjectionMatrix;
 			var m = this.model;
-			this.reflectionmvp = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
+			this.reflectionModelViewProjectionMatrix = new kha_math_FastMatrix4(_this._00 * m._00 + _this._10 * m._01 + _this._20 * m._02 + _this._30 * m._03,_this._00 * m._10 + _this._10 * m._11 + _this._20 * m._12 + _this._30 * m._13,_this._00 * m._20 + _this._10 * m._21 + _this._20 * m._22 + _this._30 * m._23,_this._00 * m._30 + _this._10 * m._31 + _this._20 * m._32 + _this._30 * m._33,_this._01 * m._00 + _this._11 * m._01 + _this._21 * m._02 + _this._31 * m._03,_this._01 * m._10 + _this._11 * m._11 + _this._21 * m._12 + _this._31 * m._13,_this._01 * m._20 + _this._11 * m._21 + _this._21 * m._22 + _this._31 * m._23,_this._01 * m._30 + _this._11 * m._31 + _this._21 * m._32 + _this._31 * m._33,_this._02 * m._00 + _this._12 * m._01 + _this._22 * m._02 + _this._32 * m._03,_this._02 * m._10 + _this._12 * m._11 + _this._22 * m._12 + _this._32 * m._13,_this._02 * m._20 + _this._12 * m._21 + _this._22 * m._22 + _this._32 * m._23,_this._02 * m._30 + _this._12 * m._31 + _this._22 * m._32 + _this._32 * m._33,_this._03 * m._00 + _this._13 * m._01 + _this._23 * m._02 + _this._33 * m._03,_this._03 * m._10 + _this._13 * m._11 + _this._23 * m._12 + _this._33 * m._13,_this._03 * m._20 + _this._13 * m._21 + _this._23 * m._22 + _this._33 * m._23,_this._03 * m._30 + _this._13 * m._31 + _this._23 * m._32 + _this._33 * m._33);
 		}
 		this.mouseDeltaX = 0;
 		this.mouseDeltaY = 0;
@@ -937,7 +941,7 @@ PlaneInstance.prototype = {
 		this.gl.bindTexture(3553,targetTexture);
 		return targetTex;
 	}
-	,renderTexture: function(targetTexture,reflectionmvp,g,frame) {
+	,renderTexture: function(targetTexture,reflectionModelViewProjectionMatrix,g,frame) {
 		var level = 0;
 		var internalFormat = 6408;
 		var border = 0;
@@ -959,20 +963,20 @@ PlaneInstance.prototype = {
 		this.gl.viewport(0,0,this.targetTextureWidth,this.targetTextureHeight);
 		this.gl.clearColor(0,0,0,1);
 		this.gl.clear(16640);
-		if(this.planes != null) {
+		if(this.terrainMesh != null) {
 			var _g = 0;
-			var _g1 = this.planes;
+			var _g1 = this.terrainMesh;
 			while(_g < _g1.length) {
 				var plane = _g1[_g];
 				++_g;
-				plane.drawPlane(frame,reflectionmvp);
+				plane.drawPlane(frame,reflectionModelViewProjectionMatrix);
 			}
 		}
 	}
 	,renderToTexture: function(g,g2,frame) {
 		g.begin();
 		var targetTex = this.createRenderTexture();
-		this.renderTexture(targetTex.texture,this.reflectionmvp,g,frame);
+		this.renderTexture(targetTex.texture,this.reflectionModelViewProjectionMatrix,g,frame);
 		g.end();
 		targetTex.get_g2();
 		var img = kha_Image.fromBytes(targetTex.getPixels(),targetTex.get_width(),targetTex.get_height());
@@ -988,26 +992,26 @@ PlaneInstance.prototype = {
 		this.gl.clearColor(0,0,0,1);
 		this.gl.clear(16640);
 		g.begin();
-		if(this.planes != null) {
+		if(this.terrainMesh != null) {
 			var _g = 0;
-			var _g1 = this.planes;
+			var _g1 = this.terrainMesh;
 			while(_g < _g1.length) {
 				var plane = _g1[_g];
 				++_g;
-				plane.drawPlane(frame,this.mvp);
+				plane.drawPlane(frame,this.modelViewProjectionMatrix);
 			}
 		}
-		if(this.planes2 != null) {
+		if(this.waterMesh != null) {
 			var _g = 0;
-			var _g1 = this.planes2;
+			var _g1 = this.waterMesh;
 			while(_g < _g1.length) {
 				var plane = _g1[_g];
 				++_g;
-				plane.drawPlane(frame,this.mvp,targetTex.texture);
+				plane.drawPlane(frame,this.modelViewProjectionMatrix,targetTex.texture);
 			}
 		}
 		if(this.sky != null) {
-			this.sky.render(frame,this.mvp);
+			this.sky.render(frame,this.modelViewProjectionMatrix);
 		}
 		if(this.instancesCollection != null) {
 			this.instancesCollection.render(frame,this.model,this.view,this.projection);
@@ -3401,15 +3405,6 @@ haxe_rtti_Meta.getType = function(t) {
 haxe_rtti_Meta.getMeta = function(t) {
 	return t.__meta__;
 };
-var instances_Cylinder = function(position) {
-	this.position = position;
-};
-$hxClasses["instances.Cylinder"] = instances_Cylinder;
-instances_Cylinder.__name__ = "instances.Cylinder";
-instances_Cylinder.prototype = {
-	position: null
-	,__class__: instances_Cylinder
-};
 var instances_CylinderMesh = function(sections) {
 	var r = 0.5;
 	var h = 1;
@@ -3500,7 +3495,14 @@ var instances_GrassPatch = function(position) {
 $hxClasses["instances.GrassPatch"] = instances_GrassPatch;
 instances_GrassPatch.__name__ = "instances.GrassPatch";
 instances_GrassPatch.prototype = {
-	position: null
+	yOffset: null
+	,position: null
+	,getModelMatrix: function() {
+		return new kha_math_FastMatrix4(1,0,0,this.position.x,0,1,0,this.position.y + this.yOffset,0,0,1,this.position.z,0,0,0,1);
+	}
+	,update: function() {
+		this.yOffset = Math.sin(this.position.x * 4 + this.position.z + kha_Scheduler.time() * 2) / 4;
+	}
 	,__class__: instances_GrassPatch
 };
 var instances_Instances = function(type,iX,iZ,m,vv,p,imvp) {
@@ -3593,13 +3595,8 @@ instances_Instances.prototype = {
 			while(_g2 < _g3) {
 				var z = _g2++;
 				var pos = new kha_math_Vector3(x - (instances_Instances.instancesX - 1) / 2,0,z - (instances_Instances.instancesZ - 1) / 2);
-				switch(type) {
-				case "cylinder":
-					this.ins.push(new instances_Cylinder(pos));
-					break;
-				case "grass":
+				if(type == "grass") {
 					this.ins.push(new instances_GrassPatch(pos));
-					break;
 				}
 			}
 		}
@@ -3776,6 +3773,14 @@ instances_Instances.prototype = {
 			g.drawIndexedVerticesInstanced(this.ins.length);
 		}
 		g.end();
+	}
+	,updateAll: function() {
+		var _g = 0;
+		var _g1 = this.ins.length;
+		while(_g < _g1) {
+			var i = _g++;
+			this.ins[i].update();
+		}
 	}
 	,__class__: instances_Instances
 };
