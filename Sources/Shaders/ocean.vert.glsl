@@ -26,7 +26,7 @@ void main() {
     vec4 vertexCoord = a_position;
     
     float distance = length(vertexCoord);
-    vertexCoord.y += sin( pi * distance + time) * 10.0;
+    vertexCoord.y += sin( pi * distance + time);
     v_textureCoordinates = uv;
     
     world_pos = (model_matrix * vertexCoord).xyz;

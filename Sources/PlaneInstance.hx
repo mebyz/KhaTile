@@ -1,4 +1,7 @@
 package;
+import js.html.webgl.Texture;
+import kha.CanvasImage;
+import js.html.Image;
 import js.Syntax;
 import kha.graphics5_.TextureFormat;
 import kha.WebGLImage;
@@ -29,10 +32,12 @@ class PlaneInstance {
 	var planes2:Array<PlaneModel>;
 	var sky: SkyCubeModel;
 	var mvp:FastMatrix4;
+	var reflectionmvp:FastMatrix4;
 	var invmvp:FastMatrix4;
 
 	var model:FastMatrix4;
 	var view:FastMatrix4;
+	var reflectionView:FastMatrix4;
 	var projection:FastMatrix4;
 
 	public var moveForward = false;
@@ -57,9 +62,15 @@ class PlaneInstance {
 
 	var lastPosition:FastVector3;
 
-	var gridSize = 6;
+	var gridSize = 3;
 	var tilePx :Int = 50;
 	var tileSize :Int = 5000;
+	
+	public var targetTextureWidth = 512;
+	public var targetTextureHeight = 512;
+
+	public var gl = SystemImpl.gl;
+	
 	public var nt:Dynamic;
 
 	public function new() {
@@ -82,7 +93,7 @@ class PlaneInstance {
 			}
 
 		// water & sky
-		 planes2.push(new PlaneModel(0,0,{ w:90000, h:90000, x:2, y:2 }));
+		 planes2.push(new PlaneModel(0,0,{ w:10000, h:10000, x:2, y:2 }));
 		 sky = new SkyCubeModel(40000,40000,40000);
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
@@ -138,6 +149,8 @@ class PlaneInstance {
 		var direction = new FastVector3(Math.cos(verticalAngle) * Math.sin(horizontalAngle), Math.sin(verticalAngle),
 			Math.cos(verticalAngle) * Math.cos(horizontalAngle));
 
+		var invDirection = new FastVector3(Math.cos(verticalAngle) * Math.sin(horizontalAngle), -Math.sin(verticalAngle),
+			Math.cos(verticalAngle) * Math.cos(horizontalAngle));
 		// Right vector
 		var right = new FastVector3(Math.sin(horizontalAngle - 3.14 / 2.0), 0, Math.cos(horizontalAngle - 3.14 / 2.0));
 
@@ -165,12 +178,21 @@ class PlaneInstance {
 		// Look vector
 		var look = position.add(direction);
 
+		var xx = Std.int(position.z/tilePx/2);
+		var zz = Std.int(position.x/tilePx/2);
+		var underwaterPosition = new FastVector3(position.x, position.y - (2*150-NoiseTile.getHeight(xx,zz)), position.z);
 		// Camera matrix
 		view = FastMatrix4.lookAt(position, // Camera is here
 			look, // and looks here : at the same position, plus "direction"
 			up // Head is up (set to (0, -1, 0) to look upside-down)
 		);
-		
+
+		// Camera matrix
+		reflectionView = FastMatrix4.lookAt(underwaterPosition, // Camera is here
+			underwaterPosition.add(invDirection), // and looks here : at the same position, plus "direction"
+			up // Head is up (set to (0, -1, 0) to look upside-down)
+		);
+		/*
 		var invView = FastMatrix4.lookAt(new FastVector3(position.x,-position.y,position.z), // Camera is here
 			look, // and looks here : at the same position, plus "direction"
 			up // Head is up (set to (0, -1, 0) to look upside-down)
@@ -185,7 +207,7 @@ class PlaneInstance {
 			invmvp = invmvp.multmat(invView);
 		if (model != null)
 			invmvp = invmvp.multmat(model);
-		
+		*/
 		// Update model-view-projection matrix
 		mvp = FastMatrix4.identity();
 		if (projection != null)
@@ -194,6 +216,14 @@ class PlaneInstance {
 			mvp = mvp.multmat(view);
 		if (model != null)
 			mvp = mvp.multmat(model);
+
+		reflectionmvp = FastMatrix4.identity();
+		if (projection != null)
+			reflectionmvp = reflectionmvp.multmat(projection);
+		if (reflectionView != null)
+			reflectionmvp = reflectionmvp.multmat(reflectionView);
+		if (model != null)
+			reflectionmvp = reflectionmvp.multmat(model);
 
 		mouseDeltaX = 0;
 		mouseDeltaY = 0;
@@ -240,76 +270,97 @@ class PlaneInstance {
 			strafeRight = false;
 	}
 
-	public function render(frames:Array<Framebuffer>){
+	public function createRenderTexture() {
 
-		var frame = frames[0];
-		var g = frame.g4;
+		// Create a texture to render to
+		var targetTex : CanvasImage = new CanvasImage(targetTextureWidth, targetTextureHeight, RGBA32, false);
+		targetTex.texture = gl.createTexture();
 
-		var frame = frames[0];
-		var g = frame.g4;
-		g.begin();
-			
-	var gl = SystemImpl.gl;
-	// Create a texture to render to
-	var targetTextureWidth = 128;
-	var targetTextureHeight = 128;
-	var targetTexture = gl.createTexture();
-	gl.bindTexture(GL.TEXTURE_2D, targetTexture);
+		targetTex.set(0);
+		var targetTexture = gl.createTexture();
+		targetTex.texture= targetTexture; 
 
-	{
-	// define size and format of level 0
-	var level = 0;
-	var internalFormat = GL.RGBA;
-	var border = 0;
-	var format = GL.RGBA;
-	var type = GL.UNSIGNED_BYTE;
-	var data = null;
-	gl.texImage2D(GL.TEXTURE_2D, level, internalFormat,
-					targetTextureWidth, targetTextureHeight, border,
-					format, type, data);
+		gl.bindTexture(GL.TEXTURE_2D, targetTexture);
 
-	// set the filtering so we don't need mips
-	gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
-	gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
-	gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+		return targetTex;
 	}
 
-	// Create and bind the framebuffer
-	var fb = gl.createFramebuffer();
-	gl.bindFramebuffer(GL.FRAMEBUFFER, fb);
+	public function renderTexture(targetTexture:Dynamic, reflectionmvp:FastMatrix4,g:Dynamic, frame:Framebuffer) {
+		// define size and format of level 0
+		var level = 0;
+		var internalFormat = GL.RGBA;
+		var border = 0;
+		var format = GL.RGBA;
+		var type = GL.UNSIGNED_BYTE;
+		var data = null;
+		gl.texImage2D(GL.TEXTURE_2D, level, internalFormat,
+						targetTextureWidth, targetTextureHeight, border,
+						format, type, data);
 
-	// attach the texture as the first color attachment
-	var attachmentPoint = GL.COLOR_ATTACHMENT0;
-	var level = 0;
-	gl.framebufferTexture2D(GL.FRAMEBUFFER, attachmentPoint, GL.TEXTURE_2D, targetTexture, level);
+		// set the filtering so we don't need mips
+		gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
+		gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+		gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+		
 
-	gl.enable(GL.CULL_FACE);
-	gl.enable(GL.DEPTH_TEST);
+		// Create and bind the framebuffer
+		var fb = gl.createFramebuffer();
+		gl.bindFramebuffer(GL.FRAMEBUFFER, fb);
 
-    {
-      // render to our targetTexture by binding the framebuffer
-      gl.bindFramebuffer(GL.FRAMEBUFFER, fb);
+		// attach the texture as the first color attachment
+		var attachmentPoint = GL.COLOR_ATTACHMENT0;
+		var mipmapLevel = 0;
+		gl.framebufferTexture2D(GL.FRAMEBUFFER, attachmentPoint, GL.TEXTURE_2D, targetTexture, mipmapLevel);
 
-      // Tell WebGL how to convert from clip space to pixels
-      gl.viewport(0, 0, targetTextureWidth, targetTextureHeight);
+		gl.enable(GL.CULL_FACE);
+		gl.enable(GL.DEPTH_TEST);
 
-      // Clear the attachment(s).
-      gl.clearColor(0, 0, 0, 1);   // clear
-      gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+		
+		// render to our targetTexture by binding the framebuffer
+		gl.bindFramebuffer(GL.FRAMEBUFFER, fb);
 
-	  
-	}
+		// Tell WebGL how to convert from clip space to pixels
+		gl.viewport(0, 0, targetTextureWidth, targetTextureHeight);
+
+		// Clear the attachment(s).
+		gl.clearColor(0, 0, 0, 1);   // clear
+		gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+
 		if (planes != null)
 			for (plane in planes)
-				plane.drawPlane(frame, mvp);
+				plane.drawPlane(frame, reflectionmvp);
+
+		
+	}
+
+	public function renderToTexture(g:Dynamic, g2:Dynamic, frame:Framebuffer) {
+
+		g.begin();
+				
+		var targetTex = createRenderTexture();
+
+		renderTexture(targetTex.texture, reflectionmvp, g, frame);
 
 		g.end();
 
+		
+		targetTex.get_g2();
+
+		var img = kha.Image.fromBytes(targetTex.getPixels(), targetTex.width, targetTex.height);
+
+		g2.begin();
+		g2.drawImage(img,0,0);
+		g2.end();
+
+		return targetTex;
+	}
+
+	public function renderToCanvas(g:Dynamic, g2:Dynamic, frame:Framebuffer, targetTex:Dynamic) {
 		// render to the canvas
 		gl.bindFramebuffer(GL.FRAMEBUFFER, null);
 
 		// render the cube with the texture we just rendered to
-		gl.bindTexture(GL.TEXTURE_2D, targetTexture);
+		gl.bindTexture(GL.TEXTURE_2D, targetTex.texture);
   
 		// Tell WebGL how to convert from clip space to pixels
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -325,7 +376,7 @@ class PlaneInstance {
 
 		if (planes2!=null)
 				for (plane in planes2)
-					plane.drawPlane(frame,mvp,targetTexture);
+					plane.drawPlane(frame,mvp,targetTex.texture);
 
 		if (sky != null)
 			sky.render(frame, mvp);
@@ -336,6 +387,18 @@ class PlaneInstance {
 
 		g.end();
 
+	}
+
+	public function render(frames:Array<Framebuffer>){
+
+		var frame = frames[0];
+		var g = frame.g4;
+		var g2 = frame.g2;
+
+		var targetTex = renderToTexture(g, g2, frame);
+
+		renderToCanvas(g, g2, frame, targetTex);
+		
 		Koui.render(frame.g2);
 
 	}
