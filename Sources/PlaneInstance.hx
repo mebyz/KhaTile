@@ -28,11 +28,11 @@ import primitive.GL;
 
 class PlaneInstance {
 
-	var planes:Array<TerrainModel>;
-	var planes2:Array<PlaneModel>;
+	var terrainMesh:Array<TerrainModel>;
+	var waterMesh:Array<PlaneModel>;
 	var sky: SkyCubeModel;
-	var mvp:FastMatrix4;
-	var reflectionmvp:FastMatrix4;
+	var modelViewProjectionMatrix:FastMatrix4;
+	var reflectionModelViewProjectionMatrix:FastMatrix4;
 	var invmvp:FastMatrix4;
 
 	var model:FastMatrix4;
@@ -79,12 +79,12 @@ class PlaneInstance {
 
 	public function loadingFinished() {
 		nt = new NoiseTile(gridSize, gridSize, tilePx);
-		planes = new Array();
-		planes2 = new Array();
+		terrainMesh = new Array();
+		waterMesh = new Array();
 
 		for (j in 0...gridSize)
 			for (i in 0...gridSize){
-				planes.push(new TerrainModel(nt.t.tiles[i + j * gridSize],nt.t.normals[i + j * gridSize], i, j, {
+				terrainMesh.push(new TerrainModel(nt.t.tiles[i + j * gridSize],nt.t.normals[i + j * gridSize], i, j, {
 					w: tileSize,
 					h: tileSize,
 					x: tilePx,
@@ -93,7 +93,7 @@ class PlaneInstance {
 			}
 
 		// water & sky
-		 planes2.push(new PlaneModel(0,0,{ w:10000, h:10000, x:2, y:2 }));
+		 waterMesh.push(new PlaneModel(0,0,{ w:10000, h:10000, x:2, y:2 }));
 		 sky = new SkyCubeModel(40000,40000,40000);
 
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
@@ -104,12 +104,12 @@ class PlaneInstance {
 		);
 
 		model = FastMatrix4.identity();
-		mvp = FastMatrix4.identity();
-		mvp = mvp.multmat(projection);
-		mvp = mvp.multmat(view);
-		mvp = mvp.multmat(model);
+		modelViewProjectionMatrix = FastMatrix4.identity();
+		modelViewProjectionMatrix = modelViewProjectionMatrix.multmat(projection);
+		modelViewProjectionMatrix = modelViewProjectionMatrix.multmat(view);
+		modelViewProjectionMatrix = modelViewProjectionMatrix.multmat(model);
 
-		//instancesCollection = new Instances('grass',10,10,model,view,projection,mvp);
+		instancesCollection = new Instances('grass',10,10,model,view,projection,modelViewProjectionMatrix);
 
 		// Add mouse and keyboard listeners
 		kha.input.Mouse.get().notify(onMouseDown, onMouseUp, onMouseMove, null);
@@ -132,8 +132,8 @@ class PlaneInstance {
 		}
 		lastPosition = position;
 
-		/*if (instancesCollection != null)
-			instancesCollection.updateAll(); */
+		if (instancesCollection != null)
+			instancesCollection.updateAll();
 		
 		// Compute time difference between current and last frame
 		var deltaTime = Scheduler.time() - lastTime;
@@ -209,21 +209,21 @@ class PlaneInstance {
 			invmvp = invmvp.multmat(model);
 		*/
 		// Update model-view-projection matrix
-		mvp = FastMatrix4.identity();
+		modelViewProjectionMatrix = FastMatrix4.identity();
 		if (projection != null)
-			mvp = mvp.multmat(projection);
+			modelViewProjectionMatrix = modelViewProjectionMatrix.multmat(projection);
 		if (view != null)
-			mvp = mvp.multmat(view);
+			modelViewProjectionMatrix = modelViewProjectionMatrix.multmat(view);
 		if (model != null)
-			mvp = mvp.multmat(model);
+			modelViewProjectionMatrix = modelViewProjectionMatrix.multmat(model);
 
-		reflectionmvp = FastMatrix4.identity();
+		reflectionModelViewProjectionMatrix = FastMatrix4.identity();
 		if (projection != null)
-			reflectionmvp = reflectionmvp.multmat(projection);
+			reflectionModelViewProjectionMatrix = reflectionModelViewProjectionMatrix.multmat(projection);
 		if (reflectionView != null)
-			reflectionmvp = reflectionmvp.multmat(reflectionView);
+			reflectionModelViewProjectionMatrix = reflectionModelViewProjectionMatrix.multmat(reflectionView);
 		if (model != null)
-			reflectionmvp = reflectionmvp.multmat(model);
+			reflectionModelViewProjectionMatrix = reflectionModelViewProjectionMatrix.multmat(model);
 
 		mouseDeltaX = 0;
 		mouseDeltaY = 0;
@@ -285,7 +285,7 @@ class PlaneInstance {
 		return targetTex;
 	}
 
-	public function renderTexture(targetTexture:Dynamic, reflectionmvp:FastMatrix4,g:Dynamic, frame:Framebuffer) {
+	public function renderTexture(targetTexture:Dynamic, reflectionModelViewProjectionMatrix:FastMatrix4,g:Dynamic, frame:Framebuffer) {
 		// define size and format of level 0
 		var level = 0;
 		var internalFormat = GL.RGBA;
@@ -326,9 +326,9 @@ class PlaneInstance {
 		gl.clearColor(0, 0, 0, 1);   // clear
 		gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
-		if (planes != null)
-			for (plane in planes)
-				plane.drawPlane(frame, reflectionmvp);
+		if (terrainMesh != null)
+			for (plane in terrainMesh)
+				plane.drawPlane(frame, reflectionModelViewProjectionMatrix);
 
 		
 	}
@@ -339,7 +339,7 @@ class PlaneInstance {
 				
 		var targetTex = createRenderTexture();
 
-		renderTexture(targetTex.texture, reflectionmvp, g, frame);
+		renderTexture(targetTex.texture, reflectionModelViewProjectionMatrix, g, frame);
 
 		g.end();
 
@@ -370,16 +370,16 @@ class PlaneInstance {
 
 		g.begin();
 
-		if (planes != null)
-			for (plane in planes)
-				plane.drawPlane(frame, mvp);
+		if (terrainMesh != null)
+			for (plane in terrainMesh)
+				plane.drawPlane(frame, modelViewProjectionMatrix);
 
-		if (planes2!=null)
-				for (plane in planes2)
-					plane.drawPlane(frame,mvp,targetTex.texture);
+		if (waterMesh!=null)
+				for (plane in waterMesh)
+					plane.drawPlane(frame,modelViewProjectionMatrix,targetTex.texture);
 
 		if (sky != null)
-			sky.render(frame, mvp);
+			sky.render(frame, modelViewProjectionMatrix);
 		
 			if (instancesCollection != null) {
 				instancesCollection.render(frame,model,view,projection);
