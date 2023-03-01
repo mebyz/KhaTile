@@ -180,7 +180,9 @@ class PlaneInstance {
 
 		var xx = Std.int(position.z/tilePx/2);
 		var zz = Std.int(position.x/tilePx/2);
-		var underwaterPosition = new FastVector3(position.x, position.y - (2*150-NoiseTile.getHeight(xx,zz)), position.z);
+		var distance = 2 * (position.y - NoiseTile.getHeight(xx,zz));
+    
+		var underwaterPosition = new FastVector3(position.x, position.y - distance, position.z);
 		// Camera matrix
 		view = FastMatrix4.lookAt(position, // Camera is here
 			look, // and looks here : at the same position, plus "direction"
@@ -192,22 +194,7 @@ class PlaneInstance {
 			underwaterPosition.add(invDirection), // and looks here : at the same position, plus "direction"
 			up // Head is up (set to (0, -1, 0) to look upside-down)
 		);
-		/*
-		var invView = FastMatrix4.lookAt(new FastVector3(position.x,-position.y,position.z), // Camera is here
-			look, // and looks here : at the same position, plus "direction"
-			up // Head is up (set to (0, -1, 0) to look upside-down)
-		);
-
 		
-		// Update model-view-projection matrix
-		invmvp = FastMatrix4.identity();
-		if (projection != null)
-			invmvp = invmvp.multmat(projection);
-		if (invView != null)
-			invmvp = invmvp.multmat(invView);
-		if (model != null)
-			invmvp = invmvp.multmat(model);
-		*/
 		// Update model-view-projection matrix
 		modelViewProjectionMatrix = FastMatrix4.identity();
 		if (projection != null)
@@ -376,7 +363,7 @@ class PlaneInstance {
 
 		if (waterMesh!=null)
 				for (plane in waterMesh)
-					plane.drawPlane(frame,modelViewProjectionMatrix,targetTex.texture);
+					plane.drawPlane(frame,modelViewProjectionMatrix,targetTex.texture, position);
 
 		if (sky != null)
 			sky.render(frame, modelViewProjectionMatrix);

@@ -9,6 +9,7 @@ uniform sampler2D s_normals;
 
 in float v_time;
 
+in vec3 fromFragmentToCamera;
 uniform vec3 light_position;
 uniform vec3 eye_position;
 
@@ -27,8 +28,13 @@ uniform sampler2D gColor;
 
 void main() {
     
+    vec2 ndc = (clipSpace.xy / clipSpace.w) / 2.0 + 0.5;
+    
+    // Reflections are upside down
+    vec2 reflectTexCoords = vec2(ndc.x, -ndc.y);
+    
     const float pi = 3.14285714286;
-    vec3 rtex = texture(render_texture, v_textureCoordinates).rgb;
+    vec3 rtex = texture(render_texture, reflectTexCoords).rgb;
 
     vec3 tex1 = texture(s_texture, v_textureCoordinates).rgb;
 
