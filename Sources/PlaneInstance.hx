@@ -28,88 +28,104 @@ import primitive.GL;
 
 class PlaneInstance {
 
-	var terrainMesh:Array<TerrainModel>;
-	var waterMesh:Array<PlaneModel>;
-	var sky: SkyCubeModel;
-	var modelViewProjectionMatrix:FastMatrix4;
-	var reflectionModelViewProjectionMatrix:FastMatrix4;
-	var invmvp:FastMatrix4;
+	var terrainMesh:Array<TerrainModel>; // Terrain mesh (array for multiple terrain tiles)
+	var waterMesh:Array<PlaneModel>; // Water mesh (array for multiple water tiles)
+	var sky:SkyCubeModel; // Skybox
+	var modelViewProjectionMatrix:FastMatrix4; // Model-view-projection matrix
+	var reflectionModelViewProjectionMatrix:FastMatrix4; // Model-view-projection matrix for reflection
+	var invmvp:FastMatrix4; // Inverse model-view-projection matrix
 
-	var model:FastMatrix4;
-	var view:FastMatrix4;
-	var reflectionView:FastMatrix4;
-	var projection:FastMatrix4;
+	var model:FastMatrix4; // Model matrix
+	var view:FastMatrix4; // View matrix
+	var reflectionView:FastMatrix4; // View matrix for reflection
+	var projection:FastMatrix4; // Projection matrix
 
-	public var moveForward = false;
-	public var moveBackward = false;
-	public var strafeLeft = false;
-	public var strafeRight = false;
+	public var moveForward = false; // Whether to move forward
+	public var moveBackward = false; // Whether to move backward
+	public var strafeLeft = false; // Whether to strafe left
+	public var strafeRight = false; // Whether to strafe right
 
-	var isMouseDown = false;
-	var mouseX = 0.0;
-	var mouseY = 0.0;
-	var mouseDeltaX = 0.0;
-	var mouseDeltaY = 0.0;
+	var isMouseDown = false; // Whether the mouse button is down
+	var mouseX = 0.0; // Last mouse X position
+	var mouseY = 0.0; // Last mouse Y position
+	var mouseDeltaX = 0.0; // Mouse X delta
+	var mouseDeltaY = 0.0; // Mouse Y delta
 
 	var speed = 2000.0; // 3 units / second
-	var mouseSpeed = 0.01;
+	var mouseSpeed = 0.01; // Mouse movement speed
 
-	var lastTime = 0.0;
+	var lastTime = 0.0; // Last time the game loop was run
 	var position:FastVector3 = new FastVector3(0, 100, 5); // Initial position: on +Z
 	var horizontalAngle = 3.14; // Initial horizontal angle: toward -Z
 	var verticalAngle = 0.0; // Initial vertical angle: none
-	var instancesCollection:Instances;
+	var instancesCollection:Instances; // Instances collection
 
-	var lastPosition:FastVector3;
+	var lastPosition:FastVector3; // Last position
 
-	var gridSize = 3;
-	var tilePx :Int = 50;
-	var tileSize :Int = 5000;
+	var gridSize = 3; // Number of tiles in the grid
+	var tilePx :Int = 50; // Number of pixels in a tile
+	var tileSize :Int = 5000; // Size of a tile
+
+	public var targetTextureWidth = 512; // Width of the reflection texture
+	public var targetTextureHeight = 512; // Height of the reflection texture
+
+	public var gl = SystemImpl.gl; // OpenGL context
 	
-	public var targetTextureWidth = 512;
-	public var targetTextureHeight = 512;
-
-	public var gl = SystemImpl.gl;
-	
-	public var nt:Dynamic;
+	public var nt:Dynamic; // Noise tiles
 
 	public function new() {
 		Assets.loadEverything(loadingFinished);
 	}
 
 	public function loadingFinished() {
+		
+		// generate random noise tiles
 		nt = new NoiseTile(gridSize, gridSize, tilePx);
+		
+		var tiles = nt.t.tiles;
+		var normals = nt.t.normals;
+		
+		// Create terrain mesh
 		terrainMesh = new Array();
-		waterMesh = new Array();
-
-		for (j in 0...gridSize)
+		for (j in 0...gridSize) { 
 			for (i in 0...gridSize){
-				terrainMesh.push(new TerrainModel(nt.t.tiles[i + j * gridSize],nt.t.normals[i + j * gridSize], i, j, {
+				var terrainModel:TerrainModel = new TerrainModel(tiles[i + j * gridSize], normals[i + j * gridSize], i, j, {
 					w: tileSize,
 					h: tileSize,
 					x: tilePx,
 					y: tilePx
-				}));
+				});
+				terrainMesh.push(terrainModel);
 			}
+		}
 
-		// water & sky
-		 waterMesh.push(new PlaneModel(0,0,{ w:10000, h:10000, x:2, y:2 }));
-		 sky = new SkyCubeModel(40000,40000,40000);
+		// Create water mesh
+		waterMesh = new Array();
+		waterMesh.push(new PlaneModel(0,0,{ w:10000, h:10000, x:2, y:2 }));
+		
+		// Create sky
+		sky = new SkyCubeModel(40000,40000,40000);
+		
+		// Create instances
+		instancesCollection = new Instances('grass',10,10,model,view,projection,modelViewProjectionMatrix);
 
+		// Create projection matrix
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
 
+		// Create view matrix
 		view = FastMatrix4.lookAt(new FastVector3(7, 0, 7), // Camera at (4, 3, 3)
 			new FastVector3(0, 0, 0), //  look at origin
 			new FastVector3(0, 1, 0) // Head is up, set (0, -1, 0) to look upside down
 		);
 
+		// Create model matrix
 		model = FastMatrix4.identity();
+
+		// Create model view projection matrix
 		modelViewProjectionMatrix = FastMatrix4.identity();
 		modelViewProjectionMatrix = modelViewProjectionMatrix.multmat(projection);
 		modelViewProjectionMatrix = modelViewProjectionMatrix.multmat(view);
 		modelViewProjectionMatrix = modelViewProjectionMatrix.multmat(model);
-
-		instancesCollection = new Instances('grass',10,10,model,view,projection,modelViewProjectionMatrix);
 
 		// Add mouse and keyboard listeners
 		kha.input.Mouse.get().notify(onMouseDown, onMouseUp, onMouseMove, null);
@@ -256,7 +272,7 @@ class PlaneInstance {
 		else if (key == KeyCode.Right)
 			strafeRight = false;
 	}
-
+	
 	public function createRenderTexture() {
 
 		// Create a texture to render to
@@ -272,7 +288,7 @@ class PlaneInstance {
 		return targetTex;
 	}
 
-	public function renderTexture(targetTexture:Dynamic, reflectionModelViewProjectionMatrix:FastMatrix4,g:Dynamic, frame:Framebuffer) {
+	public function renderTexture(targetTexture:Dynamic, reflectionModelViewProjectionMatrix:FastMatrix4, g:Dynamic, frame:Framebuffer) {
 		// define size and format of level 0
 		var level = 0;
 		var internalFormat = GL.RGBA;
@@ -321,20 +337,17 @@ class PlaneInstance {
 	}
 
 	public function renderToTexture(g:Dynamic, g2:Dynamic, frame:Framebuffer) {
-
+		// render the scene to a texture
 		g.begin();
-				
 		var targetTex = createRenderTexture();
-
 		renderTexture(targetTex.texture, reflectionModelViewProjectionMatrix, g, frame);
-
 		g.end();
 
-		
+		// get the pixels
 		targetTex.get_g2();
-
 		var img = kha.Image.fromBytes(targetTex.getPixels(), targetTex.width, targetTex.height);
 
+		// render the texture to the screen
 		g2.begin();
 		g2.drawImage(img,0,0);
 		g2.end();
