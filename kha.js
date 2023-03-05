@@ -32909,8 +32909,8 @@ primitive_PlaneModel.prototype = {
 			var image = kha_Assets.images.waternormals;
 			g.setTexture(texture,image);
 			kha_SystemImpl.gl.texParameteri(3553,10241,9729);
-			kha_SystemImpl.gl.texParameteri(3553,10242,33071);
-			kha_SystemImpl.gl.texParameteri(3553,10243,33071);
+			kha_SystemImpl.gl.texParameteri(3553,10242,10497);
+			kha_SystemImpl.gl.texParameteri(3553,10243,10497);
 			g.setMatrix(this.mvpID,mvp);
 			g.setVector3(this.camPosID,camPos);
 			g.drawIndexedVertices();
