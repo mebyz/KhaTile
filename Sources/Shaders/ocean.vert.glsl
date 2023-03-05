@@ -12,14 +12,14 @@ layout(location = 1) in vec2 uv;
 //in vec2 uv;
 //in vec4 a_position;
 
-//uniform float time;
-//uniform mat4 model_matrix, view_matrix, projection_matrix;
+uniform float time;
+uniform mat4 model_matrix, view_matrix, projection_matrix;
 
 out vec2 v_textureCoordinates;
-//out vec3 world_pos;
-//out vec3 world_normal;
+out vec3 world_pos;
+out vec3 world_normal;
 //out vec4 viewSpace;
-//out float v_time;
+out float v_time;
 
 out vec4 clipSpace;
 
@@ -30,7 +30,7 @@ out vec4 clipSpace;
 
 void main() {
     //v_textureCoordinates = a_texcoord;
-    //v_time = time;
+    v_time = time;
     //vec4 vertexCoord = a_position;
     
     //float distance = length(a_position);
@@ -40,7 +40,8 @@ void main() {
 
     //viewSpace = view_matrix * model_matrix * a_position;
 
-    //vec4 worldPosition = model_matrix * a_position;
+    world_pos = (model_matrix * vec4(pos,1.0)).xyz;
+    world_normal = vec3(1.0);
     clipSpace = MVP * vec4(pos.x,pos.y,pos.z ,1.0);
 
     gl_Position = clipSpace;
