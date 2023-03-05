@@ -101,7 +101,7 @@ class PlaneInstance {
 
 		// Create water mesh
 		waterMesh = new Array();
-		waterMesh.push(new PlaneModel(0,0,{ w:10000, h:10000, x:2, y:2 }));
+		waterMesh.push(new PlaneModel(0,0,{ w:100000, h:100000, x:2, y:2 }));
 		
 		// Create sky
 		sky = new SkyCubeModel(40000,40000,40000);
@@ -340,7 +340,7 @@ class PlaneInstance {
 		// render the scene to a texture
 		g.begin();
 		var targetTex = createRenderTexture();
-		renderTexture(targetTex.texture, reflectionModelViewProjectionMatrix, g, frame);
+		renderTexture(targetTex.texture, modelViewProjectionMatrix, g, frame);
 		g.end();
 
 		// get the pixels

@@ -6,19 +6,19 @@ out vec4 outColor;
 uniform sampler2D render_texture;
 uniform sampler2D s_texture;
 uniform sampler2D s_normals;
+in vec4 clipSpace;
+//in float v_time;
 
-in float v_time;
-
-in vec3 fromFragmentToCamera;
+//in vec3 fromFragmentToCamera;
 uniform vec3 light_position;
 uniform vec3 eye_position;
 
 const vec3 DiffuseLight = vec3(0.15, 0.05, 0.0);
 const vec3 RimColor = vec3(0.2, 0.2, 0.2);
 
-in vec3 world_pos;
-in vec3 world_normal;
-in vec4 viewSpace;
+//in vec3 world_pos;
+//in vec3 world_normal;
+//in vec4 viewSpace;
 
 const vec3 fogColor = vec3(0.5, 0.5,0.5);
 const float FogDensity = 0.0001;
@@ -28,18 +28,18 @@ uniform sampler2D gColor;
 
 void main() {
     
-    //vec2 ndc = (clipSpace.xy / clipSpace.w) / 2.0 + 0.5;
+    vec2 ndc = (clipSpace.xy / clipSpace.w);// / 2.0 + 0.5;
     
     // Reflections are upside down
-    //vec2 reflectTexCoords = vec2(ndc.x, -ndc.y);
+    vec2 reflectTexCoords = vec2(ndc.x, -ndc.y);
     
-    const float pi = 3.14285714286;
-    vec3 rtex = texture(render_texture, v_textureCoordinates/*reflectTexCoords*/).rgb;
+    //const float pi = 3.14285714286;
+    vec3 rtex = texture(render_texture, reflectTexCoords).rgb;
 
-    vec3 tex1 = texture(s_texture, v_textureCoordinates).rgb;
+    //vec3 tex1 = texture(s_texture, v_textureCoordinates).rgb;
 
-    vec3 normal = texture(s_normals, v_textureCoordinates).rgb * sin( pi * v_time/10.0);
-    normal = normalize(normal * 2.0 - 1.0);   
+    //vec3 normal = texture(s_normals, v_textureCoordinates).rgb * sin( pi * v_time/10.0);
+    /*normal = normalize(normal * 2.0 - 1.0);   
     vec3 L = normalize( light_position - world_pos);
     vec3 V = normalize( eye_position - world_pos);
 
@@ -62,7 +62,7 @@ void main() {
    fogFactor = clamp( fogFactor, 0.0, 1.0 );
 
    finalColor = mix(fogColor, lightColor, fogFactor)*2.0;
-
+*/
   outColor = vec4(rtex,1.0); //vec4(mix(mix(mix(tex1,finalColor,0.5),rtex,0.5),normal,0.005), 1.0);
 
 }
