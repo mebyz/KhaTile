@@ -49,7 +49,7 @@ class Main {
 					Timer.delay(function() { pb.set_value(70); }, 5000);
 					Timer.delay(function() { pb.set_value(100); 
 						var button = new Button("Click me!");
-						button.setPosition(300, 300);
+						button.setPosition(0, 0);
 						pb.visible = false;
 						Koui.add(button);	
 						button.addEventListener(MouseClickEvent, function(e: MouseClickEvent) {

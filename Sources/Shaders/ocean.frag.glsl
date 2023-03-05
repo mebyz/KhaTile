@@ -36,9 +36,9 @@ void main() {
     const float pi = 3.14285714286;
     vec3 rtex = texture(render_texture, reflectTexCoords).rgb;
 
-    vec3 tex1 = texture(s_texture, v_textureCoordinates).rgb;
+    vec3 tex1 = texture(s_texture, v_textureCoordinates*5.0).rgb;
 
-    vec3 normal = texture(s_normals, v_textureCoordinates).rgb * sin( pi * v_time/10.0);
+    vec3 normal = texture(s_normals, v_textureCoordinates*5.0).rgb;// * sin( pi * v_time/10.0);
     normal = normalize(normal * 2.0 - 1.0);   
     vec3 L = normalize( light_position - world_pos);
     vec3 V = normalize( eye_position - world_pos);
@@ -63,6 +63,6 @@ void main() {
 
    finalColor = mix(fogColor, lightColor, fogFactor)*2.0;
 
-  outColor = vec4(mix(mix(mix(tex1,finalColor,0.5),rtex,0.2),normal,0.005), 1.0);
+  outColor = vec4(mix(mix(mix(rtex,normal,0.6),tex1,0.2),finalColor,0.2),1.0);//vec4(mix(mix(mix(tex1,finalColor,0.5),rtex,0.2),normal,0.005), 1.0);
 
 }
