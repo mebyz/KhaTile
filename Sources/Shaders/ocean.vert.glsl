@@ -9,7 +9,6 @@ layout(location = 1) in vec2 uv;
 //uniform sampler2D s_texture;
 //in vec2 a_texcoord;
 //uniform vec3 camPos;
-//in vec2 uv;
 //in vec4 a_position;
 
 uniform float time;
@@ -35,7 +34,7 @@ void main() {
     
     //float distance = length(a_position);
     //a_position.y += sin( pi * distance + time);
-    //v_textureCoordinates = uv;
+    v_textureCoordinates = uv;
 
 
     //viewSpace = view_matrix * model_matrix * a_position;

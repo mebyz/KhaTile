@@ -14,6 +14,9 @@ uniform sampler2D grass;
 uniform sampler2D snow;
  
 void main() {
+  
+    if (1==1){// (dot(FragPos, vec3(0.0,-800,0.0)) > 0.0) {
+      
   vec3 lightColor = vec3(0.5,0.5,0.5);
   float ambientStrength = 0.2;
   vec3 ambient = ambientStrength * lightColor;
@@ -27,4 +30,8 @@ void main() {
   vec4 g = (smoothstep(200.0*norm.x, 450.0, vHeight) - smoothstep(450.0*norm.x, 3000.0, vHeight)) * texture( stone, vUV, 1.2 ) * (1.0-norm.z-0.5);
   vec4 sn = (smoothstep(200.0*norm.x, 450.0, vHeight) - smoothstep(450.0*norm.x, 3000.0, vHeight)) * texture( snow, vUV, 1.2 ) * (norm.z+0.5);
   outColor = (g+s+sd+sn)/1.2; //(vec4(ambient, 1.0)+vec4(diffuse, 1.0)+vec4(vNorm, 1.0) )/10.0+
+}
+else {
+  outColor = vec4(0.0,0.0,0.0,0.0);
+}
 }
