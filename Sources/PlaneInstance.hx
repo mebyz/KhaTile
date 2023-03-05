@@ -62,7 +62,7 @@ class PlaneInstance {
 
 	var lastPosition:FastVector3; // Last position
 
-	var gridSize = 6; // Number of tiles in the grid
+	var gridSize = 4; // Number of tiles in the grid
 	var tilePx :Int = 50; // Number of pixels in a tile
 	var tileSize :Int = 5000; // Size of a tile
 
@@ -333,6 +333,8 @@ class PlaneInstance {
 			for (plane in terrainMesh)
 				plane.drawPlane(frame, reflectionModelViewProjectionMatrix);
 
+		//if (sky != null)
+		//	sky.render(frame, reflectionModelViewProjectionMatrix);
 		
 	}
 
