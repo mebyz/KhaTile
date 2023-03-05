@@ -62,7 +62,7 @@ class PlaneInstance {
 
 	var lastPosition:FastVector3; // Last position
 
-	var gridSize = 3; // Number of tiles in the grid
+	var gridSize = 6; // Number of tiles in the grid
 	var tilePx :Int = 50; // Number of pixels in a tile
 	var tileSize :Int = 5000; // Size of a tile
 
@@ -158,7 +158,7 @@ class PlaneInstance {
 		// Compute new orientation
 		if (isMouseDown) {
 			horizontalAngle += mouseSpeed * mouseDeltaX * -1;
-			verticalAngle += mouseSpeed * mouseDeltaY * -1;
+			//verticalAngle += mouseSpeed * mouseDeltaY * -1;
 		}
 
 		// Direction : Spherical coordinates to Cartesian coordinates conversion
@@ -196,7 +196,7 @@ class PlaneInstance {
 
 		var xx = Std.int(position.z/tilePx/2);
 		var zz = Std.int(position.x/tilePx/2);
-		var distance = 2 * (position.y - NoiseTile.getHeight(xx,zz));
+		var distance = /*2 * */ (position.y - NoiseTile.getHeight(xx,zz));
     
 		var underwaterPosition = new FastVector3(position.x, position.y - distance, position.z);
 		// Camera matrix

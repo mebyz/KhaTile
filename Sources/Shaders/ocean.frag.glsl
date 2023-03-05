@@ -63,6 +63,6 @@ void main() {
 
    finalColor = mix(fogColor, lightColor, fogFactor)*2.0;
 
-  outColor = vec4(mix(mix(mix(tex1,finalColor,0.5),rtex,0.5),normal,0.005), 1.0);
+  outColor = vec4(mix(mix(mix(tex1,finalColor,0.5),rtex,0.2),normal,0.005), 1.0);
 
 }
