@@ -107,7 +107,7 @@ class PlaneInstance {
 		sky = new SkyCubeModel(40000,40000,40000);
 		
 		// Create instances
-		instancesCollection = new Instances('grass',10,10,model,view,projection,modelViewProjectionMatrix);
+		instancesCollection = new Instances('cylinder',100,100,model,view,projection,modelViewProjectionMatrix);
 
 		// Create projection matrix
 		projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100000.0);
