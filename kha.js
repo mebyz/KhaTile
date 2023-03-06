@@ -302,7 +302,7 @@ PlaneInstance.prototype = {
 		this.waterMesh = [];
 		this.waterMesh.push(new primitive_PlaneModel(0,0,{ w : 100000, h : 100000, x : 2, y : 2}));
 		this.sky = new primitive_SkyCubeModel(40000,40000,40000);
-		this.instancesCollection = new instances_Instances("grass",10,10,this.model,this.view,this.projection,this.modelViewProjectionMatrix);
+		this.instancesCollection = new instances_Instances("cylinder",100,100,this.model,this.view,this.projection,this.modelViewProjectionMatrix);
 		var uh = 1.0 / Math.tan(22.5);
 		var uw = uh / 1.33333333333333326;
 		this.projection = new kha_math_FastMatrix4(uw,0,0,0,0,uh,0,0,0,0,-1.000002000002,-0.200000200000200024,0,0,-1,0);
@@ -3408,9 +3408,25 @@ haxe_rtti_Meta.getType = function(t) {
 haxe_rtti_Meta.getMeta = function(t) {
 	return t.__meta__;
 };
+var instances_Cylinder = function(position) {
+	this.position = position;
+};
+$hxClasses["instances.Cylinder"] = instances_Cylinder;
+instances_Cylinder.__name__ = "instances.Cylinder";
+instances_Cylinder.prototype = {
+	yOffset: null
+	,position: null
+	,getModelMatrix: function() {
+		return new kha_math_FastMatrix4(1,0,0,this.position.x,0,1,0,this.position.y + this.yOffset,0,0,1,this.position.z,0,0,0,1);
+	}
+	,update: function() {
+		this.yOffset = Math.sin(this.position.x * 4 + this.position.z + kha_Scheduler.time() * 2) / 4;
+	}
+	,__class__: instances_Cylinder
+};
 var instances_CylinderMesh = function(sections) {
-	var r = 0.5;
-	var h = 1;
+	var r = 50;
+	var h = 10000;
 	this.vertices = [];
 	this.indices = [];
 	this.vertices.push(0);
@@ -3480,34 +3496,6 @@ instances_CylinderMesh.prototype = {
 	}
 	,__class__: instances_CylinderMesh
 };
-var instances_GrassMesh = function() {
-	var obj = new instances_ObjLoader(kha_Assets.blobs.grass_obj.toString());
-	this.vertices = obj.data;
-	this.indices = obj.indices;
-};
-$hxClasses["instances.GrassMesh"] = instances_GrassMesh;
-instances_GrassMesh.__name__ = "instances.GrassMesh";
-instances_GrassMesh.prototype = {
-	vertices: null
-	,indices: null
-	,__class__: instances_GrassMesh
-};
-var instances_GrassPatch = function(position) {
-	this.position = position;
-};
-$hxClasses["instances.GrassPatch"] = instances_GrassPatch;
-instances_GrassPatch.__name__ = "instances.GrassPatch";
-instances_GrassPatch.prototype = {
-	yOffset: null
-	,position: null
-	,getModelMatrix: function() {
-		return new kha_math_FastMatrix4(1,0,0,this.position.x,0,1,0,this.position.y + this.yOffset,0,0,1,this.position.z,0,0,0,1);
-	}
-	,update: function() {
-		this.yOffset = Math.sin(this.position.x * 4 + this.position.z + kha_Scheduler.time() * 2) / 4;
-	}
-	,__class__: instances_GrassPatch
-};
 var instances_Instances = function(type,iX,iZ,m,vv,p,imvp) {
 	if(iZ == null) {
 		iZ = 100;
@@ -3525,18 +3513,12 @@ var instances_Instances = function(type,iX,iZ,m,vv,p,imvp) {
 		this.projection = new kha_math_FastMatrix4(uw,0,0,0,0,uh,0,0,0,0,-1.00200200200200196,-0.200200200200200185,0,0,-1,0);
 	}
 	var mesh = this.createMesh(type);
-	switch(type) {
-	case "cylinder":
+	if(type == "cylinder") {
 		var f = kha_Shaders.cylinder_frag;
 		var v = kha_Shaders.cylinder_vert;
 		var structures = this.fillStructure(mesh);
 		this.setupPipeline(structures,f,v);
-		break;
-	case "grass":
-		var f = kha_Shaders.cylinder_frag;
-		var v = kha_Shaders.cylinder_vert;
-		var structures = this.fillStructure2(mesh);
-		this.setupPipeline(structures,f,v);
+		this.mvpID = this.pipeline.getConstantLocation("MVP");
 		var model = null;
 		if(m != null) {
 			model = m;
@@ -3561,8 +3543,6 @@ var instances_Instances = function(type,iX,iZ,m,vv,p,imvp) {
 			var _this = this.mvp2;
 			this.mvp2 = new kha_math_FastMatrix4(_this._00 * model._00 + _this._10 * model._01 + _this._20 * model._02 + _this._30 * model._03,_this._00 * model._10 + _this._10 * model._11 + _this._20 * model._12 + _this._30 * model._13,_this._00 * model._20 + _this._10 * model._21 + _this._20 * model._22 + _this._30 * model._23,_this._00 * model._30 + _this._10 * model._31 + _this._20 * model._32 + _this._30 * model._33,_this._01 * model._00 + _this._11 * model._01 + _this._21 * model._02 + _this._31 * model._03,_this._01 * model._10 + _this._11 * model._11 + _this._21 * model._12 + _this._31 * model._13,_this._01 * model._20 + _this._11 * model._21 + _this._21 * model._22 + _this._31 * model._23,_this._01 * model._30 + _this._11 * model._31 + _this._21 * model._32 + _this._31 * model._33,_this._02 * model._00 + _this._12 * model._01 + _this._22 * model._02 + _this._32 * model._03,_this._02 * model._10 + _this._12 * model._11 + _this._22 * model._12 + _this._32 * model._13,_this._02 * model._20 + _this._12 * model._21 + _this._22 * model._22 + _this._32 * model._23,_this._02 * model._30 + _this._12 * model._31 + _this._22 * model._32 + _this._32 * model._33,_this._03 * model._00 + _this._13 * model._01 + _this._23 * model._02 + _this._33 * model._03,_this._03 * model._10 + _this._13 * model._11 + _this._23 * model._12 + _this._33 * model._13,_this._03 * model._20 + _this._13 * model._21 + _this._23 * model._22 + _this._33 * model._23,_this._03 * model._30 + _this._13 * model._31 + _this._23 * model._32 + _this._33 * model._33);
 		}
-		break;
-	default:
 	}
 };
 $hxClasses["instances.Instances"] = instances_Instances;
@@ -3598,19 +3578,16 @@ instances_Instances.prototype = {
 			while(_g2 < _g3) {
 				var z = _g2++;
 				var pos = new kha_math_Vector3(x - (instances_Instances.instancesX - 1) / 2,0,z - (instances_Instances.instancesZ - 1) / 2);
-				if(type == "grass") {
-					this.ins.push(new instances_GrassPatch(pos));
+				if(type == "cylinder") {
+					this.ins.push(new instances_Cylinder(pos));
 				}
 			}
 		}
 	}
 	,createMesh: function(type) {
-		switch(type) {
-		case "cylinder":
+		if(type == "cylinder") {
 			return new instances_CylinderMesh(32);
-		case "grass":
-			return new instances_GrassMesh();
-		default:
+		} else {
 			return null;
 		}
 	}
@@ -3661,53 +3638,6 @@ instances_Instances.prototype = {
 			var v = 0.75 + kha_math_Random.getIn(-100,100) / 500;
 			oData.setFloat32((i * 3 + 1) * 4,v,true);
 			oData.setFloat32((i * 3 + 2) * 4,0,true);
-		}
-		this.vertexBuffers[1].unlock();
-		structures[2] = new kha_graphics4_VertexStructure();
-		structures[2].add("m",4);
-		this.vertexBuffers[2] = new kha_graphics4_VertexBuffer(this.ins.length,structures[2],0,1);
-		return structures;
-	}
-	,fillStructure2: function(mesh) {
-		var structures = [];
-		structures[0] = new kha_graphics4_VertexStructure();
-		structures[0].add("pos",2);
-		structures[0].add("uv",1);
-		structures[0].add("nor",2);
-		var structureLength = 8;
-		this.vertexBuffers = [];
-		this.vertexBuffers[0] = new kha_graphics4_VertexBuffer(mesh.vertices.length / structureLength | 0,structures[0],0);
-		var vbData = this.vertexBuffers[0].lock();
-		var _g = 0;
-		var _g1 = vbData.byteLength >> 2;
-		while(_g < _g1) {
-			var i = _g++;
-			var v = mesh.vertices[i];
-			vbData.setFloat32(i * 4,v,true);
-		}
-		this.vertexBuffers[0].unlock();
-		this.indexBuffer = new kha_graphics4_IndexBuffer(mesh.indices.length,0);
-		var iData = this.indexBuffer.lock();
-		var _g = 0;
-		var _g1 = iData.byteLength >> 2;
-		while(_g < _g1) {
-			var i = _g++;
-			iData.setUint32(i * 4,mesh.indices[i],kha_arrays_ByteArray.LITTLE_ENDIAN);
-			var tmp = i * 4;
-		}
-		this.indexBuffer.unlock();
-		structures[1] = new kha_graphics4_VertexStructure();
-		structures[1].add("col",2);
-		this.vertexBuffers[1] = new kha_graphics4_VertexBuffer(this.ins.length,structures[1],0,1);
-		var oData = this.vertexBuffers[1].lock();
-		var _g = 0;
-		var _g1 = this.ins.length;
-		while(_g < _g1) {
-			var i = _g++;
-			oData.setFloat32(i * 3 * 4,0.3,true);
-			var v = 0.75 + kha_math_Random.getIn(-100,100) / 500;
-			oData.setFloat32((i * 3 + 1) * 4,v,true);
-			oData.setFloat32((i * 3 + 2) * 4,0.3,true);
 		}
 		this.vertexBuffers[1].unlock();
 		structures[2] = new kha_graphics4_VertexStructure();
@@ -3786,133 +3716,6 @@ instances_Instances.prototype = {
 		}
 	}
 	,__class__: instances_Instances
-};
-var instances_ObjLoader = function(objData) {
-	var vertices = [];
-	var uvs = [];
-	var normals = [];
-	var vertexIndices = [];
-	var uvIndices = [];
-	var normalIndices = [];
-	var tempVertices = [];
-	var tempUVs = [];
-	var tempNormals = [];
-	var lines = objData.split("\n");
-	var _g = 0;
-	var _g1 = lines.length;
-	while(_g < _g1) {
-		var i = _g++;
-		var words = lines[i].split(" ");
-		if(words[0] == "v") {
-			var vector = [];
-			vector.push(parseFloat(words[1]));
-			vector.push(parseFloat(words[2]));
-			vector.push(parseFloat(words[3]));
-			tempVertices.push(vector);
-		} else if(words[0] == "vt") {
-			var vector1 = [];
-			vector1.push(parseFloat(words[1]));
-			vector1.push(parseFloat(words[2]));
-			tempUVs.push(vector1);
-		} else if(words[0] == "vn") {
-			var vector2 = [];
-			vector2.push(parseFloat(words[1]));
-			vector2.push(parseFloat(words[2]));
-			vector2.push(parseFloat(words[3]));
-			tempNormals.push(vector2);
-		} else if(words[0] == "f") {
-			var sec1 = words[1].split("/");
-			var sec2 = words[2].split("/");
-			var sec3 = words[3].split("/");
-			vertexIndices.push(parseFloat(sec1[0]) | 0);
-			vertexIndices.push(parseFloat(sec2[0]) | 0);
-			vertexIndices.push(parseFloat(sec3[0]) | 0);
-			uvIndices.push(parseFloat(sec1[1]) | 0);
-			uvIndices.push(parseFloat(sec2[1]) | 0);
-			uvIndices.push(parseFloat(sec3[1]) | 0);
-			normalIndices.push(parseFloat(sec1[2]) | 0);
-			normalIndices.push(parseFloat(sec2[2]) | 0);
-			normalIndices.push(parseFloat(sec3[2]) | 0);
-		}
-	}
-	var _g = 0;
-	var _g1 = vertexIndices.length;
-	while(_g < _g1) {
-		var i = _g++;
-		var vertex = tempVertices[vertexIndices[i] - 1];
-		var uv = tempUVs[uvIndices[i] - 1];
-		var normal = tempNormals[normalIndices[i] - 1];
-		vertices.push(vertex[0]);
-		vertices.push(vertex[1]);
-		vertices.push(vertex[2]);
-		uvs.push(uv[0]);
-		uvs.push(uv[1]);
-		normals.push(normal[0]);
-		normals.push(normal[1]);
-		normals.push(normal[2]);
-	}
-	this.build(vertices,uvs,normals);
-	this.data = [];
-	var _g = 0;
-	var _g1 = vertices.length / 3 | 0;
-	while(_g < _g1) {
-		var i = _g++;
-		this.data.push(instances_ObjLoader.indexedVertices[i * 3]);
-		this.data.push(instances_ObjLoader.indexedVertices[i * 3 + 1]);
-		this.data.push(instances_ObjLoader.indexedVertices[i * 3 + 2]);
-		this.data.push(instances_ObjLoader.indexedUVs[i * 2]);
-		this.data.push(1 - instances_ObjLoader.indexedUVs[i * 2 + 1]);
-		this.data.push(instances_ObjLoader.indexedNormals[i * 3]);
-		this.data.push(instances_ObjLoader.indexedNormals[i * 3 + 1]);
-		this.data.push(instances_ObjLoader.indexedNormals[i * 3 + 2]);
-	}
-};
-$hxClasses["instances.ObjLoader"] = instances_ObjLoader;
-instances_ObjLoader.__name__ = "instances.ObjLoader";
-instances_ObjLoader.prototype = {
-	data: null
-	,indices: null
-	,build: function(vertices,uvs,normals) {
-		instances_ObjLoader.indexedVertices = [];
-		instances_ObjLoader.indexedUVs = [];
-		instances_ObjLoader.indexedNormals = [];
-		this.indices = [];
-		var _g = 0;
-		var _g1 = vertices.length / 3 | 0;
-		while(_g < _g1) {
-			var i = _g++;
-			var found = this.getSimilarVertexIndex(vertices[i * 3],vertices[i * 3 + 1],vertices[i * 3 + 2],uvs[i * 2],uvs[i * 2 + 1],normals[i * 3],normals[i * 3 + 1],normals[i * 3 + 2]);
-			if(found) {
-				this.indices.push(instances_ObjLoader.index);
-			} else {
-				instances_ObjLoader.indexedVertices.push(vertices[i * 3]);
-				instances_ObjLoader.indexedVertices.push(vertices[i * 3 + 1]);
-				instances_ObjLoader.indexedVertices.push(vertices[i * 3 + 2]);
-				instances_ObjLoader.indexedUVs.push(uvs[i * 2]);
-				instances_ObjLoader.indexedUVs.push(uvs[i * 2 + 1]);
-				instances_ObjLoader.indexedNormals.push(normals[i * 3]);
-				instances_ObjLoader.indexedNormals.push(normals[i * 3 + 1]);
-				instances_ObjLoader.indexedNormals.push(normals[i * 3 + 2]);
-				this.indices.push((instances_ObjLoader.indexedVertices.length / 3 | 0) - 1);
-			}
-		}
-	}
-	,isNear: function(v1,v2) {
-		return Math.abs(v1 - v2) < 0.01;
-	}
-	,getSimilarVertexIndex: function(vertexX,vertexY,vertexZ,uvX,uvY,normalX,normalY,normalZ) {
-		var _g = 0;
-		var _g1 = instances_ObjLoader.indexedVertices.length / 3 | 0;
-		while(_g < _g1) {
-			var i = _g++;
-			if(this.isNear(vertexX,instances_ObjLoader.indexedVertices[i * 3]) && this.isNear(vertexY,instances_ObjLoader.indexedVertices[i * 3 + 1]) && this.isNear(vertexZ,instances_ObjLoader.indexedVertices[i * 3 + 2]) && this.isNear(uvX,instances_ObjLoader.indexedUVs[i * 2]) && this.isNear(uvY,instances_ObjLoader.indexedUVs[i * 2 + 1]) && this.isNear(normalX,instances_ObjLoader.indexedNormals[i * 3]) && this.isNear(normalY,instances_ObjLoader.indexedNormals[i * 3 + 1]) && this.isNear(normalZ,instances_ObjLoader.indexedNormals[i * 3 + 2])) {
-				instances_ObjLoader.index = i;
-				return true;
-			}
-		}
-		return false;
-	}
-	,__class__: instances_ObjLoader
 };
 var io_colyseus_Auth = function(endpoint) {
 	this.endpoint = StringTools.replace(endpoint,"ws","http");
@@ -33431,12 +33234,12 @@ kha_Scheduler.startTime = 0;
 kha_Shaders.circle_fragData0 = "s1674:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCB2ZWM0IHNoYWRvd0NvbG9yc1sxNl07CnVuaWZvcm0gaGlnaHAgdmVjNCBjaXJjbGVzWzE2XTsKdW5pZm9ybSBoaWdocCB2ZWM0IGF0dHJpYnV0ZXNbMTZdOwp1bmlmb3JtIGhpZ2hwIHZlYzQgYm9yZGVyQ29sb3JbMTZdOwoKZmxhdCB2YXJ5aW5nIGludCBpbnN0YW5jZUlEOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY29sb3I7CgpoaWdocCBmbG9hdCBkaXN0YW5jZVRvQ2lyY2xlKGhpZ2hwIHZlYzIgY2VudGVyLCBoaWdocCBmbG9hdCByYWRpdXMsIGhpZ2hwIHZlYzIgcG9pbnQpCnsKICAgIHJldHVybiBsZW5ndGgocG9pbnQgLSBjZW50ZXIpIC0gcmFkaXVzOwp9Cgp2b2lkIG1haW4oKQp7CiAgICBpbnQgaUlEID0gaW5zdGFuY2VJRDsKICAgIGhpZ2hwIHZlYzQgc2hhZG93Q29sb3IgPSBzaGFkb3dDb2xvcnNbaUlEXTsKICAgIGhpZ2hwIGZsb2F0IGRzdCA9IGRpc3RhbmNlVG9DaXJjbGUoY2lyY2xlc1tpSURdLnh5LCBjaXJjbGVzW2lJRF0ueiwgZ2xfRnJhZ0Nvb3JkLnh5KTsKICAgIGhpZ2hwIGZsb2F0IHNoYWRvd1dpZHRoID0gYXR0cmlidXRlc1tpSURdLnkgKyA5Ljk5OTk5OTc0NzM3ODc1MTYzNTU1MTQ1MjYzNjcxODhlLTA1OwogICAgaGlnaHAgZmxvYXQgc2hhZG93QW1vdW50ID0gcG93KG1heCgwLjAsIDEuMCAtIChkc3QgLyBzaGFkb3dXaWR0aCkpLCBhdHRyaWJ1dGVzW2lJRF0ueik7CiAgICBoaWdocCB2ZWM0IHNoYWRvdyA9IHNoYWRvd0NvbG9yOwogICAgc2hhZG93LncgKj0gc2hhZG93QW1vdW50OwogICAgaGlnaHAgZmxvYXQgYm9yZGVyVGhpY2tuZXNzID0gYXR0cmlidXRlc1tpSURdLng7CiAgICBoaWdocCBmbG9hdCBib3JkZXJPdXRlciA9IHNtb290aHN0ZXAoLTEuMjAwMDAwMDQ3NjgzNzE1ODIwMzEyNSwgMC4wLCBkc3QpOwogICAgaGlnaHAgZmxvYXQgYm9yZGVySW5uZXIgPSBzbW9vdGhzdGVwKC0wLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCAwLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCBkc3QgKyBib3JkZXJUaGlja25lc3MpOwogICAgaGlnaHAgdmVjNCBiZ0NvbG9yID0gY29sb3I7CiAgICBiZ0NvbG9yID0gbWl4KGJnQ29sb3IsIGJvcmRlckNvbG9yW2lJRF0sIHZlYzQoYm9yZGVySW5uZXIpKTsKICAgIGJnQ29sb3IgPSBtaXgoYmdDb2xvciwgc2hhZG93LCB2ZWM0KGJvcmRlck91dGVyKSk7CiAgICBnbF9GcmFnRGF0YVswXSA9IGJnQ29sb3I7Cn0KCg";
 kha_Shaders.circle_fragData1 = "s1692:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCB2ZWM0IHNoYWRvd0NvbG9yc1sxNl07CnVuaWZvcm0gaGlnaHAgdmVjNCBjaXJjbGVzWzE2XTsKdW5pZm9ybSBoaWdocCB2ZWM0IGF0dHJpYnV0ZXNbMTZdOwp1bmlmb3JtIGhpZ2hwIHZlYzQgYm9yZGVyQ29sb3JbMTZdOwoKZmxhdCBpbiBpbnQgaW5zdGFuY2VJRDsKaW4gaGlnaHAgdmVjNCBjb2xvcjsKb3V0IGhpZ2hwIHZlYzQgZnJhZ0NvbG9yOwoKaGlnaHAgZmxvYXQgZGlzdGFuY2VUb0NpcmNsZShoaWdocCB2ZWMyIGNlbnRlciwgaGlnaHAgZmxvYXQgcmFkaXVzLCBoaWdocCB2ZWMyIHBvaW50KQp7CiAgICByZXR1cm4gbGVuZ3RoKHBvaW50IC0gY2VudGVyKSAtIHJhZGl1czsKfQoKdm9pZCBtYWluKCkKewogICAgaW50IGlJRCA9IGluc3RhbmNlSUQ7CiAgICBoaWdocCB2ZWM0IHNoYWRvd0NvbG9yID0gc2hhZG93Q29sb3JzW2lJRF07CiAgICBoaWdocCBmbG9hdCBkc3QgPSBkaXN0YW5jZVRvQ2lyY2xlKGNpcmNsZXNbaUlEXS54eSwgY2lyY2xlc1tpSURdLnosIGdsX0ZyYWdDb29yZC54eSk7CiAgICBoaWdocCBmbG9hdCBzaGFkb3dXaWR0aCA9IGF0dHJpYnV0ZXNbaUlEXS55ICsgOS45OTk5OTk3NDczNzg3NTE2MzU1NTE0NTI2MzY3MTg4ZS0wNTsKICAgIGhpZ2hwIGZsb2F0IHNoYWRvd0Ftb3VudCA9IHBvdyhtYXgoMC4wLCAxLjAgLSAoZHN0IC8gc2hhZG93V2lkdGgpKSwgYXR0cmlidXRlc1tpSURdLnopOwogICAgaGlnaHAgdmVjNCBzaGFkb3cgPSBzaGFkb3dDb2xvcjsKICAgIHNoYWRvdy53ICo9IHNoYWRvd0Ftb3VudDsKICAgIGhpZ2hwIGZsb2F0IGJvcmRlclRoaWNrbmVzcyA9IGF0dHJpYnV0ZXNbaUlEXS54OwogICAgaGlnaHAgZmxvYXQgYm9yZGVyT3V0ZXIgPSBzbW9vdGhzdGVwKC0xLjIwMDAwMDA0NzY4MzcxNTgyMDMxMjUsIDAuMCwgZHN0KTsKICAgIGhpZ2hwIGZsb2F0IGJvcmRlcklubmVyID0gc21vb3Roc3RlcCgtMC42MDAwMDAwMjM4NDE4NTc5MTAxNTYyNSwgMC42MDAwMDAwMjM4NDE4NTc5MTAxNTYyNSwgZHN0ICsgYm9yZGVyVGhpY2tuZXNzKTsKICAgIGhpZ2hwIHZlYzQgYmdDb2xvciA9IGNvbG9yOwogICAgYmdDb2xvciA9IG1peChiZ0NvbG9yLCBib3JkZXJDb2xvcltpSURdLCB2ZWM0KGJvcmRlcklubmVyKSk7CiAgICBiZ0NvbG9yID0gbWl4KGJnQ29sb3IsIHNoYWRvdywgdmVjNChib3JkZXJPdXRlcikpOwogICAgZnJhZ0NvbG9yID0gYmdDb2xvcjsKfQoK";
 kha_Shaders.circle_fragData2 = "s1532:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIHZlYzQgc2hhZG93Q29sb3JzWzE2XTsKdW5pZm9ybSB2ZWM0IGNpcmNsZXNbMTZdOwp1bmlmb3JtIHZlYzQgYXR0cmlidXRlc1sxNl07CnVuaWZvcm0gdmVjNCBib3JkZXJDb2xvclsxNl07CgpmbGF0IHZhcnlpbmcgaW50IGluc3RhbmNlSUQ7CnZhcnlpbmcgdmVjNCBjb2xvcjsKCmZsb2F0IGRpc3RhbmNlVG9DaXJjbGUodmVjMiBjZW50ZXIsIGZsb2F0IHJhZGl1cywgdmVjMiBwb2ludCkKewogICAgcmV0dXJuIGxlbmd0aChwb2ludCAtIGNlbnRlcikgLSByYWRpdXM7Cn0KCnZvaWQgbWFpbigpCnsKICAgIGludCBpSUQgPSBpbnN0YW5jZUlEOwogICAgdmVjNCBzaGFkb3dDb2xvciA9IHNoYWRvd0NvbG9yc1tpSURdOwogICAgZmxvYXQgZHN0ID0gZGlzdGFuY2VUb0NpcmNsZShjaXJjbGVzW2lJRF0ueHksIGNpcmNsZXNbaUlEXS56LCBnbF9GcmFnQ29vcmQueHkpOwogICAgZmxvYXQgc2hhZG93V2lkdGggPSBhdHRyaWJ1dGVzW2lJRF0ueSArIDkuOTk5OTk5NzQ3Mzc4NzUxNjM1NTUxNDUyNjM2NzE4OGUtMDU7CiAgICBmbG9hdCBzaGFkb3dBbW91bnQgPSBwb3cobWF4KDAuMCwgMS4wIC0gKGRzdCAvIHNoYWRvd1dpZHRoKSksIGF0dHJpYnV0ZXNbaUlEXS56KTsKICAgIHZlYzQgc2hhZG93ID0gc2hhZG93Q29sb3I7CiAgICBzaGFkb3cudyAqPSBzaGFkb3dBbW91bnQ7CiAgICBmbG9hdCBib3JkZXJUaGlja25lc3MgPSBhdHRyaWJ1dGVzW2lJRF0ueDsKICAgIGZsb2F0IGJvcmRlck91dGVyID0gc21vb3Roc3RlcCgtMS4yMDAwMDAwNDc2ODM3MTU4MjAzMTI1LCAwLjAsIGRzdCk7CiAgICBmbG9hdCBib3JkZXJJbm5lciA9IHNtb290aHN0ZXAoLTAuNjAwMDAwMDIzODQxODU3OTEwMTU2MjUsIDAuNjAwMDAwMDIzODQxODU3OTEwMTU2MjUsIGRzdCArIGJvcmRlclRoaWNrbmVzcyk7CiAgICB2ZWM0IGJnQ29sb3IgPSBjb2xvcjsKICAgIGJnQ29sb3IgPSBtaXgoYmdDb2xvciwgYm9yZGVyQ29sb3JbaUlEXSwgdmVjNChib3JkZXJJbm5lcikpOwogICAgYmdDb2xvciA9IG1peChiZ0NvbG9yLCBzaGFkb3csIHZlYzQoYm9yZGVyT3V0ZXIpKTsKICAgIGdsX0ZyYWdEYXRhWzBdID0gYmdDb2xvcjsKfQoK";
-kha_Shaders.cylinder_fragData0 = "s103:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdm9pZCBtYWluKCkKewp9Cgo";
-kha_Shaders.cylinder_fragData1 = "s107:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdm9pZCBtYWluKCkKewp9Cgo";
-kha_Shaders.cylinder_fragData2 = "s106:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp2b2lkIG1haW4oKQp7Cn0KCg";
-kha_Shaders.cylinder_vertData0 = "s175:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgTVZQOwoKYXR0cmlidXRlIHZlYzMgcG9zOwphdHRyaWJ1dGUgdmVjMyBjb2w7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IE1WUCAqIHZlYzQocG9zLCAxLjApOwp9Cgo";
-kha_Shaders.cylinder_vertData1 = "s160:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1hdDQgTVZQOwoKaW4gdmVjMyBwb3M7CmluIHZlYzMgY29sOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBNVlAgKiB2ZWM0KHBvcywgMS4wKTsKfQoK";
-kha_Shaders.cylinder_vertData2 = "s207:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBNVlA7CgphdHRyaWJ1dGUgbWVkaXVtcCB2ZWMzIHBvczsKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyBjb2w7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IE1WUCAqIHZlYzQocG9zLCAxLjApOwp9Cgo";
+kha_Shaders.cylinder_fragData0 = "s198:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdmFyeWluZyBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9GcmFnRGF0YVswXSA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
+kha_Shaders.cylinder_fragData1 = "s220:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKb3V0IGhpZ2hwIHZlYzQgb3V0Q29sb3I7CmluIGhpZ2hwIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIG91dENvbG9yID0gZnJhZ21lbnRDb2xvcjsKfQoK";
+kha_Shaders.cylinder_fragData2 = "s192:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX0ZyYWdEYXRhWzBdID0gZnJhZ21lbnRDb2xvcjsKfQoK";
+kha_Shaders.cylinder_vertData0 = "s259:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgTVZQOwoKdmFyeWluZyB2ZWM0IGZyYWdtZW50Q29sb3I7CmF0dHJpYnV0ZSB2ZWMzIHBvczsKYXR0cmlidXRlIHZlYzMgY29sOwoKdm9pZCBtYWluKCkKewogICAgZnJhZ21lbnRDb2xvciA9IE1WUCAqIHZlYzQocG9zLCAxLjApOwogICAgZ2xfUG9zaXRpb24gPSBmcmFnbWVudENvbG9yOwp9Cgo";
+kha_Shaders.cylinder_vertData1 = "s239:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1hdDQgTVZQOwoKb3V0IHZlYzQgZnJhZ21lbnRDb2xvcjsKaW4gdmVjMyBwb3M7CmluIHZlYzMgY29sOwoKdm9pZCBtYWluKCkKewogICAgZnJhZ21lbnRDb2xvciA9IE1WUCAqIHZlYzQocG9zLCAxLjApOwogICAgZ2xfUG9zaXRpb24gPSBmcmFnbWVudENvbG9yOwp9Cgo";
+kha_Shaders.cylinder_vertData2 = "s302:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBNVlA7Cgp2YXJ5aW5nIG1lZGl1bXAgdmVjNCBmcmFnbWVudENvbG9yOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWMzIHBvczsKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyBjb2w7Cgp2b2lkIG1haW4oKQp7CiAgICBmcmFnbWVudENvbG9yID0gTVZQICogdmVjNChwb3MsIDEuMCk7CiAgICBnbF9Qb3NpdGlvbiA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
 kha_Shaders.ocean_fragData0 = "s3114:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc19ub3JtYWxzOwp1bmlmb3JtIGhpZ2hwIHNhbXBsZXIyRCByZW5kZXJfdGV4dHVyZTsKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc190ZXh0dXJlOwp1bmlmb3JtIGhpZ2hwIHZlYzMgbGlnaHRfcG9zaXRpb247CnVuaWZvcm0gaGlnaHAgdmVjMyBleWVfcG9zaXRpb247CnVuaWZvcm0gaGlnaHAgc2FtcGxlcjJEIGdDb2xvcjsKCnZhcnlpbmcgaGlnaHAgZmxvYXQgdl90aW1lOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY2xpcFNwYWNlOwp2YXJ5aW5nIGhpZ2hwIHZlYzIgdl90ZXh0dXJlQ29vcmRpbmF0ZXM7CnZhcnlpbmcgaGlnaHAgdmVjMyB3b3JsZF9wb3M7CnZhcnlpbmcgaGlnaHAgdmVjMyB3b3JsZF9ub3JtYWw7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCBmbG9hdCB0aW1lID0gdl90aW1lIC8gNS4wOwogICAgaGlnaHAgdmVjMiBuZGMgPSBjbGlwU3BhY2UueHkgLyB2ZWMyKGNsaXBTcGFjZS53KTsKICAgIGhpZ2hwIHZlYzIgcmVmbGVjdFRleENvb3JkcyA9ICh2ZWMyKG5kYy54LCAtbmRjLnkpIC8gdmVjMigyLjApKSArIHZlYzIoMC41KTsKICAgIGhpZ2hwIHZlYzIgZGlzdDEgPSAodGV4dHVyZTJEKHNfbm9ybWFscywgKHZlYzIodl90ZXh0dXJlQ29vcmRpbmF0ZXMueCwgdl90ZXh0dXJlQ29vcmRpbmF0ZXMueSkgKiBzaW4odGltZSkpIC8gdmVjMigxMDAwLjApKS54eSAqIDIuMCkgLSB2ZWMyKDEuMCk7CiAgICBoaWdocCB2ZWMzIHJ0ZXggPSB2ZWMzKGRpc3QxLCAxLjApICsgdGV4dHVyZTJEKHJlbmRlcl90ZXh0dXJlLCByZWZsZWN0VGV4Q29vcmRzKS54eXo7CiAgICBoaWdocCB2ZWMzIHRleDEgPSB2ZWMzKGRpc3QxLCAxLjApICsgdGV4dHVyZTJEKHNfdGV4dHVyZSwgKHZfdGV4dHVyZUNvb3JkaW5hdGVzICogNS4wKSArIHZlYzIoc2luKHRpbWUpIC8gMTAwMC4wLCAoc2luKHRpbWUpIC8gMTAwMC4wKSArIChjb3ModGltZSkgLyA4MC4wKSkpLnh5ejsKICAgIGhpZ2hwIHZlYzMgbm9ybWFsID0gKC12ZWMzKGRpc3QxLCAxLjApKSArIHRleHR1cmUyRChzX25vcm1hbHMsICh2X3RleHR1cmVDb29yZGluYXRlcyAqIDUuMCkgKyB2ZWMyKChzaW4odGltZSkgLyAxMDAwLjApICsgKGNvcyh0aW1lKSAvIDgwLjApLCBzaW4odGltZSkgLyAxMDAuMCkpLnh5ejsKICAgIG5vcm1hbC54ID0gMC4wOwogICAgbm9ybWFsID0gbm9ybWFsaXplKChub3JtYWwgKiAyLjApIC0gdmVjMygxLjApKTsKICAgIGhpZ2hwIHZlYzMgTCA9IG5vcm1hbGl6ZShsaWdodF9wb3NpdGlvbiAtIHdvcmxkX3Bvcyk7CiAgICBoaWdocCB2ZWMzIFYgPSBub3JtYWxpemUoZXllX3Bvc2l0aW9uIC0gd29ybGRfcG9zKTsKICAgIGhpZ2hwIHZlYzMgZGlmZnVzZSA9IHZlYzMoMC4xNTAwMDAwMDU5NjA0NjQ0Nzc1MzkwNjI1LCAwLjA1MDAwMDAwMDc0NTA1ODA1OTY5MjM4MjgxMjUsIDAuMCkgKiBtYXgoMC4wLCBkb3QoTCwgd29ybGRfbm9ybWFsKSk7CiAgICBoaWdocCBmbG9hdCByaW0gPSAxLjAgLSBtYXgoZG90KFYsIHdvcmxkX25vcm1hbCksIDAuMCk7CiAgICByaW0gPSBzbW9vdGhzdGVwKDAuNjAwMDAwMDIzODQxODU3OTEwMTU2MjUsIDEuMCwgcmltKTsKICAgIGhpZ2hwIHZlYzMgZmluYWxSaW0gPSB2ZWMzKDAuMjAwMDAwMDAyOTgwMjMyMjM4NzY5NTMxMjUpICogdmVjMyhyaW0sIHJpbSwgcmltKTsKICAgIGhpZ2hwIHZlYzMgbGlnaHRDb2xvciA9IChmaW5hbFJpbSArIGRpZmZ1c2UpICsgdGV4MTsKICAgIGhpZ2hwIHZlYzMgZmluYWxDb2xvciA9IHZlYzMoMC4wKTsKICAgIGhpZ2hwIGZsb2F0IGRpc3QgPSAwLjA7CiAgICBoaWdocCBmbG9hdCBmb2dGYWN0b3IgPSAwLjA7CiAgICBkaXN0ID0gZ2xfRnJhZ0Nvb3JkLnogLyBnbF9GcmFnQ29vcmQudzsKICAgIGZvZ0ZhY3RvciA9IDEuMCAvIGV4cCgoZGlzdCAqIDAuMDAwNTAwMDAwMDIzNzQ4NzI1NjUyNjk0NzAyMTQ4NDM3NSkgKiAoZGlzdCAqIDAuMDAwNTAwMDAwMDIzNzQ4NzI1NjUyNjk0NzAyMTQ4NDM3NSkpOwogICAgZm9nRmFjdG9yID0gY2xhbXAoZm9nRmFjdG9yLCAwLjAsIDEuMCk7CiAgICBmaW5hbENvbG9yID0gbWl4KHZlYzMoMC41KSwgbGlnaHRDb2xvciAvIHZlYzMoODAuMCksIHZlYzMoZm9nRmFjdG9yKSkgLyB2ZWMzKDIuMCk7CiAgICBnbF9GcmFnRGF0YVswXSA9IHZlYzQoZmluYWxDb2xvciwgMS4wKSArIHZlYzQobWl4KG1peChtaXgocnRleCwgdGV4MSwgdmVjMygwLjUpKSwgZmluYWxDb2xvciwgdmVjMygwLjMwMDAwMDAxMTkyMDkyODk1NTA3ODEyNSkpLCBub3JtYWwsIHZlYzMoMC41KSksIDEuMCk7Cn0KCg";
 kha_Shaders.ocean_fragData1 = "s3099:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc19ub3JtYWxzOwp1bmlmb3JtIGhpZ2hwIHNhbXBsZXIyRCByZW5kZXJfdGV4dHVyZTsKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc190ZXh0dXJlOwp1bmlmb3JtIGhpZ2hwIHZlYzMgbGlnaHRfcG9zaXRpb247CnVuaWZvcm0gaGlnaHAgdmVjMyBleWVfcG9zaXRpb247CnVuaWZvcm0gaGlnaHAgc2FtcGxlcjJEIGdDb2xvcjsKCmluIGhpZ2hwIGZsb2F0IHZfdGltZTsKaW4gaGlnaHAgdmVjNCBjbGlwU3BhY2U7CmluIGhpZ2hwIHZlYzIgdl90ZXh0dXJlQ29vcmRpbmF0ZXM7CmluIGhpZ2hwIHZlYzMgd29ybGRfcG9zOwppbiBoaWdocCB2ZWMzIHdvcmxkX25vcm1hbDsKb3V0IGhpZ2hwIHZlYzQgb3V0Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCBmbG9hdCB0aW1lID0gdl90aW1lIC8gNS4wOwogICAgaGlnaHAgdmVjMiBuZGMgPSBjbGlwU3BhY2UueHkgLyB2ZWMyKGNsaXBTcGFjZS53KTsKICAgIGhpZ2hwIHZlYzIgcmVmbGVjdFRleENvb3JkcyA9ICh2ZWMyKG5kYy54LCAtbmRjLnkpIC8gdmVjMigyLjApKSArIHZlYzIoMC41KTsKICAgIGhpZ2hwIHZlYzIgZGlzdDEgPSAodGV4dHVyZShzX25vcm1hbHMsICh2ZWMyKHZfdGV4dHVyZUNvb3JkaW5hdGVzLngsIHZfdGV4dHVyZUNvb3JkaW5hdGVzLnkpICogc2luKHRpbWUpKSAvIHZlYzIoMTAwMC4wKSkueHkgKiAyLjApIC0gdmVjMigxLjApOwogICAgaGlnaHAgdmVjMyBydGV4ID0gdmVjMyhkaXN0MSwgMS4wKSArIHRleHR1cmUocmVuZGVyX3RleHR1cmUsIHJlZmxlY3RUZXhDb29yZHMpLnh5ejsKICAgIGhpZ2hwIHZlYzMgdGV4MSA9IHZlYzMoZGlzdDEsIDEuMCkgKyB0ZXh0dXJlKHNfdGV4dHVyZSwgKHZfdGV4dHVyZUNvb3JkaW5hdGVzICogNS4wKSArIHZlYzIoc2luKHRpbWUpIC8gMTAwMC4wLCAoc2luKHRpbWUpIC8gMTAwMC4wKSArIChjb3ModGltZSkgLyA4MC4wKSkpLnh5ejsKICAgIGhpZ2hwIHZlYzMgbm9ybWFsID0gKC12ZWMzKGRpc3QxLCAxLjApKSArIHRleHR1cmUoc19ub3JtYWxzLCAodl90ZXh0dXJlQ29vcmRpbmF0ZXMgKiA1LjApICsgdmVjMigoc2luKHRpbWUpIC8gMTAwMC4wKSArIChjb3ModGltZSkgLyA4MC4wKSwgc2luKHRpbWUpIC8gMTAwLjApKS54eXo7CiAgICBub3JtYWwueCA9IDAuMDsKICAgIG5vcm1hbCA9IG5vcm1hbGl6ZSgobm9ybWFsICogMi4wKSAtIHZlYzMoMS4wKSk7CiAgICBoaWdocCB2ZWMzIEwgPSBub3JtYWxpemUobGlnaHRfcG9zaXRpb24gLSB3b3JsZF9wb3MpOwogICAgaGlnaHAgdmVjMyBWID0gbm9ybWFsaXplKGV5ZV9wb3NpdGlvbiAtIHdvcmxkX3Bvcyk7CiAgICBoaWdocCB2ZWMzIGRpZmZ1c2UgPSB2ZWMzKDAuMTUwMDAwMDA1OTYwNDY0NDc3NTM5MDYyNSwgMC4wNTAwMDAwMDA3NDUwNTgwNTk2OTIzODI4MTI1LCAwLjApICogbWF4KDAuMCwgZG90KEwsIHdvcmxkX25vcm1hbCkpOwogICAgaGlnaHAgZmxvYXQgcmltID0gMS4wIC0gbWF4KGRvdChWLCB3b3JsZF9ub3JtYWwpLCAwLjApOwogICAgcmltID0gc21vb3Roc3RlcCgwLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCAxLjAsIHJpbSk7CiAgICBoaWdocCB2ZWMzIGZpbmFsUmltID0gdmVjMygwLjIwMDAwMDAwMjk4MDIzMjIzODc2OTUzMTI1KSAqIHZlYzMocmltLCByaW0sIHJpbSk7CiAgICBoaWdocCB2ZWMzIGxpZ2h0Q29sb3IgPSAoZmluYWxSaW0gKyBkaWZmdXNlKSArIHRleDE7CiAgICBoaWdocCB2ZWMzIGZpbmFsQ29sb3IgPSB2ZWMzKDAuMCk7CiAgICBoaWdocCBmbG9hdCBkaXN0ID0gMC4wOwogICAgaGlnaHAgZmxvYXQgZm9nRmFjdG9yID0gMC4wOwogICAgZGlzdCA9IGdsX0ZyYWdDb29yZC56IC8gZ2xfRnJhZ0Nvb3JkLnc7CiAgICBmb2dGYWN0b3IgPSAxLjAgLyBleHAoKGRpc3QgKiAwLjAwMDUwMDAwMDAyMzc0ODcyNTY1MjY5NDcwMjE0ODQzNzUpICogKGRpc3QgKiAwLjAwMDUwMDAwMDAyMzc0ODcyNTY1MjY5NDcwMjE0ODQzNzUpKTsKICAgIGZvZ0ZhY3RvciA9IGNsYW1wKGZvZ0ZhY3RvciwgMC4wLCAxLjApOwogICAgZmluYWxDb2xvciA9IG1peCh2ZWMzKDAuNSksIGxpZ2h0Q29sb3IgLyB2ZWMzKDgwLjApLCB2ZWMzKGZvZ0ZhY3RvcikpIC8gdmVjMygyLjApOwogICAgb3V0Q29sb3IgPSB2ZWM0KGZpbmFsQ29sb3IsIDEuMCkgKyB2ZWM0KG1peChtaXgobWl4KHJ0ZXgsIHRleDEsIHZlYzMoMC41KSksIGZpbmFsQ29sb3IsIHZlYzMoMC4zMDAwMDAwMTE5MjA5Mjg5NTUwNzgxMjUpKSwgbm9ybWFsLCB2ZWMzKDAuNSkpLCAxLjApOwp9Cgo";
 kha_Shaders.ocean_fragData2 = "s2943:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHNfbm9ybWFsczsKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCByZW5kZXJfdGV4dHVyZTsKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCBzX3RleHR1cmU7CnVuaWZvcm0gdmVjMyBsaWdodF9wb3NpdGlvbjsKdW5pZm9ybSB2ZWMzIGV5ZV9wb3NpdGlvbjsKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCBnQ29sb3I7Cgp2YXJ5aW5nIGZsb2F0IHZfdGltZTsKdmFyeWluZyB2ZWM0IGNsaXBTcGFjZTsKdmFyeWluZyB2ZWMyIHZfdGV4dHVyZUNvb3JkaW5hdGVzOwp2YXJ5aW5nIHZlYzMgd29ybGRfcG9zOwp2YXJ5aW5nIHZlYzMgd29ybGRfbm9ybWFsOwoKdm9pZCBtYWluKCkKewogICAgZmxvYXQgdGltZSA9IHZfdGltZSAvIDUuMDsKICAgIHZlYzIgbmRjID0gY2xpcFNwYWNlLnh5IC8gdmVjMihjbGlwU3BhY2Uudyk7CiAgICB2ZWMyIHJlZmxlY3RUZXhDb29yZHMgPSAodmVjMihuZGMueCwgLW5kYy55KSAvIHZlYzIoMi4wKSkgKyB2ZWMyKDAuNSk7CiAgICB2ZWMyIGRpc3QxID0gKHRleHR1cmUyRChzX25vcm1hbHMsICh2ZWMyKHZfdGV4dHVyZUNvb3JkaW5hdGVzLngsIHZfdGV4dHVyZUNvb3JkaW5hdGVzLnkpICogc2luKHRpbWUpKSAvIHZlYzIoMTAwMC4wKSkueHkgKiAyLjApIC0gdmVjMigxLjApOwogICAgdmVjMyBydGV4ID0gdmVjMyhkaXN0MSwgMS4wKSArIHRleHR1cmUyRChyZW5kZXJfdGV4dHVyZSwgcmVmbGVjdFRleENvb3JkcykueHl6OwogICAgdmVjMyB0ZXgxID0gdmVjMyhkaXN0MSwgMS4wKSArIHRleHR1cmUyRChzX3RleHR1cmUsICh2X3RleHR1cmVDb29yZGluYXRlcyAqIDUuMCkgKyB2ZWMyKHNpbih0aW1lKSAvIDEwMDAuMCwgKHNpbih0aW1lKSAvIDEwMDAuMCkgKyAoY29zKHRpbWUpIC8gODAuMCkpKS54eXo7CiAgICB2ZWMzIG5vcm1hbCA9ICgtdmVjMyhkaXN0MSwgMS4wKSkgKyB0ZXh0dXJlMkQoc19ub3JtYWxzLCAodl90ZXh0dXJlQ29vcmRpbmF0ZXMgKiA1LjApICsgdmVjMigoc2luKHRpbWUpIC8gMTAwMC4wKSArIChjb3ModGltZSkgLyA4MC4wKSwgc2luKHRpbWUpIC8gMTAwLjApKS54eXo7CiAgICBub3JtYWwueCA9IDAuMDsKICAgIG5vcm1hbCA9IG5vcm1hbGl6ZSgobm9ybWFsICogMi4wKSAtIHZlYzMoMS4wKSk7CiAgICB2ZWMzIEwgPSBub3JtYWxpemUobGlnaHRfcG9zaXRpb24gLSB3b3JsZF9wb3MpOwogICAgdmVjMyBWID0gbm9ybWFsaXplKGV5ZV9wb3NpdGlvbiAtIHdvcmxkX3Bvcyk7CiAgICB2ZWMzIGRpZmZ1c2UgPSB2ZWMzKDAuMTUwMDAwMDA1OTYwNDY0NDc3NTM5MDYyNSwgMC4wNTAwMDAwMDA3NDUwNTgwNTk2OTIzODI4MTI1LCAwLjApICogbWF4KDAuMCwgZG90KEwsIHdvcmxkX25vcm1hbCkpOwogICAgZmxvYXQgcmltID0gMS4wIC0gbWF4KGRvdChWLCB3b3JsZF9ub3JtYWwpLCAwLjApOwogICAgcmltID0gc21vb3Roc3RlcCgwLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCAxLjAsIHJpbSk7CiAgICB2ZWMzIGZpbmFsUmltID0gdmVjMygwLjIwMDAwMDAwMjk4MDIzMjIzODc2OTUzMTI1KSAqIHZlYzMocmltLCByaW0sIHJpbSk7CiAgICB2ZWMzIGxpZ2h0Q29sb3IgPSAoZmluYWxSaW0gKyBkaWZmdXNlKSArIHRleDE7CiAgICB2ZWMzIGZpbmFsQ29sb3IgPSB2ZWMzKDAuMCk7CiAgICBmbG9hdCBkaXN0ID0gMC4wOwogICAgZmxvYXQgZm9nRmFjdG9yID0gMC4wOwogICAgZGlzdCA9IGdsX0ZyYWdDb29yZC56IC8gZ2xfRnJhZ0Nvb3JkLnc7CiAgICBmb2dGYWN0b3IgPSAxLjAgLyBleHAoKGRpc3QgKiAwLjAwMDUwMDAwMDAyMzc0ODcyNTY1MjY5NDcwMjE0ODQzNzUpICogKGRpc3QgKiAwLjAwMDUwMDAwMDAyMzc0ODcyNTY1MjY5NDcwMjE0ODQzNzUpKTsKICAgIGZvZ0ZhY3RvciA9IGNsYW1wKGZvZ0ZhY3RvciwgMC4wLCAxLjApOwogICAgZmluYWxDb2xvciA9IG1peCh2ZWMzKDAuNSksIGxpZ2h0Q29sb3IgLyB2ZWMzKDgwLjApLCB2ZWMzKGZvZ0ZhY3RvcikpIC8gdmVjMygyLjApOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSB2ZWM0KGZpbmFsQ29sb3IsIDEuMCkgKyB2ZWM0KG1peChtaXgobWl4KHJ0ZXgsIHRleDEsIHZlYzMoMC41KSksIGZpbmFsQ29sb3IsIHZlYzMoMC4zMDAwMDAwMTE5MjA5Mjg5NTUwNzgxMjUpKSwgbm9ybWFsLCB2ZWMzKDAuNSkpLCAxLjApOwp9Cgo";
