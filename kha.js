@@ -3417,16 +3417,16 @@ instances_Cylinder.prototype = {
 	offset: null
 	,position: null
 	,getModelMatrix: function() {
-		return new kha_math_FastMatrix4(1,0,0,this.position.x * this.offset,0,1,0,this.position.y,0,0,1,this.position.z * this.offset,0,0,0,1);
+		return new kha_math_FastMatrix4(1,0,0,this.position.x,0,1,0,this.position.y + 100,0,0,1,this.position.z,0,0,0,1);
 	}
 	,update: function() {
-		this.offset = Math.sin(this.position.x * 40 + this.position.z * 40 + kha_Scheduler.time() * 2) * 100;
+		this.offset = Math.sin(this.position.x + this.position.z + kha_Scheduler.time());
 	}
 	,__class__: instances_Cylinder
 };
 var instances_CylinderMesh = function(sections) {
-	var r = 50;
-	var h = 1000;
+	var r = 1;
+	var h = 30;
 	this.vertices = [];
 	this.indices = [];
 	this.vertices.push(0);
@@ -3472,15 +3472,15 @@ instances_CylinderMesh.prototype = {
 		this.vertices.push(lastPoint.x);
 		this.vertices.push(0);
 		this.vertices.push(lastPoint.y);
-		this.vertices.push(lastPoint.x);
+		this.vertices.push(lastPoint.x / 20);
 		this.vertices.push(h);
-		this.vertices.push(lastPoint.y);
+		this.vertices.push(lastPoint.y / 20);
 		this.vertices.push(nextPoint.x);
 		this.vertices.push(0);
 		this.vertices.push(nextPoint.y);
-		this.vertices.push(nextPoint.x);
+		this.vertices.push(nextPoint.x / 20);
 		this.vertices.push(h);
-		this.vertices.push(nextPoint.y);
+		this.vertices.push(nextPoint.y / 20);
 		this.indices.push(index);
 		this.indices.push(index + 1);
 		this.indices.push(index + 2);
@@ -3577,7 +3577,7 @@ instances_Instances.prototype = {
 			var _g3 = instances_Instances.instancesZ;
 			while(_g2 < _g3) {
 				var z = _g2++;
-				var pos = new kha_math_Vector3(x - (instances_Instances.instancesX - 1) / 2,0,z - (instances_Instances.instancesZ - 1) / 2);
+				var pos = new kha_math_Vector3((x - Math.random() * (instances_Instances.instancesX - 1) / 2) * 10,0,(z - Math.random() * (instances_Instances.instancesZ - 1) / 2) * 10);
 				if(type == "cylinder") {
 					this.ins.push(new instances_Cylinder(pos));
 				}
@@ -3586,7 +3586,7 @@ instances_Instances.prototype = {
 	}
 	,createMesh: function(type) {
 		if(type == "cylinder") {
-			return new instances_CylinderMesh(32);
+			return new instances_CylinderMesh(3);
 		} else {
 			return null;
 		}
@@ -3634,10 +3634,11 @@ instances_Instances.prototype = {
 		var _g1 = this.ins.length;
 		while(_g < _g1) {
 			var i = _g++;
-			oData.setFloat32(i * 3 * 4,1,true);
-			var v = 0.75 + kha_math_Random.getIn(-100,100) / 500;
+			oData.setFloat32(i * 3 * 4,0,true);
+			var v = 0.5 + kha_math_Random.getIn(-100,100) / 500;
 			oData.setFloat32((i * 3 + 1) * 4,v,true);
-			oData.setFloat32((i * 3 + 2) * 4,0,true);
+			var v1 = 0.25 + kha_math_Random.getIn(-100,100) / 500;
+			oData.setFloat32((i * 3 + 2) * 4,v1,true);
 		}
 		this.vertexBuffers[1].unlock();
 		structures[2] = new kha_graphics4_VertexStructure();
