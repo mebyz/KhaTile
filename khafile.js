@@ -6,6 +6,8 @@ project.addLibrary('noisetile');
 project.addLibrary('instances');
 project.addLibrary('colyseus-websocket');
 project.addLibrary('colyseus');
+project.addLibrary('haxe-glm');
+project.addLibrary('haxe-gltf');
 project.addShaders('Sources/Shaders/**');
 project.addAssets('Assets/**');
 project.addAssets('Libraries/instances/Sources/Assets/**');
