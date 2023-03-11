@@ -22,3 +22,9 @@
 [submodule "Libraries/colyseus-websocket"]
 	path = Libraries/colyseus-websocket
 	url = https://github.com/colyseus/colyseus-websocket-hx
+[submodule "Libraries/haxe-glm"]
+	path = Libraries/haxe-glm
+	url = https://github.com/hamaluik/haxe-glm.git
+[submodule "Libraries/haxe-gltf"]
+	path = Libraries/haxe-gltf
+	url = https://github.com/hamaluik/haxe-gltf
