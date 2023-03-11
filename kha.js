@@ -5796,6 +5796,12 @@ kha__$Assets_SoundList.prototype = {
 	__class__: kha__$Assets_SoundList
 };
 var kha__$Assets_BlobList = function() {
+	this.tree_gltfDescription = { name : "tree_gltf", file_sizes : [318764], files : ["tree.gltf"], type : "blob"};
+	this.tree_gltf = null;
+	this.tree_glbDescription = { name : "tree_glb", file_sizes : [354180], files : ["tree.glb"], type : "blob"};
+	this.tree_glb = null;
+	this.tree_data_binDescription = { name : "tree_data_bin", file_sizes : [37720], files : ["tree_data.bin"], type : "blob"};
+	this.tree_data_bin = null;
 	this.theme_ksnDescription = { name : "theme_ksn", file_sizes : [8718], files : ["theme.ksn"], type : "blob"};
 	this.theme_ksn = null;
 	this.grass_objDescription = { name : "grass_obj", file_sizes : [46538], files : ["grass.obj"], type : "blob"};
@@ -5812,6 +5818,12 @@ kha__$Assets_BlobList.prototype = {
 	,grass_objDescription: null
 	,theme_ksn: null
 	,theme_ksnDescription: null
+	,tree_data_bin: null
+	,tree_data_binDescription: null
+	,tree_glb: null
+	,tree_glbDescription: null
+	,tree_gltf: null
+	,tree_gltfDescription: null
 	,__class__: kha__$Assets_BlobList
 };
 var kha__$Assets_FontList = function() {
