@@ -302,7 +302,7 @@ PlaneInstance.prototype = {
 		this.waterMesh = [];
 		this.waterMesh.push(new primitive_PlaneModel(0,0,{ w : 100000, h : 100000, x : 2, y : 2}));
 		this.sky = new primitive_SkyCubeModel(40000,40000,40000);
-		this.instancesCollection = new instances_Instances("cylinder",10,10,this.model,this.view,this.projection,this.modelViewProjectionMatrix);
+		this.instancesCollection = new instances_Instances("cylinder",100,100,this.model,this.view,this.projection,this.modelViewProjectionMatrix);
 		var uh = 1.0 / Math.tan(22.5);
 		var uw = uh / 1.33333333333333326;
 		this.projection = new kha_math_FastMatrix4(uw,0,0,0,0,uh,0,0,0,0,-1.000002000002,-0.200000200000200024,0,0,-1,0);
@@ -1304,1376 +1304,6 @@ Vec3Data.prototype = {
 	,y: null
 	,z: null
 	,__class__: Vec3Data
-};
-var glm_GLM = function() { };
-$hxClasses["glm.GLM"] = glm_GLM;
-glm_GLM.__name__ = "glm.GLM";
-glm_GLM.lookAt = function(eye,centre,up,dest) {
-	var f_x = 0;
-	var f_y = 0;
-	var f_z = 0;
-	f_x = 0;
-	f_y = 0;
-	f_z = 0;
-	f_x = centre.x - eye.x;
-	f_y = centre.y - eye.y;
-	f_z = centre.z - eye.z;
-	var length = Math.sqrt(f_x * f_x + f_y * f_y + f_z * f_z);
-	var mult = 0;
-	if(length >= glm_GLM.EPSILON) {
-		mult = 1 / length;
-	}
-	f_x *= mult;
-	f_y *= mult;
-	f_z *= mult;
-	var this1 = new kha_math_FastVector3();
-	this1.x = 0;
-	this1.y = 0;
-	this1.z = 0;
-	var dest1 = this1;
-	var x = f_y * up.z - f_z * up.y;
-	var y = f_z * up.x - f_x * up.z;
-	var z = f_x * up.y - f_y * up.x;
-	if(z == null) {
-		z = 0;
-	}
-	if(y == null) {
-		y = 0;
-	}
-	if(x == null) {
-		x = 0;
-	}
-	var this1 = new kha_math_FastVector3();
-	this1.x = x;
-	this1.y = y;
-	this1.z = z;
-	dest1 = this1;
-	var s = dest1;
-	var length = Math.sqrt(s.x * s.x + s.y * s.y + s.z * s.z);
-	var mult = 0;
-	if(length >= glm_GLM.EPSILON) {
-		mult = 1 / length;
-	}
-	s.x *= mult;
-	s.y *= mult;
-	s.z *= mult;
-	var this1 = new kha_math_FastVector3();
-	this1.x = 0;
-	this1.y = 0;
-	this1.z = 0;
-	var dest1 = this1;
-	var x = s.y * f_z - s.z * f_y;
-	var y = s.z * f_x - s.x * f_z;
-	var z = s.x * f_y - s.y * f_x;
-	if(z == null) {
-		z = 0;
-	}
-	if(y == null) {
-		y = 0;
-	}
-	if(x == null) {
-		x = 0;
-	}
-	var this1 = new kha_math_FastVector3();
-	this1.x = x;
-	this1.y = y;
-	this1.z = z;
-	dest1 = this1;
-	var u = dest1;
-	dest._00 = 1;
-	dest._10 = 0;
-	dest._20 = 0;
-	dest._30 = 0;
-	dest._01 = 0;
-	dest._11 = 1;
-	dest._21 = 0;
-	dest._31 = 0;
-	dest._02 = 0;
-	dest._12 = 0;
-	dest._22 = 1;
-	dest._32 = 0;
-	dest._03 = 0;
-	dest._13 = 0;
-	dest._23 = 0;
-	dest._33 = 1;
-	dest._00 = s.x;
-	dest._10 = s.y;
-	dest._20 = s.z;
-	dest._01 = u.x;
-	dest._11 = u.y;
-	dest._21 = u.z;
-	dest._02 = -f_x;
-	dest._12 = -f_y;
-	dest._22 = -f_z;
-	dest._30 = -(s.x * eye.x + s.y * eye.y + s.z * eye.z);
-	dest._31 = -(u.x * eye.x + u.y * eye.y + u.z * eye.z);
-	dest._32 = f_x * eye.x + f_y * eye.y + f_z * eye.z;
-	return dest;
-};
-var gltf_GLTF = function() {
-	var this1 = new Array(0);
-	this.scenes = this1;
-	this.defaultScene = null;
-	var this1 = new Array(0);
-	this.nodes = this1;
-	var this1 = new Array(0);
-	this.textures = this1;
-	var this1 = new Array(0);
-	this.skins = this1;
-	var this1 = new Array(0);
-	this.samplers = this1;
-	var this1 = new Array(0);
-	this.meshes = this1;
-	var this1 = new Array(0);
-	this.material = this1;
-	var this1 = new Array(0);
-	this.images = this1;
-	var this1 = new Array(0);
-	this.cameras = this1;
-	var this1 = new Array(0);
-	this.bufferViews = this1;
-	var this1 = new Array(0);
-	this.buffers = this1;
-	var this1 = new Array(0);
-	this.animations = this1;
-	var this1 = new Array(0);
-	this.accessors = this1;
-};
-$hxClasses["gltf.GLTF"] = gltf_GLTF;
-gltf_GLTF.__name__ = "gltf.GLTF";
-gltf_GLTF.load = function(raw,buffers) {
-	return gltf_GLTF.loadWithBufferGetter(raw,function(index) {
-		return buffers[index];
-	});
-};
-gltf_GLTF.loadWithBufferGetter = function(raw,bufferGetter) {
-	var gltf = new gltf_GLTF();
-	gltf.nodes = gltf_types_Node.preloadFromRaw(gltf,raw);
-	gltf.buffers = gltf_types_Buffer.loadFromRawWithGetter(gltf,raw,bufferGetter);
-	gltf.bufferViews = gltf_types_BufferView.loadFromRaw(gltf,raw);
-	gltf.accessors = gltf_types_Accessor.loadFromRaw(gltf,raw);
-	gltf.animations = gltf_types_Animation.loadFromRaw(gltf,raw);
-	gltf.cameras = gltf_types_Camera.loadFromRaw(gltf,raw);
-	gltf.images = gltf_types_Image.loadFromRaw(gltf,raw);
-	gltf.samplers = gltf_types_Sampler.loadFromRaw(gltf,raw);
-	gltf.textures = gltf_types_Texture.loadFromRaw(gltf,raw);
-	gltf.meshes = gltf_types_Mesh.loadFromRaw(gltf,raw);
-	gltf.material = gltf_types_Material.loadFromRaw(gltf,raw);
-	gltf.skins = gltf_types_Skin.loadFromRaw(gltf,raw);
-	gltf.nodes = gltf_types_Node.loadFromRaw(gltf,raw);
-	gltf.scenes = gltf_types_Scene.loadFromRaw(gltf,raw);
-	gltf.defaultScene = gltf.scenes[raw.scene];
-	return gltf;
-};
-gltf_GLTF.parse = function(src) {
-	var gltf = JSON.parse(src);
-	if(gltf.accessors == null) {
-		gltf.accessors = [];
-	}
-	var _g = 0;
-	var _g1 = gltf.accessors;
-	while(_g < _g1.length) {
-		var accessor = _g1[_g];
-		++_g;
-		var tmp = accessor.bufferView == null;
-		if(accessor.byteOffset == null) {
-			accessor.byteOffset = 0;
-		}
-		if(accessor.normalized == null) {
-			accessor.normalized = false;
-		}
-		if(accessor.max == null) {
-			accessor.max = [];
-		}
-		if(accessor.min == null) {
-			accessor.min = [];
-		}
-		if(accessor.sparse != null) {
-			if(accessor.sparse.indices.byteOffset == null) {
-				accessor.sparse.indices.byteOffset = 0;
-			}
-			if(accessor.sparse.values.byteOffset == null) {
-				accessor.sparse.values.byteOffset = 0;
-			}
-		}
-	}
-	if(gltf.animations == null) {
-		gltf.animations = [];
-	}
-	var _g = 0;
-	var _g1 = gltf.animations;
-	while(_g < _g1.length) {
-		var animation = _g1[_g];
-		++_g;
-		var _g2 = 0;
-		var _g3 = animation.samplers;
-		while(_g2 < _g3.length) {
-			var sampler = _g3[_g2];
-			++_g2;
-			if(sampler.interpolation == null) {
-				sampler.interpolation = "LINEAR";
-			}
-		}
-	}
-	if(gltf.buffers == null) {
-		gltf.buffers = [];
-	}
-	if(gltf.bufferViews == null) {
-		gltf.bufferViews = [];
-	}
-	var _g = 0;
-	var _g1 = gltf.bufferViews;
-	while(_g < _g1.length) {
-		var bufferView = _g1[_g];
-		++_g;
-		if(bufferView.byteOffset == null) {
-			bufferView.byteOffset = 0;
-		}
-	}
-	if(gltf.cameras == null) {
-		gltf.cameras = [];
-	}
-	if(gltf.images == null) {
-		gltf.images = [];
-	}
-	if(gltf.materials == null) {
-		gltf.materials = [];
-	}
-	var _g = 0;
-	var _g1 = gltf.materials;
-	while(_g < _g1.length) {
-		var material = _g1[_g];
-		++_g;
-		if(material.normalTexture != null) {
-			if(material.normalTexture.texCoord == null) {
-				material.normalTexture.texCoord = 0;
-			}
-			if(material.normalTexture.scale == null) {
-				material.normalTexture.scale = 1.0;
-			}
-		}
-		if(material.occlusionTexture != null) {
-			if(material.occlusionTexture.texCoord == null) {
-				material.occlusionTexture.texCoord = 0;
-			}
-			if(material.occlusionTexture.strength == null) {
-				material.occlusionTexture.strength = 1.0;
-			}
-		}
-		if(material.pbrMetallicRoughness != null) {
-			if(material.pbrMetallicRoughness.baseColorFactor == null) {
-				material.pbrMetallicRoughness.baseColorFactor = [1.0,1.0,1.0,1.0];
-			}
-			if(material.pbrMetallicRoughness.baseColorTexture != null) {
-				if(material.pbrMetallicRoughness.baseColorTexture.texCoord == null) {
-					material.pbrMetallicRoughness.baseColorTexture.texCoord = 0;
-				}
-			}
-			if(material.pbrMetallicRoughness.metallicFactor == null) {
-				material.pbrMetallicRoughness.metallicFactor = 1.0;
-			}
-			if(material.pbrMetallicRoughness.roughnessFactor == null) {
-				material.pbrMetallicRoughness.roughnessFactor = 1.0;
-			}
-			if(material.pbrMetallicRoughness.metallicRoughnessTexture != null) {
-				if(material.pbrMetallicRoughness.metallicRoughnessTexture.texCoord == null) {
-					material.pbrMetallicRoughness.metallicRoughnessTexture.texCoord = 0;
-				}
-			}
-		}
-		if(material.emissiveTexture != null) {
-			if(material.emissiveTexture.texCoord == null) {
-				material.emissiveTexture.texCoord = 0;
-			}
-		}
-		if(material.emissiveFactor == null) {
-			material.emissiveFactor = [0.0,0.0,0.0];
-		}
-		if(material.alphaCutoff == null) {
-			material.alphaCutoff = 0.5;
-		}
-		if(material.doubleSided == null) {
-			material.doubleSided = false;
-		}
-	}
-	if(gltf.meshes == null) {
-		gltf.meshes = [];
-	}
-	var _g = 0;
-	var _g1 = gltf.meshes;
-	while(_g < _g1.length) {
-		var mesh = _g1[_g];
-		++_g;
-		if(mesh.primitives == null) {
-			mesh.primitives = [];
-		}
-		var _g2 = 0;
-		var _g3 = mesh.primitives;
-		while(_g2 < _g3.length) {
-			var primitive = _g3[_g2];
-			++_g2;
-			if(primitive.mode == null) {
-				primitive.mode = 4;
-			}
-		}
-	}
-	if(gltf.nodes == null) {
-		gltf.nodes = [];
-	}
-	var _g = 0;
-	var _g1 = gltf.nodes;
-	while(_g < _g1.length) {
-		var node = _g1[_g];
-		++_g;
-		if(node.matrix == null && node.rotation == null && node.scale == null && node.translation == null) {
-			node.matrix = [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
-		}
-		if(node.matrix != null) {
-			var a = node.matrix;
-			node.translation = [];
-			node.translation.push(a[12]);
-			node.translation.push(a[13]);
-			node.translation.push(a[14]);
-			var sx = Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2] + a[3] * a[3]);
-			var sy = Math.sqrt(a[4] * a[4] + a[5] * a[5] + a[6] * a[6] + a[7] * a[7]);
-			var sz = Math.sqrt(a[8] * a[8] + a[9] * a[9] + a[10] * a[10] + a[11] * a[11]);
-			node.scale = [];
-			node.scale.push(sx);
-			node.scale.push(sy);
-			node.scale.push(sz);
-			var m00 = a[0] / sx;
-			var m11 = a[5] / sy;
-			var m22 = a[10] / sz;
-			node.rotation = [];
-			node.rotation.push(Math.sqrt(Math.max(0.0,1.0 + m00 - m11 - m22)) / 2.0);
-			node.rotation.push(Math.sqrt(Math.max(0.0,1.0 - m00 + m11 - m22)) / 2.0);
-			node.rotation.push(Math.sqrt(Math.max(0.0,1.0 - m00 - m11 + m22)) / 2.0);
-			node.rotation.push(Math.sqrt(Math.max(0.0,1.0 + m00 + m11 + m22)) / 2.0);
-		} else if(node.matrix == null && (node.rotation != null || node.scale != null || node.translation != null)) {
-			if(node.rotation == null) {
-				node.rotation = [0.0,0.0,0.0,1.0];
-			}
-			if(node.scale == null) {
-				node.scale = [1.0,1.0,1.0];
-			}
-			if(node.translation == null) {
-				node.translation = [0.0,0.0,0.0];
-			}
-			var x2 = node.rotation[0] + node.rotation[0];
-			var y2 = node.rotation[1] + node.rotation[1];
-			var z2 = node.rotation[2] + node.rotation[2];
-			var xx = node.rotation[0] * x2;
-			var xy = node.rotation[0] * y2;
-			var xz = node.rotation[0] * z2;
-			var yy = node.rotation[1] * y2;
-			var yz = node.rotation[1] * z2;
-			var zz = node.rotation[2] * z2;
-			var wx = node.rotation[3] * x2;
-			var wy = node.rotation[3] * y2;
-			var wz = node.rotation[3] * z2;
-			node.matrix = [(1 - (yy + zz)) * node.scale[0],(xy + wz) * node.scale[0],(xz - wy) * node.scale[0],0,(xy - wz) * node.scale[1],(1 - (xx + zz)) * node.scale[1],(yz + wx) * node.scale[1],0,(xz + wy) * node.scale[2],(yz - wx) * node.scale[2],(1 - (xx + yy)) * node.scale[2],0,node.translation[0],node.translation[1],node.translation[2],1];
-		} else {
-			throw haxe_Exception.thrown("Unhandled transform case: " + Std.string(node.matrix == null) + " " + Std.string(node.translation == null) + " " + Std.string(node.rotation == null) + " " + Std.string(node.scale == null));
-		}
-	}
-	if(gltf.samplers == null) {
-		gltf.samplers = [];
-	}
-	var _g = 0;
-	var _g1 = gltf.samplers;
-	while(_g < _g1.length) {
-		var sampler = _g1[_g];
-		++_g;
-		if(sampler.magFilter == null) {
-			sampler.magFilter = 9729;
-		}
-		if(sampler.minFilter == null) {
-			sampler.minFilter = 9729;
-		}
-		if(sampler.wrapS == null) {
-			sampler.wrapS = 10497;
-		}
-		if(sampler.wrapT == null) {
-			sampler.wrapT = 10497;
-		}
-	}
-	if(gltf.scene == null) {
-		gltf.scene = 0;
-	}
-	if(gltf.scenes == null) {
-		gltf.scenes = [];
-	}
-	if(gltf.skins == null) {
-		gltf.skins = [];
-	}
-	if(gltf.textures == null) {
-		gltf.textures = [];
-	}
-	var _g = 0;
-	var _g1 = gltf.textures;
-	while(_g < _g1.length) {
-		var texture = _g1[_g];
-		++_g;
-		if(texture.sampler == null) {
-			texture.sampler = -1;
-		}
-	}
-	return gltf;
-};
-gltf_GLTF.prototype = {
-	accessors: null
-	,animations: null
-	,buffers: null
-	,bufferViews: null
-	,cameras: null
-	,images: null
-	,material: null
-	,meshes: null
-	,samplers: null
-	,skins: null
-	,textures: null
-	,nodes: null
-	,defaultScene: null
-	,scenes: null
-	,__class__: gltf_GLTF
-};
-var gltf_types_Accessor = function() {
-	this.normalized = false;
-	this.type = "SCALAR";
-	this.componentType = 5120;
-	this.count = 0;
-	this.byteOffset = 0;
-	this.bufferView = null;
-};
-$hxClasses["gltf.types.Accessor"] = gltf_types_Accessor;
-gltf_types_Accessor.__name__ = "gltf.types.Accessor";
-gltf_types_Accessor.loadFromRaw = function(gltf,raw) {
-	var this1 = new Array(raw.accessors.length);
-	var accessors = this1;
-	var _g = 0;
-	var _g1 = raw.accessors.length;
-	while(_g < _g1) {
-		var i = _g++;
-		accessors[i] = new gltf_types_Accessor();
-	}
-	var _g = 0;
-	var _g1 = raw.accessors.length;
-	while(_g < _g1) {
-		var i = _g++;
-		accessors[i].load(gltf,raw.accessors[i]);
-	}
-	return accessors;
-};
-gltf_types_Accessor.prototype = {
-	bufferView: null
-	,byteOffset: null
-	,count: null
-	,componentType: null
-	,type: null
-	,normalized: null
-	,load: function(gltf,accessor) {
-		this.bufferView = gltf.bufferViews[accessor.bufferView];
-		this.byteOffset = accessor.byteOffset;
-		this.count = accessor.count;
-		this.componentType = accessor.componentType;
-		this.type = accessor.type;
-		this.normalized = accessor.normalized == null ? false : accessor.normalized;
-	}
-	,getInts: function() {
-		var _gthis = this;
-		if(this.componentType == 5126) {
-			throw haxe_Exception.thrown("This accessor points to `float` data, use `getFloats()` instead of `getInts()`!");
-		}
-		var componentSize;
-		switch(this.type) {
-		case "MAT2":
-			componentSize = 4;
-			break;
-		case "MAT3":
-			componentSize = 9;
-			break;
-		case "MAT4":
-			componentSize = 16;
-			break;
-		case "SCALAR":
-			componentSize = 1;
-			break;
-		case "VEC2":
-			componentSize = 2;
-			break;
-		case "VEC3":
-			componentSize = 3;
-			break;
-		case "VEC4":
-			componentSize = 4;
-			break;
-		}
-		var this1 = new Array(this.count * componentSize);
-		var data = this1;
-		var pos = this.byteOffset;
-		var accessor;
-		switch(this.componentType) {
-		case 5120:case 5121:
-			accessor = function(i) {
-				var val = _gthis.bufferView.get_data().b[pos];
-				data[i] = val;
-				pos += 1;
-			};
-			break;
-		case 5122:case 5123:
-			accessor = function(i) {
-				var val = _gthis.bufferView.get_data().getUInt16(pos);
-				data[i] = val;
-				pos += 2;
-			};
-			break;
-		case 5125:
-			accessor = function(i) {
-				var val = _gthis.bufferView.get_data().getInt32(pos);
-				data[i] = val;
-				pos += 4;
-			};
-			break;
-		default:
-			throw haxe_Exception.thrown("Floats aren't supported with this function!");
-		}
-		var _g = 0;
-		var _g1 = this.count * componentSize;
-		while(_g < _g1) {
-			var i = _g++;
-			accessor(i);
-		}
-		return data;
-	}
-	,getFloats: function() {
-		if(this.componentType != 5126) {
-			throw haxe_Exception.thrown("This accessor points to `int` data, use `getInts()` instead of `getFloats()`!");
-		}
-		var size;
-		switch(this.type) {
-		case "MAT2":
-			size = 4;
-			break;
-		case "MAT3":
-			size = 9;
-			break;
-		case "MAT4":
-			size = 16;
-			break;
-		case "SCALAR":
-			size = 1;
-			break;
-		case "VEC2":
-			size = 2;
-			break;
-		case "VEC3":
-			size = 3;
-			break;
-		case "VEC4":
-			size = 4;
-			break;
-		}
-		var this1 = new Array(this.count * size);
-		var data = this1;
-		var pos = this.byteOffset;
-		var _g = 0;
-		var _g1 = this.count * size;
-		while(_g < _g1) {
-			var i = _g++;
-			data[i] = this.bufferView.get_data().getFloat(pos);
-			pos += 4;
-		}
-		return data;
-	}
-	,__class__: gltf_types_Accessor
-};
-var gltf_types_Animation = function() {
-	this.channels = null;
-	this.name = null;
-};
-$hxClasses["gltf.types.Animation"] = gltf_types_Animation;
-gltf_types_Animation.__name__ = "gltf.types.Animation";
-gltf_types_Animation.loadFromRaw = function(gltf,raw) {
-	var this1 = new Array(raw.animations.length);
-	var animations = this1;
-	var _g = 0;
-	var _g1 = raw.animations.length;
-	while(_g < _g1) {
-		var i = _g++;
-		animations[i] = new gltf_types_Animation();
-	}
-	var _g = 0;
-	var _g1 = raw.animations.length;
-	while(_g < _g1) {
-		var i = _g++;
-		animations[i].load(gltf,raw.animations[i]);
-	}
-	return animations;
-};
-gltf_types_Animation.prototype = {
-	name: null
-	,channels: null
-	,load: function(gltf,animation) {
-		this.name = animation.name;
-		var this1 = new Array(animation.channels.length);
-		this.channels = this1;
-		var _g = 0;
-		var _g1 = animation.channels.length;
-		while(_g < _g1) {
-			var i = _g++;
-			this.channels[i] = new gltf_types_AnimationChannel();
-			this.channels[i].node = gltf.nodes[animation.channels[i].target.node];
-			this.channels[i].loadSampler(gltf,animation.samplers[animation.channels[i].sampler]);
-			this.channels[i].path = animation.channels[i].target.path;
-		}
-	}
-	,__class__: gltf_types_Animation
-};
-var gltf_types_AnimationSample = function(input,output) {
-	this.output = null;
-	this.input = 0;
-	this.input = input;
-	this.output = output;
-};
-$hxClasses["gltf.types.AnimationSample"] = gltf_types_AnimationSample;
-gltf_types_AnimationSample.__name__ = "gltf.types.AnimationSample";
-gltf_types_AnimationSample.prototype = {
-	input: null
-	,output: null
-	,__class__: gltf_types_AnimationSample
-};
-var gltf_types_AnimationChannel = function() {
-	this.path = null;
-	this.samples = null;
-	this.node = null;
-};
-$hxClasses["gltf.types.AnimationChannel"] = gltf_types_AnimationChannel;
-gltf_types_AnimationChannel.__name__ = "gltf.types.AnimationChannel";
-gltf_types_AnimationChannel.prototype = {
-	node: null
-	,samples: null
-	,path: null
-	,loadSampler: function(gltf,sampler) {
-		var inputSampler = gltf.accessors[sampler.input];
-		var outputSampler = gltf.accessors[sampler.output];
-		var inputs = inputSampler.getFloats();
-		var outputs = outputSampler.getFloats();
-		var this1 = new Array(inputs.length);
-		this.samples = this1;
-		var _g = 0;
-		var _g1 = inputs.length;
-		while(_g < _g1) {
-			var i = _g++;
-			var this1 = this.samples;
-			var inputs1 = inputs[i];
-			var val;
-			switch(outputSampler.type) {
-			case "SCALAR":
-				var this2 = new Array(1);
-				var o = this2;
-				o[0] = outputs[i];
-				val = o;
-				break;
-			case "VEC2":
-				var this3 = new Array(2);
-				var o1 = this3;
-				o1[0] = outputs[i * 2];
-				o1[1] = outputs[i * 2 + 1];
-				val = o1;
-				break;
-			case "VEC3":
-				var this4 = new Array(3);
-				var o2 = this4;
-				o2[0] = outputs[i * 3];
-				o2[1] = outputs[i * 3 + 1];
-				o2[2] = outputs[i * 3 + 2];
-				val = o2;
-				break;
-			case "VEC4":
-				var this5 = new Array(4);
-				var o3 = this5;
-				o3[0] = outputs[i * 4];
-				o3[1] = outputs[i * 4 + 1];
-				o3[2] = outputs[i * 4 + 2];
-				o3[3] = outputs[i * 4 + 3];
-				val = o3;
-				break;
-			default:
-				throw haxe_Exception.thrown("Unhandled animation sampler accessor type: '" + outputSampler.type + "'!");
-			}
-			this1[i] = new gltf_types_AnimationSample(inputs1,val);
-		}
-	}
-	,__class__: gltf_types_AnimationChannel
-};
-var gltf_types_Buffer = function() {
-	this.data = null;
-	this.name = "";
-	this.uri = "";
-};
-$hxClasses["gltf.types.Buffer"] = gltf_types_Buffer;
-gltf_types_Buffer.__name__ = "gltf.types.Buffer";
-gltf_types_Buffer.loadFromRawWithGetter = function(gltf,raw,getter) {
-	var this1 = new Array(raw.buffers.length);
-	var buffers = this1;
-	var _g = 0;
-	var _g1 = raw.buffers.length;
-	while(_g < _g1) {
-		var i = _g++;
-		buffers[i] = new gltf_types_Buffer();
-		var raw1 = raw.buffers[i];
-		var tmp = getter(i);
-		buffers[i].load(gltf,raw1,tmp);
-	}
-	return buffers;
-};
-gltf_types_Buffer.prototype = {
-	uri: null
-	,name: null
-	,data: null
-	,load: function(gltf,buffer,data) {
-		this.uri = buffer.uri;
-		this.name = buffer.name;
-		this.data = data;
-	}
-	,__class__: gltf_types_Buffer
-};
-var gltf_types_BufferView = function() {
-	this._data = null;
-	this.target = 34962;
-	this.byteStride = 0;
-	this.byteLength = 0;
-	this.byteOffset = 0;
-	this.buffer = null;
-};
-$hxClasses["gltf.types.BufferView"] = gltf_types_BufferView;
-gltf_types_BufferView.__name__ = "gltf.types.BufferView";
-gltf_types_BufferView.loadFromRaw = function(gltf,raw) {
-	var this1 = new Array(raw.bufferViews.length);
-	var views = this1;
-	var _g = 0;
-	var _g1 = raw.bufferViews.length;
-	while(_g < _g1) {
-		var i = _g++;
-		views[i] = new gltf_types_BufferView();
-	}
-	var _g = 0;
-	var _g1 = raw.bufferViews.length;
-	while(_g < _g1) {
-		var i = _g++;
-		views[i].load(gltf,raw.bufferViews[i]);
-	}
-	return views;
-};
-gltf_types_BufferView.prototype = {
-	buffer: null
-	,byteOffset: null
-	,byteLength: null
-	,byteStride: null
-	,target: null
-	,_data: null
-	,get_data: function() {
-		if(this._data == null) {
-			this._data = this.buffer.data.sub(this.byteOffset,this.byteLength);
-		}
-		return this._data;
-	}
-	,load: function(gltf,bufferView) {
-		this.buffer = gltf.buffers[bufferView.buffer];
-		this.byteOffset = bufferView.byteOffset;
-		this.byteLength = bufferView.byteLength;
-		this.byteStride = bufferView.byteStride;
-		this.target = bufferView.target;
-	}
-	,__class__: gltf_types_BufferView
-	,__properties__: {get_data:"get_data"}
-};
-var gltf_types_Camera = function() {
-};
-$hxClasses["gltf.types.Camera"] = gltf_types_Camera;
-gltf_types_Camera.__name__ = "gltf.types.Camera";
-gltf_types_Camera.loadFromRaw = function(gltf,raw) {
-	var this1 = new Array(raw.cameras.length);
-	var cameras = this1;
-	var _g = 0;
-	var _g1 = raw.cameras.length;
-	while(_g < _g1) {
-		var i = _g++;
-		cameras[i] = new gltf_types_Camera();
-	}
-	var _g = 0;
-	var _g1 = raw.cameras.length;
-	while(_g < _g1) {
-		var i = _g++;
-		cameras[i].load(gltf,raw.cameras[i]);
-	}
-	return cameras;
-};
-gltf_types_Camera.prototype = {
-	name: null
-	,type: null
-	,znear: null
-	,zfar: null
-	,yfov: null
-	,aspectRatio: null
-	,load: function(gltf,camera) {
-		this.name = camera.name;
-		if(camera.perspective != null) {
-			this.type = gltf_types_CameraType.Perspective(camera.perspective.aspectRatio,camera.perspective.yfov);
-			this.znear = camera.perspective.znear;
-			this.zfar = camera.perspective.zfar;
-			this.yfov = camera.perspective.yfov;
-			this.aspectRatio = camera.perspective.aspectRatio;
-		} else {
-			this.type = gltf_types_CameraType.Orthographic(camera.orthographic.xmag,camera.orthographic.ymag);
-			this.znear = camera.orthographic.znear;
-			this.zfar = camera.orthographic.zfar;
-		}
-	}
-	,__class__: gltf_types_Camera
-};
-var gltf_types_CameraType = $hxEnums["gltf.types.CameraType"] = { __ename__:true,__constructs__:null
-	,Orthographic: ($_=function(xmag,ymag) { return {_hx_index:0,xmag:xmag,ymag:ymag,__enum__:"gltf.types.CameraType",toString:$estr}; },$_._hx_name="Orthographic",$_.__params__ = ["xmag","ymag"],$_)
-	,Perspective: ($_=function(aspectRatio,yFov) { return {_hx_index:1,aspectRatio:aspectRatio,yFov:yFov,__enum__:"gltf.types.CameraType",toString:$estr}; },$_._hx_name="Perspective",$_.__params__ = ["aspectRatio","yFov"],$_)
-};
-gltf_types_CameraType.__constructs__ = [gltf_types_CameraType.Orthographic,gltf_types_CameraType.Perspective];
-var gltf_types_Image = function() {
-	this.bufferView = null;
-	this.mimeType = "image/png";
-	this.uri = null;
-	this.name = null;
-};
-$hxClasses["gltf.types.Image"] = gltf_types_Image;
-gltf_types_Image.__name__ = "gltf.types.Image";
-gltf_types_Image.loadFromRaw = function(gltf,raw) {
-	var this1 = new Array(raw.images.length);
-	var images = this1;
-	var _g = 0;
-	var _g1 = raw.images.length;
-	while(_g < _g1) {
-		var i = _g++;
-		images[i] = new gltf_types_Image();
-	}
-	var _g = 0;
-	var _g1 = raw.images.length;
-	while(_g < _g1) {
-		var i = _g++;
-		images[i].load(gltf,raw.images[i]);
-	}
-	return images;
-};
-gltf_types_Image.prototype = {
-	name: null
-	,uri: null
-	,mimeType: null
-	,bufferView: null
-	,load: function(gltf,image) {
-		this.name = image.name;
-		this.uri = image.uri;
-		this.mimeType = image.mimeType;
-		if(image.bufferView != null) {
-			this.bufferView = gltf.bufferViews[image.bufferView];
-		}
-	}
-	,__class__: gltf_types_Image
-};
-var gltf_types_Material = function() {
-	this.pbrMetallicRoughness = null;
-	this.name = null;
-};
-$hxClasses["gltf.types.Material"] = gltf_types_Material;
-gltf_types_Material.__name__ = "gltf.types.Material";
-gltf_types_Material.loadFromRaw = function(gltf,raw) {
-	var this1 = new Array(raw.materials.length);
-	var materials = this1;
-	var _g = 0;
-	var _g1 = raw.materials.length;
-	while(_g < _g1) {
-		var i = _g++;
-		materials[i] = new gltf_types_Material();
-	}
-	var _g = 0;
-	var _g1 = raw.materials.length;
-	while(_g < _g1) {
-		var i = _g++;
-		materials[i].load(gltf,raw.materials[i]);
-	}
-	return materials;
-};
-gltf_types_Material.prototype = {
-	name: null
-	,pbrMetallicRoughness: null
-	,load: function(gltf,material) {
-		this.name = material.name;
-		this.pbrMetallicRoughness = material.pbrMetallicRoughness;
-	}
-	,__class__: gltf_types_Material
-};
-var gltf_types_Mesh = function() {
-	var this1 = new Array(0);
-	this.weights = this1;
-	var this1 = new Array(0);
-	this.primitives = this1;
-	this.name = null;
-};
-$hxClasses["gltf.types.Mesh"] = gltf_types_Mesh;
-gltf_types_Mesh.__name__ = "gltf.types.Mesh";
-gltf_types_Mesh.loadFromRaw = function(gltf,raw) {
-	var this1 = new Array(raw.meshes.length);
-	var meshes = this1;
-	var _g = 0;
-	var _g1 = raw.meshes.length;
-	while(_g < _g1) {
-		var i = _g++;
-		meshes[i] = new gltf_types_Mesh();
-	}
-	var _g = 0;
-	var _g1 = raw.meshes.length;
-	while(_g < _g1) {
-		var i = _g++;
-		meshes[i].load(gltf,raw.meshes[i]);
-	}
-	return meshes;
-};
-gltf_types_Mesh.prototype = {
-	name: null
-	,primitives: null
-	,weights: null
-	,load: function(gltf,mesh) {
-		this.name = mesh.name;
-		var this1 = new Array(mesh.primitives.length);
-		this.primitives = this1;
-		var _g = 0;
-		var _g1 = mesh.primitives.length;
-		while(_g < _g1) {
-			var i = _g++;
-			this.primitives[i] = new gltf_types_MeshPrimitive();
-			this.primitives[i].load(gltf,mesh.primitives[i]);
-		}
-		if(mesh.weights != null) {
-			this.weights = mesh.weights.slice(0);
-		}
-	}
-	,__class__: gltf_types_Mesh
-};
-var gltf_types_MeshPrimitive = function() {
-	this.material = null;
-	this.indices = null;
-	var this1 = new Array(0);
-	this.attributes = this1;
-};
-$hxClasses["gltf.types.MeshPrimitive"] = gltf_types_MeshPrimitive;
-gltf_types_MeshPrimitive.__name__ = "gltf.types.MeshPrimitive";
-gltf_types_MeshPrimitive.prototype = {
-	attributes: null
-	,indices: null
-	,material: null
-	,load: function(gltf,primitive) {
-		var names = Reflect.fields(primitive.attributes);
-		var this1 = new Array(names.length);
-		this.attributes = this1;
-		var _g = 0;
-		var _g1 = names.length;
-		while(_g < _g1) {
-			var i = _g++;
-			var aid = Reflect.field(primitive.attributes,names[i]);
-			this.attributes[i] = { name : names[i], accessor : gltf.accessors[aid]};
-		}
-		if(primitive.indices != null) {
-			this.indices = gltf.accessors[primitive.indices];
-		}
-		if(primitive.material != null) {
-			this.material = primitive.material;
-		}
-	}
-	,getFloatAttributeValues: function(attribute) {
-		var accessor = null;
-		var _g = 0;
-		var _g1 = this.attributes;
-		while(_g < _g1.length) {
-			var a = _g1[_g];
-			++_g;
-			if(a.name == attribute) {
-				accessor = a.accessor;
-				break;
-			}
-		}
-		if(accessor == null) {
-			throw haxe_Exception.thrown("This mesh primitive doesn't contain the '" + attribute + "' attribute!");
-		}
-		if(accessor.componentType != 5126) {
-			var ints = accessor.getInts();
-			if(accessor.normalized) {
-				switch(accessor.componentType) {
-				case 5120:
-					var length = ints.length;
-					var this1 = new Array(length);
-					var r = this1;
-					var len = length;
-					var _g = 0;
-					var _g1 = len;
-					while(_g < _g1) {
-						var i = _g++;
-						var v = (ints[i] / 255.0 - 0.5) * 2.0;
-						r[i] = v;
-					}
-					return r;
-				case 5121:
-					var length = ints.length;
-					var this1 = new Array(length);
-					var r = this1;
-					var len = length;
-					var _g = 0;
-					var _g1 = len;
-					while(_g < _g1) {
-						var i = _g++;
-						var v = ints[i] / 255.0;
-						r[i] = v;
-					}
-					return r;
-				case 5122:
-					var length = ints.length;
-					var this1 = new Array(length);
-					var r = this1;
-					var len = length;
-					var _g = 0;
-					var _g1 = len;
-					while(_g < _g1) {
-						var i = _g++;
-						var v = (ints[i] / 65535.0 - 0.5) * 2.0;
-						r[i] = v;
-					}
-					return r;
-				case 5123:
-					var length = ints.length;
-					var this1 = new Array(length);
-					var r = this1;
-					var len = length;
-					var _g = 0;
-					var _g1 = len;
-					while(_g < _g1) {
-						var i = _g++;
-						var v = ints[i] / 65535.0;
-						r[i] = v;
-					}
-					return r;
-				case 5125:
-					var length = ints.length;
-					var this1 = new Array(length);
-					var r = this1;
-					var len = length;
-					var _g = 0;
-					var _g1 = len;
-					while(_g < _g1) {
-						var i = _g++;
-						var v = ints[i] / 4294967295.0;
-						r[i] = v;
-					}
-					return r;
-				default:
-					var length = ints.length;
-					var this1 = new Array(length);
-					var r = this1;
-					var len = length;
-					var _g = 0;
-					var _g1 = len;
-					while(_g < _g1) {
-						var i = _g++;
-						var v = js_Boot.__cast(ints[i] , Float);
-						r[i] = v;
-					}
-					return r;
-				}
-			} else {
-				var length = ints.length;
-				var this1 = new Array(length);
-				var r = this1;
-				var len = length;
-				var _g = 0;
-				var _g1 = len;
-				while(_g < _g1) {
-					var i = _g++;
-					var v = js_Boot.__cast(ints[i] , Float);
-					r[i] = v;
-				}
-				return r;
-			}
-		} else {
-			return accessor.getFloats();
-		}
-	}
-	,getIndexValues: function() {
-		if(this.indices == null) {
-			throw haxe_Exception.thrown("This mesh primitive doesn't have indices!");
-		}
-		return this.indices.getInts();
-	}
-	,__class__: gltf_types_MeshPrimitive
-};
-var gltf_types_Node = function() {
-	this.weights = null;
-	this.translation = null;
-	this.scale = null;
-	this.rotation = null;
-	this.mesh = null;
-	this.matrix = null;
-	this.skin = null;
-	var this1 = new Array(0);
-	this.children = this1;
-	this.camera = null;
-	this.name = null;
-	this.id = -1;
-};
-$hxClasses["gltf.types.Node"] = gltf_types_Node;
-gltf_types_Node.__name__ = "gltf.types.Node";
-gltf_types_Node.preloadFromRaw = function(gltf,raw) {
-	var this1 = new Array(raw.nodes.length);
-	var existingNodes = this1;
-	var _g = 0;
-	var _g1 = raw.nodes.length;
-	while(_g < _g1) {
-		var i = _g++;
-		existingNodes[i] = new gltf_types_Node();
-		existingNodes[i].id = i;
-	}
-	return existingNodes;
-};
-gltf_types_Node.loadFromRaw = function(gltf,raw) {
-	var _g = 0;
-	var _g1 = raw.nodes.length;
-	while(_g < _g1) {
-		var i = _g++;
-		gltf.nodes[i].load(gltf,raw.nodes[i],gltf.nodes);
-	}
-	return gltf.nodes;
-};
-gltf_types_Node.prototype = {
-	id: null
-	,name: null
-	,camera: null
-	,children: null
-	,skin: null
-	,matrix: null
-	,mesh: null
-	,rotation: null
-	,scale: null
-	,translation: null
-	,weights: null
-	,load: function(gltf,node,existingNodes) {
-		this.name = node.name;
-		if(node.camera != null) {
-			this.camera = gltf.cameras[node.camera];
-		}
-		if(node.children != null) {
-			var this1 = new Array(node.children.length);
-			this.children = this1;
-			var _g = 0;
-			var _g1 = node.children.length;
-			while(_g < _g1) {
-				var i = _g++;
-				this.children[i] = existingNodes[node.children[i]];
-			}
-		}
-		if(node.skin != null) {
-			this.skin = gltf.skins[node.skin];
-		}
-		if(node.matrix != null) {
-			this.matrix = node.matrix.slice(0);
-		}
-		if(node.mesh != null) {
-			this.mesh = gltf.meshes[node.mesh];
-		}
-		if(node.rotation != null) {
-			this.rotation = node.rotation.slice(0);
-		}
-		if(node.scale != null) {
-			this.scale = node.scale.slice(0);
-		}
-		if(node.translation != null) {
-			this.translation = node.translation.slice(0);
-		}
-		if(node.weights != null) {
-			this.weights = node.weights.slice(0);
-		}
-	}
-	,__class__: gltf_types_Node
-};
-var gltf_types_Sampler = function() {
-};
-$hxClasses["gltf.types.Sampler"] = gltf_types_Sampler;
-gltf_types_Sampler.__name__ = "gltf.types.Sampler";
-gltf_types_Sampler.loadFromRaw = function(gltf,raw) {
-	var this1 = new Array(raw.samplers.length);
-	var samplers = this1;
-	var _g = 0;
-	var _g1 = raw.samplers.length;
-	while(_g < _g1) {
-		var i = _g++;
-		samplers[i] = new gltf_types_Sampler();
-	}
-	var _g = 0;
-	var _g1 = raw.samplers.length;
-	while(_g < _g1) {
-		var i = _g++;
-		samplers[i].load(gltf,raw.samplers[i]);
-	}
-	return samplers;
-};
-gltf_types_Sampler.prototype = {
-	name: null
-	,magFilter: null
-	,minFilter: null
-	,wrapS: null
-	,wrapT: null
-	,load: function(gltf,sampler) {
-		this.name = sampler.name;
-		this.magFilter = sampler.magFilter;
-		this.minFilter = sampler.minFilter;
-		this.wrapS = sampler.wrapS;
-		this.wrapT = sampler.wrapT;
-	}
-	,__class__: gltf_types_Sampler
-};
-var gltf_types_Scene = function() {
-	var this1 = new Array(0);
-	this.nodes = this1;
-	this.name = null;
-};
-$hxClasses["gltf.types.Scene"] = gltf_types_Scene;
-gltf_types_Scene.__name__ = "gltf.types.Scene";
-gltf_types_Scene.loadFromRaw = function(gltf,raw) {
-	var this1 = new Array(raw.scenes.length);
-	var scenes = this1;
-	var _g = 0;
-	var _g1 = raw.scenes.length;
-	while(_g < _g1) {
-		var i = _g++;
-		scenes[i] = new gltf_types_Scene();
-	}
-	var _g = 0;
-	var _g1 = raw.scenes.length;
-	while(_g < _g1) {
-		var i = _g++;
-		scenes[i].load(gltf,raw.scenes[i]);
-	}
-	return scenes;
-};
-gltf_types_Scene.prototype = {
-	name: null
-	,nodes: null
-	,load: function(gltf,scene) {
-		this.name = scene.name;
-		var this1 = new Array(scene.nodes.length);
-		this.nodes = this1;
-		var _g = 0;
-		var _g1 = scene.nodes.length;
-		while(_g < _g1) {
-			var i = _g++;
-			this.nodes[i] = gltf.nodes[scene.nodes[i]];
-		}
-	}
-	,__class__: gltf_types_Scene
-};
-var gltf_types_Skin = function() {
-};
-$hxClasses["gltf.types.Skin"] = gltf_types_Skin;
-gltf_types_Skin.__name__ = "gltf.types.Skin";
-gltf_types_Skin.loadFromRaw = function(gltf,raw) {
-	var this1 = new Array(raw.skins.length);
-	var skins = this1;
-	var _g = 0;
-	var _g1 = raw.skins.length;
-	while(_g < _g1) {
-		var i = _g++;
-		var skin = new gltf_types_Skin();
-		skin.load(gltf,raw.skins[i]);
-		skins[i] = skin;
-	}
-	return skins;
-};
-gltf_types_Skin.prototype = {
-	skeleton: null
-	,joints: null
-	,inverseBindMatrices: null
-	,load: function(gltf,skin) {
-		this.skeleton = gltf.nodes[skin.skeleton];
-		var this1 = new Array(skin.joints.length);
-		this.joints = this1;
-		var _g = 0;
-		var _g1 = skin.joints.length;
-		while(_g < _g1) {
-			var i = _g++;
-			this.joints[i] = gltf.nodes[skin.joints[i]];
-		}
-		var this1 = new Array(skin.joints.length);
-		this.inverseBindMatrices = this1;
-		var accessor = gltf.accessors[skin.inverseBindMatrices];
-		var matrices = accessor.getFloats();
-		var _g = 0;
-		var _g1 = skin.joints.length;
-		while(_g < _g1) {
-			var i = _g++;
-			var this1 = this.inverseBindMatrices;
-			var this2 = new Array(16);
-			this1[i] = this2;
-			this.inverseBindMatrices[i][0] = matrices[i * 16];
-			this.inverseBindMatrices[i][1] = matrices[i * 16 + 1];
-			this.inverseBindMatrices[i][2] = matrices[i * 16 + 2];
-			this.inverseBindMatrices[i][3] = matrices[i * 16 + 3];
-			this.inverseBindMatrices[i][4] = matrices[i * 16 + 4];
-			this.inverseBindMatrices[i][5] = matrices[i * 16 + 5];
-			this.inverseBindMatrices[i][6] = matrices[i * 16 + 6];
-			this.inverseBindMatrices[i][7] = matrices[i * 16 + 7];
-			this.inverseBindMatrices[i][8] = matrices[i * 16 + 8];
-			this.inverseBindMatrices[i][9] = matrices[i * 16 + 9];
-			this.inverseBindMatrices[i][10] = matrices[i * 16 + 10];
-			this.inverseBindMatrices[i][11] = matrices[i * 16 + 11];
-			this.inverseBindMatrices[i][12] = matrices[i * 16 + 12];
-			this.inverseBindMatrices[i][13] = matrices[i * 16 + 13];
-			this.inverseBindMatrices[i][14] = matrices[i * 16 + 14];
-			this.inverseBindMatrices[i][15] = matrices[i * 16 + 15];
-		}
-	}
-	,__class__: gltf_types_Skin
-};
-var gltf_types_Texture = function() {
-	this.sampler = null;
-	this.image = null;
-	this.name = null;
-};
-$hxClasses["gltf.types.Texture"] = gltf_types_Texture;
-gltf_types_Texture.__name__ = "gltf.types.Texture";
-gltf_types_Texture.loadFromRaw = function(gltf,raw) {
-	var this1 = new Array(raw.textures.length);
-	var textures = this1;
-	var _g = 0;
-	var _g1 = raw.textures.length;
-	while(_g < _g1) {
-		var i = _g++;
-		textures[i] = new gltf_types_Texture();
-	}
-	var _g = 0;
-	var _g1 = raw.textures.length;
-	while(_g < _g1) {
-		var i = _g++;
-		textures[i].load(gltf,raw.textures[i]);
-	}
-	return textures;
-};
-gltf_types_Texture.prototype = {
-	name: null
-	,image: null
-	,sampler: null
-	,load: function(gltf,texture) {
-		this.name = texture.name;
-		if(texture.source != null) {
-			this.image = gltf.images[texture.source];
-		}
-		if(texture.sampler != null) {
-			this.sampler = gltf.samplers[texture.sampler];
-		}
-	}
-	,__class__: gltf_types_Texture
 };
 var haxe_IMap = function() { };
 $hxClasses["haxe.IMap"] = haxe_IMap;
@@ -3758,12 +2388,6 @@ haxe_io_Bytes.prototype = {
 		}
 		return this.data.getFloat32(pos,true);
 	}
-	,getUInt16: function(pos) {
-		if(this.data == null) {
-			this.data = new DataView(this.b.buffer,this.b.byteOffset,this.b.byteLength);
-		}
-		return this.data.getUint16(pos,true);
-	}
 	,getInt32: function(pos) {
 		if(this.data == null) {
 			this.data = new DataView(this.b.buffer,this.b.byteOffset,this.b.byteLength);
@@ -4800,6 +3424,78 @@ instances_Cylinder.prototype = {
 	}
 	,__class__: instances_Cylinder
 };
+var instances_CylinderMesh = function(sections) {
+	var r = 1;
+	var h = 30;
+	this.vertices = [];
+	this.indices = [];
+	this.vertices.push(0);
+	this.vertices.push(0);
+	this.vertices.push(0);
+	this.vertices.push(0);
+	this.vertices.push(h);
+	this.vertices.push(0);
+	var index = 2;
+	var firstPoint = new kha_math_Vector2(0,r);
+	var lastPoint = firstPoint;
+	var nextPoint;
+	var _g = 0;
+	var _g1 = sections;
+	while(_g < _g1) {
+		var i = _g++;
+		var alpha = i * (2 / sections) * Math.PI;
+		var _this__00 = Math.cos(alpha);
+		var _this__10 = -Math.sin(alpha);
+		var _this__20 = 0;
+		var _this__01 = Math.sin(alpha);
+		var _this__11 = Math.cos(alpha);
+		var _this__21 = 0;
+		var _this__02 = 0;
+		var _this__12 = 0;
+		var _this__22 = 1;
+		var w = _this__02 * firstPoint.x + _this__12 * firstPoint.y + _this__22;
+		var x = (_this__00 * firstPoint.x + _this__10 * firstPoint.y + _this__20) / w;
+		var y = (_this__01 * firstPoint.x + _this__11 * firstPoint.y + _this__21) / w;
+		nextPoint = new kha_math_Vector2(x,y);
+		this.addSection(lastPoint,nextPoint,h,index);
+		lastPoint = nextPoint;
+		index += 4;
+	}
+	this.addSection(lastPoint,firstPoint,h,index);
+};
+$hxClasses["instances.CylinderMesh"] = instances_CylinderMesh;
+instances_CylinderMesh.__name__ = "instances.CylinderMesh";
+instances_CylinderMesh.prototype = {
+	vertices: null
+	,indices: null
+	,addSection: function(lastPoint,nextPoint,h,index) {
+		this.vertices.push(lastPoint.x);
+		this.vertices.push(0);
+		this.vertices.push(lastPoint.y);
+		this.vertices.push(lastPoint.x / 20);
+		this.vertices.push(h);
+		this.vertices.push(lastPoint.y / 20);
+		this.vertices.push(nextPoint.x);
+		this.vertices.push(0);
+		this.vertices.push(nextPoint.y);
+		this.vertices.push(nextPoint.x / 20);
+		this.vertices.push(h);
+		this.vertices.push(nextPoint.y / 20);
+		this.indices.push(index);
+		this.indices.push(index + 1);
+		this.indices.push(index + 2);
+		this.indices.push(index + 3);
+		this.indices.push(index + 2);
+		this.indices.push(index + 1);
+		this.indices.push(0);
+		this.indices.push(index);
+		this.indices.push(index + 2);
+		this.indices.push(index + 3);
+		this.indices.push(index + 1);
+		this.indices.push(1);
+	}
+	,__class__: instances_CylinderMesh
+};
 var instances_Instances = function(type,iX,iZ,m,vv,p,imvp) {
 	if(iZ == null) {
 		iZ = 100;
@@ -4881,7 +3577,7 @@ instances_Instances.prototype = {
 			var _g3 = instances_Instances.instancesZ;
 			while(_g2 < _g3) {
 				var z = _g2++;
-				var pos = new kha_math_Vector3((x - Math.random() * (instances_Instances.instancesX - 1) / 2) * 100,0,(z - Math.random() * (instances_Instances.instancesZ - 1) / 2) * 100);
+				var pos = new kha_math_Vector3((x - Math.random() * (instances_Instances.instancesX - 1) / 2) * 10,0,(z - Math.random() * (instances_Instances.instancesZ - 1) / 2) * 10);
 				if(type == "cylinder") {
 					this.ins.push(new instances_Cylinder(pos));
 				}
@@ -4890,7 +3586,7 @@ instances_Instances.prototype = {
 	}
 	,createMesh: function(type) {
 		if(type == "cylinder") {
-			return new instances_TreeMesh();
+			return new instances_CylinderMesh(3);
 		} else {
 			return null;
 		}
@@ -4938,10 +3634,10 @@ instances_Instances.prototype = {
 		var _g1 = this.ins.length;
 		while(_g < _g1) {
 			var i = _g++;
-			oData.setFloat32(i * 3 * 4,0.5,true);
-			var v = 0.3 + kha_math_Random.getIn(-100,100) / 500;
+			oData.setFloat32(i * 3 * 4,0,true);
+			var v = 0.5 + kha_math_Random.getIn(-100,100) / 500;
 			oData.setFloat32((i * 3 + 1) * 4,v,true);
-			var v1 = 0.1 + kha_math_Random.getIn(-100,100) / 500;
+			var v1 = 0.25 + kha_math_Random.getIn(-100,100) / 500;
 			oData.setFloat32((i * 3 + 2) * 4,v1,true);
 		}
 		this.vertexBuffers[1].unlock();
@@ -5021,322 +3717,6 @@ instances_Instances.prototype = {
 		}
 	}
 	,__class__: instances_Instances
-};
-var instances_TreeMesh = function() {
-	var structure = new kha_graphics4_VertexStructure();
-	structure.add("position",2);
-	structure.add("texcoord",1);
-	structure.add("normal",2);
-	var structureLength = structure.byteSize() / 4 | 0;
-	this.pipeline = new kha_graphics4_PipelineState();
-	this.pipeline.inputLayout = [structure];
-	this.pipeline.fragmentShader = kha_Shaders.simple_frag;
-	this.pipeline.vertexShader = kha_Shaders.simple_vert;
-	this.pipeline.cullMode = 0;
-	this.pipeline.depthMode = 4;
-	this.pipeline.depthWrite = true;
-	this.pipeline.compile();
-	this.mvpID = this.pipeline.getConstantLocation("MVP");
-	this.mID = this.pipeline.getConstantLocation("M");
-	this.texID = this.pipeline.getTextureUnit("albedoTex");
-	var this1 = new kha_math_FastMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-	var dest = this1;
-	var f = 1 / Math.tan(22.5);
-	var nf = -0.001000100010001;
-	dest._00 = f / 1.33333333333333326;
-	dest._01 = 0;
-	dest._02 = 0;
-	dest._03 = 0;
-	dest._10 = 0;
-	dest._11 = f;
-	dest._12 = 0;
-	dest._13 = 0;
-	dest._20 = 0;
-	dest._21 = 0;
-	dest._22 = 1000.1 * nf;
-	dest._23 = -1;
-	dest._30 = 0;
-	dest._31 = 0;
-	dest._32 = 200. * nf;
-	dest._33 = 0;
-	var projection = dest;
-	var x = 200;
-	var y = 200;
-	var z = 200;
-	if(z == null) {
-		z = 0;
-	}
-	if(y == null) {
-		y = 0;
-	}
-	if(x == null) {
-		x = 0;
-	}
-	var this1 = new kha_math_FastVector3();
-	this1.x = x;
-	this1.y = y;
-	this1.z = z;
-	var x = 0;
-	var y = 75;
-	var z = 0;
-	if(z == null) {
-		z = 0;
-	}
-	if(y == null) {
-		y = 0;
-	}
-	if(x == null) {
-		x = 0;
-	}
-	var this2 = new kha_math_FastVector3();
-	this2.x = x;
-	this2.y = y;
-	this2.z = z;
-	var x = 0;
-	var y = 1;
-	var z = 0;
-	if(z == null) {
-		z = 0;
-	}
-	if(y == null) {
-		y = 0;
-	}
-	if(x == null) {
-		x = 0;
-	}
-	var this3 = new kha_math_FastVector3();
-	this3.x = x;
-	this3.y = y;
-	this3.z = z;
-	var this4 = new kha_math_FastMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-	var view = glm_GLM.lookAt(this1,this2,this3,this4);
-	var this1 = new kha_math_FastMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-	var dest = this1;
-	dest._00 = 1;
-	dest._10 = 0;
-	dest._20 = 0;
-	dest._30 = 0;
-	dest._01 = 0;
-	dest._11 = 1;
-	dest._21 = 0;
-	dest._31 = 0;
-	dest._02 = 0;
-	dest._12 = 0;
-	dest._22 = 1;
-	dest._32 = 0;
-	dest._03 = 0;
-	dest._13 = 0;
-	dest._23 = 0;
-	dest._33 = 1;
-	this.model = dest;
-	var this1 = new kha_math_FastMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-	var dest = this1;
-	var _a;
-	var _b;
-	if(dest == projection) {
-		var this1 = new kha_math_FastMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-		var dest1 = this1;
-		dest1._00 = projection._00;
-		dest1._10 = projection._10;
-		dest1._20 = projection._20;
-		dest1._30 = projection._30;
-		dest1._01 = projection._01;
-		dest1._11 = projection._11;
-		dest1._21 = projection._21;
-		dest1._31 = projection._31;
-		dest1._02 = projection._02;
-		dest1._12 = projection._12;
-		dest1._22 = projection._22;
-		dest1._32 = projection._32;
-		dest1._03 = projection._03;
-		dest1._13 = projection._13;
-		dest1._23 = projection._23;
-		dest1._33 = projection._33;
-		_a = dest1;
-		_b = view;
-	} else if(dest == view) {
-		_a = projection;
-		var this1 = new kha_math_FastMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-		var dest1 = this1;
-		dest1._00 = view._00;
-		dest1._10 = view._10;
-		dest1._20 = view._20;
-		dest1._30 = view._30;
-		dest1._01 = view._01;
-		dest1._11 = view._11;
-		dest1._21 = view._21;
-		dest1._31 = view._31;
-		dest1._02 = view._02;
-		dest1._12 = view._12;
-		dest1._22 = view._22;
-		dest1._32 = view._32;
-		dest1._03 = view._03;
-		dest1._13 = view._13;
-		dest1._23 = view._23;
-		dest1._33 = view._33;
-		_b = dest1;
-	} else {
-		_a = projection;
-		_b = view;
-	}
-	dest._00 = _a._00 * _b._00 + _a._10 * _b._01 + _a._20 * _b._02 + _a._30 * _b._03;
-	dest._10 = _a._00 * _b._10 + _a._10 * _b._11 + _a._20 * _b._12 + _a._30 * _b._13;
-	dest._20 = _a._00 * _b._20 + _a._10 * _b._21 + _a._20 * _b._22 + _a._30 * _b._23;
-	dest._30 = _a._00 * _b._30 + _a._10 * _b._31 + _a._20 * _b._32 + _a._30 * _b._33;
-	dest._01 = _a._01 * _b._00 + _a._11 * _b._01 + _a._21 * _b._02 + _a._31 * _b._03;
-	dest._11 = _a._01 * _b._10 + _a._11 * _b._11 + _a._21 * _b._12 + _a._31 * _b._13;
-	dest._21 = _a._01 * _b._20 + _a._11 * _b._21 + _a._21 * _b._22 + _a._31 * _b._23;
-	dest._31 = _a._01 * _b._30 + _a._11 * _b._31 + _a._21 * _b._32 + _a._31 * _b._33;
-	dest._02 = _a._02 * _b._00 + _a._12 * _b._01 + _a._22 * _b._02 + _a._32 * _b._03;
-	dest._12 = _a._02 * _b._10 + _a._12 * _b._11 + _a._22 * _b._12 + _a._32 * _b._13;
-	dest._22 = _a._02 * _b._20 + _a._12 * _b._21 + _a._22 * _b._22 + _a._32 * _b._23;
-	dest._32 = _a._02 * _b._30 + _a._12 * _b._31 + _a._22 * _b._32 + _a._32 * _b._33;
-	dest._03 = _a._03 * _b._00 + _a._13 * _b._01 + _a._23 * _b._02 + _a._33 * _b._03;
-	dest._13 = _a._03 * _b._10 + _a._13 * _b._11 + _a._23 * _b._12 + _a._33 * _b._13;
-	dest._23 = _a._03 * _b._20 + _a._13 * _b._21 + _a._23 * _b._22 + _a._33 * _b._23;
-	dest._33 = _a._03 * _b._30 + _a._13 * _b._31 + _a._23 * _b._32 + _a._33 * _b._33;
-	this.vp = dest;
-	var a = this.vp;
-	var b = this.model;
-	var this1 = new kha_math_FastMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-	var dest = this1;
-	var _a;
-	var _b;
-	if(dest == a) {
-		var this1 = new kha_math_FastMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-		var dest1 = this1;
-		dest1._00 = a._00;
-		dest1._10 = a._10;
-		dest1._20 = a._20;
-		dest1._30 = a._30;
-		dest1._01 = a._01;
-		dest1._11 = a._11;
-		dest1._21 = a._21;
-		dest1._31 = a._31;
-		dest1._02 = a._02;
-		dest1._12 = a._12;
-		dest1._22 = a._22;
-		dest1._32 = a._32;
-		dest1._03 = a._03;
-		dest1._13 = a._13;
-		dest1._23 = a._23;
-		dest1._33 = a._33;
-		_a = dest1;
-		_b = b;
-	} else if(dest == b) {
-		_a = a;
-		var this1 = new kha_math_FastMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-		var dest1 = this1;
-		dest1._00 = b._00;
-		dest1._10 = b._10;
-		dest1._20 = b._20;
-		dest1._30 = b._30;
-		dest1._01 = b._01;
-		dest1._11 = b._11;
-		dest1._21 = b._21;
-		dest1._31 = b._31;
-		dest1._02 = b._02;
-		dest1._12 = b._12;
-		dest1._22 = b._22;
-		dest1._32 = b._32;
-		dest1._03 = b._03;
-		dest1._13 = b._13;
-		dest1._23 = b._23;
-		dest1._33 = b._33;
-		_b = dest1;
-	} else {
-		_a = a;
-		_b = b;
-	}
-	dest._00 = _a._00 * _b._00 + _a._10 * _b._01 + _a._20 * _b._02 + _a._30 * _b._03;
-	dest._10 = _a._00 * _b._10 + _a._10 * _b._11 + _a._20 * _b._12 + _a._30 * _b._13;
-	dest._20 = _a._00 * _b._20 + _a._10 * _b._21 + _a._20 * _b._22 + _a._30 * _b._23;
-	dest._30 = _a._00 * _b._30 + _a._10 * _b._31 + _a._20 * _b._32 + _a._30 * _b._33;
-	dest._01 = _a._01 * _b._00 + _a._11 * _b._01 + _a._21 * _b._02 + _a._31 * _b._03;
-	dest._11 = _a._01 * _b._10 + _a._11 * _b._11 + _a._21 * _b._12 + _a._31 * _b._13;
-	dest._21 = _a._01 * _b._20 + _a._11 * _b._21 + _a._21 * _b._22 + _a._31 * _b._23;
-	dest._31 = _a._01 * _b._30 + _a._11 * _b._31 + _a._21 * _b._32 + _a._31 * _b._33;
-	dest._02 = _a._02 * _b._00 + _a._12 * _b._01 + _a._22 * _b._02 + _a._32 * _b._03;
-	dest._12 = _a._02 * _b._10 + _a._12 * _b._11 + _a._22 * _b._12 + _a._32 * _b._13;
-	dest._22 = _a._02 * _b._20 + _a._12 * _b._21 + _a._22 * _b._22 + _a._32 * _b._23;
-	dest._32 = _a._02 * _b._30 + _a._12 * _b._31 + _a._22 * _b._32 + _a._32 * _b._33;
-	dest._03 = _a._03 * _b._00 + _a._13 * _b._01 + _a._23 * _b._02 + _a._33 * _b._03;
-	dest._13 = _a._03 * _b._10 + _a._13 * _b._11 + _a._23 * _b._12 + _a._33 * _b._13;
-	dest._23 = _a._03 * _b._20 + _a._13 * _b._21 + _a._23 * _b._22 + _a._33 * _b._23;
-	dest._33 = _a._03 * _b._30 + _a._13 * _b._31 + _a._23 * _b._32 + _a._33 * _b._33;
-	this.mvp = dest;
-	var this1 = new kha_math_FastVector4();
-	this1.x = 0;
-	this1.y = 0;
-	this1.z = 0;
-	this1.w = 1;
-	var dest = this1;
-	dest.x = 0;
-	dest.y = 0;
-	dest.z = 0;
-	dest.w = 1;
-	this.rotation = dest;
-	var raw = gltf_GLTF.parse(kha_Assets.blobs.tree_gltf.toString());
-	var object = gltf_GLTF.load(raw,[kha_Assets.blobs.tree_bin.bytes]);
-	var positions = object.meshes[0].primitives[0].getFloatAttributeValues("POSITION");
-	var normals = object.meshes[0].primitives[0].getFloatAttributeValues("NORMAL");
-	var uvs = object.meshes[0].primitives[0].getFloatAttributeValues("TEXCOORD_0");
-	this.indices = object.meshes[0].primitives[0].getIndexValues();
-	this.tex = kha_Assets.images.water;
-	var numVerts = positions.length / 3 | 0;
-	this.vertexBuffer = new kha_graphics4_VertexBuffer(numVerts,structure,0);
-	var vbData = this.vertexBuffer.lock();
-	var _g = 0;
-	var _g1 = numVerts;
-	while(_g < _g1) {
-		var v = _g++;
-		var v1 = positions[v * 3];
-		vbData.setFloat32(v * structureLength * 4,v1,true);
-		var v2 = positions[v * 3 + 1];
-		vbData.setFloat32((v * structureLength + 1) * 4,v2,true);
-		var v3 = positions[v * 3 + 2];
-		vbData.setFloat32((v * structureLength + 2) * 4,v3,true);
-		var v4 = uvs[v * 2];
-		vbData.setFloat32((v * structureLength + 3) * 4,v4,true);
-		var v5 = uvs[v * 2 + 1];
-		vbData.setFloat32((v * structureLength + 4) * 4,v5,true);
-		var v6 = normals[v * 3];
-		vbData.setFloat32((v * structureLength + 5) * 4,v6,true);
-		var v7 = normals[v * 3 + 1];
-		vbData.setFloat32((v * structureLength + 6) * 4,v7,true);
-		var v8 = normals[v * 3 + 2];
-		vbData.setFloat32((v * structureLength + 7) * 4,v8,true);
-	}
-	this.vertexBuffer.unlock();
-	this.indexBuffer = new kha_graphics4_IndexBuffer(this.indices.length,0);
-	var iData = this.indexBuffer.lock();
-	var _g = 0;
-	var _g1 = iData.byteLength >> 2;
-	while(_g < _g1) {
-		var i = _g++;
-		iData.setUint32(i * 4,this.indices[i],kha_arrays_ByteArray.LITTLE_ENDIAN);
-		var tmp = i * 4;
-	}
-	this.indexBuffer.unlock();
-	this.vertices = positions;
-};
-$hxClasses["instances.TreeMesh"] = instances_TreeMesh;
-instances_TreeMesh.__name__ = "instances.TreeMesh";
-instances_TreeMesh.prototype = {
-	vertices: null
-	,indices: null
-	,pipeline: null
-	,vertexBuffer: null
-	,indexBuffer: null
-	,tex: null
-	,mvpID: null
-	,mID: null
-	,texID: null
-	,rotation: null
-	,model: null
-	,vp: null
-	,mvp: null
-	,__class__: instances_TreeMesh
 };
 var io_colyseus_Auth = function(endpoint) {
 	this.endpoint = StringTools.replace(endpoint,"ws","http");
@@ -7416,12 +5796,12 @@ kha__$Assets_SoundList.prototype = {
 	__class__: kha__$Assets_SoundList
 };
 var kha__$Assets_BlobList = function() {
-	this.tree_gltfDescription = { name : "tree_gltf", file_sizes : [318682], files : ["tree.gltf"], type : "blob"};
+	this.tree_gltfDescription = { name : "tree_gltf", file_sizes : [318764], files : ["tree.gltf"], type : "blob"};
 	this.tree_gltf = null;
-	this.tree_glbDescription = { name : "tree_glb", file_sizes : [391952], files : ["tree.glb"], type : "blob"};
+	this.tree_glbDescription = { name : "tree_glb", file_sizes : [354180], files : ["tree.glb"], type : "blob"};
 	this.tree_glb = null;
-	this.tree_binDescription = { name : "tree_bin", file_sizes : [75576], files : ["tree.bin"], type : "blob"};
-	this.tree_bin = null;
+	this.tree_data_binDescription = { name : "tree_data_bin", file_sizes : [37720], files : ["tree_data.bin"], type : "blob"};
+	this.tree_data_bin = null;
 	this.theme_ksnDescription = { name : "theme_ksn", file_sizes : [8718], files : ["theme.ksn"], type : "blob"};
 	this.theme_ksn = null;
 	this.grass_objDescription = { name : "grass_obj", file_sizes : [46538], files : ["grass.obj"], type : "blob"};
@@ -7438,8 +5818,8 @@ kha__$Assets_BlobList.prototype = {
 	,grass_objDescription: null
 	,theme_ksn: null
 	,theme_ksnDescription: null
-	,tree_bin: null
-	,tree_binDescription: null
+	,tree_data_bin: null
+	,tree_data_binDescription: null
 	,tree_glb: null
 	,tree_glbDescription: null
 	,tree_gltf: null
@@ -15036,13 +13416,8 @@ kha_graphics2_Graphics.prototype = {
 			strength = 1.0;
 		}
 	}
-	,drawString: function(text,x,y) {
-	}
 	,set_color: function(color) {
 		return -16777216;
-	}
-	,get_font: function() {
-		return null;
 	}
 	,get_fontSize: function() {
 		return this.myFontSize;
@@ -15117,7 +13492,7 @@ kha_graphics2_Graphics.prototype = {
 	,setPipeline: function(pipeline) {
 	}
 	,__class__: kha_graphics2_Graphics
-	,__properties__: {set_pipeline:"set_pipeline",set_opacity:"set_opacity",get_opacity:"get_opacity",set_fontSize:"set_fontSize",get_fontSize:"get_fontSize",get_font:"get_font",set_color:"set_color"}
+	,__properties__: {set_pipeline:"set_pipeline",set_opacity:"set_opacity",get_opacity:"get_opacity",set_fontSize:"set_fontSize",get_fontSize:"get_fontSize",set_color:"set_color"}
 };
 var kha_graphics2_Graphics1 = function(canvas) {
 	this.canvas = canvas;
@@ -15128,30 +13503,6 @@ kha_graphics2_Graphics1.__interfaces__ = [kha_graphics1_Graphics];
 kha_graphics2_Graphics1.prototype = {
 	canvas: null
 	,__class__: kha_graphics2_Graphics1
-};
-var kha_graphics2_GraphicsExtension = function() { };
-$hxClasses["kha.graphics2.GraphicsExtension"] = kha_graphics2_GraphicsExtension;
-kha_graphics2_GraphicsExtension.__name__ = "kha.graphics2.GraphicsExtension";
-kha_graphics2_GraphicsExtension.drawAlignedString = function(g2,text,x,y,horAlign,verAlign) {
-	var xoffset = 0.0;
-	if(horAlign == 1 || horAlign == 2) {
-		var width = g2.get_font().width(g2.get_fontSize(),text);
-		if(horAlign == 1) {
-			xoffset = -width * 0.5;
-		} else {
-			xoffset = -width;
-		}
-	}
-	var yoffset = 0.0;
-	if(verAlign == 1 || verAlign == 2) {
-		var height = g2.get_font().height(g2.get_fontSize());
-		if(verAlign == 1) {
-			yoffset = -height * 0.5;
-		} else {
-			yoffset = -height;
-		}
-	}
-	g2.drawString(text,x + xoffset,y + yoffset);
 };
 var kha_graphics2_truetype_VectorOfIntPointer = function() {
 };
@@ -25056,16 +23407,6 @@ kha_graphics4_VertexStructure.prototype = {
 	,size: function() {
 		return this.elements.length;
 	}
-	,byteSize: function() {
-		var byteSize = 0;
-		var _g = 0;
-		var _g1 = this.elements.length;
-		while(_g < _g1) {
-			var i = _g++;
-			byteSize += kha_graphics4_VertexStructure.dataByteSize(this.elements[i].data);
-		}
-		return byteSize;
-	}
 	,get: function(index) {
 		return this.elements[index];
 	}
@@ -26064,7 +24405,6 @@ kha_js_AudioElementAudio.stream = function(sound,loop) {
 	return channel;
 };
 var kha_js_CanvasGraphics = function(canvas) {
-	this.bakedQuadCache = new kha_AlignedQuad();
 	kha_graphics2_Graphics.call(this);
 	this.canvas = canvas;
 	kha_js_CanvasGraphics.instance = this;
@@ -26075,7 +24415,6 @@ kha_js_CanvasGraphics.__name__ = "kha.js.CanvasGraphics";
 kha_js_CanvasGraphics.__super__ = kha_graphics2_Graphics;
 kha_js_CanvasGraphics.prototype = $extend(kha_graphics2_Graphics.prototype,{
 	canvas: null
-	,webfont: null
 	,myColor: null
 	,begin: function(clear,clearColor) {
 		if(clear == null) {
@@ -26147,81 +24486,11 @@ kha_js_CanvasGraphics.prototype = $extend(kha_graphics2_Graphics.prototype,{
 		this.canvas.stroke();
 		this.canvas.lineWidth = oldStrength;
 	}
-	,bakedQuadCache: null
-	,drawString: function(text,x,y) {
-		var image = this.webfont.getImage(this.get_fontSize(),this.myColor);
-		if(image.width > 0) {
-			var xpos = x;
-			var ypos = y;
-			var _g = 0;
-			var _g1 = text.length;
-			while(_g < _g1) {
-				var i = _g++;
-				var q = this.webfont.kravur._get(this.get_fontSize()).getBakedQuad(this.bakedQuadCache,kha_graphics2_Graphics.fontGlyphs.indexOf(HxOverrides.cca(text,i)),xpos,ypos);
-				if(q != null) {
-					if(q.s1 - q.s0 > 0 && q.t1 - q.t0 > 0 && q.x1 - q.x0 > 0 && q.y1 - q.y0 > 0) {
-						this.canvas.drawImage(image,q.s0 * image.width,q.t0 * image.height,(q.s1 - q.s0) * image.width,(q.t1 - q.t0) * image.height,q.x0,q.y0,q.x1 - q.x0,q.y1 - q.y0);
-					}
-					xpos += q.xadvance;
-				}
-			}
-		}
-	}
-	,get_font: function() {
-		return this.webfont;
-	}
 	,setTransformation: function(transformation) {
 		this.canvas.setTransform(transformation._00,transformation._01,transformation._10,transformation._11,transformation._20,transformation._21);
 	}
 	,__class__: kha_js_CanvasGraphics
 });
-var kha_js_Font = function(blob) {
-	this.images = new haxe_ds_IntMap();
-	this.kravur = new kha_js_Font.Kravur(blob);
-};
-$hxClasses["kha.js.Font"] = kha_js_Font;
-kha_js_Font.__name__ = "kha.js.Font";
-kha_js_Font.__interfaces__ = [kha_Resource];
-kha_js_Font.prototype = {
-	kravur: null
-	,images: null
-	,getImage: function(fontSize,color) {
-		var glyphs = kha_graphics2_Graphics.fontGlyphs;
-		var imageIndex = fontSize * 10000 + glyphs.length;
-		if(!this.images.h.hasOwnProperty(imageIndex)) {
-			var this1 = this.images;
-			var v = new haxe_ds_IntMap();
-			this1.h[imageIndex] = v;
-		}
-		if(!this.images.h[imageIndex].h.hasOwnProperty(color)) {
-			var kravur = this.kravur._get(fontSize);
-			var canvas = window.document.createElement("canvas");
-			canvas.width = kravur.width;
-			canvas.height = kravur.height;
-			var ctx = canvas.getContext("2d");
-			ctx.fillStyle = "black";
-			ctx.fillRect(0,0,kravur.width,kravur.height);
-			var imageData = ctx.getImageData(0,0,kravur.width,kravur.height);
-			var bytes = (js_Boot.__cast(kravur.getTexture() , kha_CanvasImage)).bytes;
-			var _g = 0;
-			var _g1 = bytes.length;
-			while(_g < _g1) {
-				var i = _g++;
-				imageData.data[i * 4] = (color & 16711680) >>> 16;
-				imageData.data[i * 4 + 1] = (color & 65280) >>> 8;
-				imageData.data[i * 4 + 2] = color & 255;
-				imageData.data[i * 4 + 3] = bytes.b[i];
-			}
-			ctx.putImageData(imageData,0,0);
-			var img = window.document.createElement("img");
-			img.src = canvas.toDataURL("image/png");
-			this.images.h[imageIndex].h[color] = img;
-			return img;
-		}
-		return this.images.h[imageIndex].h[color];
-	}
-	,__class__: kha_js_Font
-};
 var kha_js_MobileWebAudio = function() { };
 $hxClasses["kha.js.MobileWebAudio"] = kha_js_MobileWebAudio;
 kha_js_MobileWebAudio.__name__ = "kha.js.MobileWebAudio";
@@ -27224,33 +25493,6 @@ kha_math_FastVector3.prototype = {
 	,z: null
 	,__class__: kha_math_FastVector3
 };
-var kha_math_FastVector4 = function(x,y,z,w) {
-	if(w == null) {
-		w = 1;
-	}
-	if(z == null) {
-		z = 0;
-	}
-	if(y == null) {
-		y = 0;
-	}
-	if(x == null) {
-		x = 0;
-	}
-	this.x = x;
-	this.y = y;
-	this.z = z;
-	this.w = w;
-};
-$hxClasses["kha.math.FastVector4"] = kha_math_FastVector4;
-kha_math_FastVector4.__name__ = "kha.math.FastVector4";
-kha_math_FastVector4.prototype = {
-	x: null
-	,y: null
-	,z: null
-	,w: null
-	,__class__: kha_math_FastVector4
-};
 var kha_math_Random = function(seed) {
 	this.d = seed;
 	this.a = 917435674;
@@ -27298,6 +25540,23 @@ kha_math_Random.prototype = {
 		return this.Get() % (max + 1 - min) + min;
 	}
 	,__class__: kha_math_Random
+};
+var kha_math_Vector2 = function(x,y) {
+	if(y == null) {
+		y = 0;
+	}
+	if(x == null) {
+		x = 0;
+	}
+	this.x = x;
+	this.y = y;
+};
+$hxClasses["kha.math.Vector2"] = kha_math_Vector2;
+kha_math_Vector2.__name__ = "kha.math.Vector2";
+kha_math_Vector2.prototype = {
+	x: null
+	,y: null
+	,__class__: kha_math_Vector2
 };
 var kha_math_Vector3 = function(x,y,z) {
 	if(z == null) {
@@ -30912,10 +29171,10 @@ koui_graphics_KGraphics.prototype = $extend(kha_graphics4_Graphics2.prototype,{
 		this.set_font(kha_Assets.fonts.get(style.font.family));
 		if(style.textShadow != null) {
 			this.set_color(style.textShadow.color);
-			kha_graphics2_GraphicsExtension.drawAlignedString(this,text,x + style.textShadow.offsetX,y + style.textShadow.offsetY,horAlign,verAlign);
+			this.khaGraphicsExtDrawAlignedString(text,x + style.textShadow.offsetX,y + style.textShadow.offsetY,horAlign,verAlign);
 		}
 		this.set_color(style.color.text);
-		kha_graphics2_GraphicsExtension.drawAlignedString(this,text,x,y,horAlign,verAlign);
+		this.khaGraphicsExtDrawAlignedString(text,x,y,horAlign,verAlign);
 		this.set_pipeline(null);
 		if(style.font.underlineThickness != 0) {
 			var width = this.get_font().width(this.get_fontSize(),text);
@@ -30944,6 +29203,27 @@ koui_graphics_KGraphics.prototype = $extend(kha_graphics4_Graphics2.prototype,{
 			}
 			this.fillRect(x + offsetX,y + offsetY,width,style.font.underlineThickness);
 		}
+	}
+	,khaGraphicsExtDrawAlignedString: function(text,x,y,horAlign,verAlign) {
+		var offsetX = 0.0;
+		if(horAlign == 1 || horAlign == 2) {
+			var width = this.get_font().width(this.get_fontSize(),text);
+			if(horAlign == 1) {
+				offsetX = -width * 0.5;
+			} else {
+				offsetX = -width;
+			}
+		}
+		var offsetY = 0.0;
+		if(verAlign == 1 || verAlign == 2) {
+			var height = this.get_font().height(this.get_fontSize());
+			if(verAlign == 1) {
+				offsetY = -height * 0.5;
+			} else {
+				offsetY = -height;
+			}
+		}
+		this.drawString(text,x + offsetX,y + offsetY);
 	}
 	,flush: function() {
 		kha_graphics4_Graphics2.prototype.flush.call(this);
@@ -34857,7 +33137,6 @@ js_Boot.__toStr = ({ }).toString;
 if(ArrayBuffer.prototype.slice == null) {
 	ArrayBuffer.prototype.slice = js_lib__$ArrayBuffer_ArrayBufferCompat.sliceImpl;
 }
-glm_GLM.EPSILON = 0.0000001;
 haxe_Template.splitter = new EReg("(::[A-Za-z0-9_ ()&|!+=/><*.\"-]+::|\\$\\$([A-Za-z0-9_-]+)\\()","");
 haxe_Template.expr_splitter = new EReg("(\\(|\\)|[ \r\n\t]*\"[^\"]*\"[ \r\n\t]*|[!+=/><*.&|-]+)","");
 haxe_Template.expr_trim = new EReg("^[ ]*([^ ]+)[ ]*$","");
@@ -34888,12 +33167,12 @@ kha_Scheduler.startTime = 0;
 kha_Shaders.circle_fragData0 = "s1674:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCB2ZWM0IHNoYWRvd0NvbG9yc1sxNl07CnVuaWZvcm0gaGlnaHAgdmVjNCBjaXJjbGVzWzE2XTsKdW5pZm9ybSBoaWdocCB2ZWM0IGF0dHJpYnV0ZXNbMTZdOwp1bmlmb3JtIGhpZ2hwIHZlYzQgYm9yZGVyQ29sb3JbMTZdOwoKZmxhdCB2YXJ5aW5nIGludCBpbnN0YW5jZUlEOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY29sb3I7CgpoaWdocCBmbG9hdCBkaXN0YW5jZVRvQ2lyY2xlKGhpZ2hwIHZlYzIgY2VudGVyLCBoaWdocCBmbG9hdCByYWRpdXMsIGhpZ2hwIHZlYzIgcG9pbnQpCnsKICAgIHJldHVybiBsZW5ndGgocG9pbnQgLSBjZW50ZXIpIC0gcmFkaXVzOwp9Cgp2b2lkIG1haW4oKQp7CiAgICBpbnQgaUlEID0gaW5zdGFuY2VJRDsKICAgIGhpZ2hwIHZlYzQgc2hhZG93Q29sb3IgPSBzaGFkb3dDb2xvcnNbaUlEXTsKICAgIGhpZ2hwIGZsb2F0IGRzdCA9IGRpc3RhbmNlVG9DaXJjbGUoY2lyY2xlc1tpSURdLnh5LCBjaXJjbGVzW2lJRF0ueiwgZ2xfRnJhZ0Nvb3JkLnh5KTsKICAgIGhpZ2hwIGZsb2F0IHNoYWRvd1dpZHRoID0gYXR0cmlidXRlc1tpSURdLnkgKyA5Ljk5OTk5OTc0NzM3ODc1MTYzNTU1MTQ1MjYzNjcxODhlLTA1OwogICAgaGlnaHAgZmxvYXQgc2hhZG93QW1vdW50ID0gcG93KG1heCgwLjAsIDEuMCAtIChkc3QgLyBzaGFkb3dXaWR0aCkpLCBhdHRyaWJ1dGVzW2lJRF0ueik7CiAgICBoaWdocCB2ZWM0IHNoYWRvdyA9IHNoYWRvd0NvbG9yOwogICAgc2hhZG93LncgKj0gc2hhZG93QW1vdW50OwogICAgaGlnaHAgZmxvYXQgYm9yZGVyVGhpY2tuZXNzID0gYXR0cmlidXRlc1tpSURdLng7CiAgICBoaWdocCBmbG9hdCBib3JkZXJPdXRlciA9IHNtb290aHN0ZXAoLTEuMjAwMDAwMDQ3NjgzNzE1ODIwMzEyNSwgMC4wLCBkc3QpOwogICAgaGlnaHAgZmxvYXQgYm9yZGVySW5uZXIgPSBzbW9vdGhzdGVwKC0wLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCAwLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCBkc3QgKyBib3JkZXJUaGlja25lc3MpOwogICAgaGlnaHAgdmVjNCBiZ0NvbG9yID0gY29sb3I7CiAgICBiZ0NvbG9yID0gbWl4KGJnQ29sb3IsIGJvcmRlckNvbG9yW2lJRF0sIHZlYzQoYm9yZGVySW5uZXIpKTsKICAgIGJnQ29sb3IgPSBtaXgoYmdDb2xvciwgc2hhZG93LCB2ZWM0KGJvcmRlck91dGVyKSk7CiAgICBnbF9GcmFnRGF0YVswXSA9IGJnQ29sb3I7Cn0KCg";
 kha_Shaders.circle_fragData1 = "s1692:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCB2ZWM0IHNoYWRvd0NvbG9yc1sxNl07CnVuaWZvcm0gaGlnaHAgdmVjNCBjaXJjbGVzWzE2XTsKdW5pZm9ybSBoaWdocCB2ZWM0IGF0dHJpYnV0ZXNbMTZdOwp1bmlmb3JtIGhpZ2hwIHZlYzQgYm9yZGVyQ29sb3JbMTZdOwoKZmxhdCBpbiBpbnQgaW5zdGFuY2VJRDsKaW4gaGlnaHAgdmVjNCBjb2xvcjsKb3V0IGhpZ2hwIHZlYzQgZnJhZ0NvbG9yOwoKaGlnaHAgZmxvYXQgZGlzdGFuY2VUb0NpcmNsZShoaWdocCB2ZWMyIGNlbnRlciwgaGlnaHAgZmxvYXQgcmFkaXVzLCBoaWdocCB2ZWMyIHBvaW50KQp7CiAgICByZXR1cm4gbGVuZ3RoKHBvaW50IC0gY2VudGVyKSAtIHJhZGl1czsKfQoKdm9pZCBtYWluKCkKewogICAgaW50IGlJRCA9IGluc3RhbmNlSUQ7CiAgICBoaWdocCB2ZWM0IHNoYWRvd0NvbG9yID0gc2hhZG93Q29sb3JzW2lJRF07CiAgICBoaWdocCBmbG9hdCBkc3QgPSBkaXN0YW5jZVRvQ2lyY2xlKGNpcmNsZXNbaUlEXS54eSwgY2lyY2xlc1tpSURdLnosIGdsX0ZyYWdDb29yZC54eSk7CiAgICBoaWdocCBmbG9hdCBzaGFkb3dXaWR0aCA9IGF0dHJpYnV0ZXNbaUlEXS55ICsgOS45OTk5OTk3NDczNzg3NTE2MzU1NTE0NTI2MzY3MTg4ZS0wNTsKICAgIGhpZ2hwIGZsb2F0IHNoYWRvd0Ftb3VudCA9IHBvdyhtYXgoMC4wLCAxLjAgLSAoZHN0IC8gc2hhZG93V2lkdGgpKSwgYXR0cmlidXRlc1tpSURdLnopOwogICAgaGlnaHAgdmVjNCBzaGFkb3cgPSBzaGFkb3dDb2xvcjsKICAgIHNoYWRvdy53ICo9IHNoYWRvd0Ftb3VudDsKICAgIGhpZ2hwIGZsb2F0IGJvcmRlclRoaWNrbmVzcyA9IGF0dHJpYnV0ZXNbaUlEXS54OwogICAgaGlnaHAgZmxvYXQgYm9yZGVyT3V0ZXIgPSBzbW9vdGhzdGVwKC0xLjIwMDAwMDA0NzY4MzcxNTgyMDMxMjUsIDAuMCwgZHN0KTsKICAgIGhpZ2hwIGZsb2F0IGJvcmRlcklubmVyID0gc21vb3Roc3RlcCgtMC42MDAwMDAwMjM4NDE4NTc5MTAxNTYyNSwgMC42MDAwMDAwMjM4NDE4NTc5MTAxNTYyNSwgZHN0ICsgYm9yZGVyVGhpY2tuZXNzKTsKICAgIGhpZ2hwIHZlYzQgYmdDb2xvciA9IGNvbG9yOwogICAgYmdDb2xvciA9IG1peChiZ0NvbG9yLCBib3JkZXJDb2xvcltpSURdLCB2ZWM0KGJvcmRlcklubmVyKSk7CiAgICBiZ0NvbG9yID0gbWl4KGJnQ29sb3IsIHNoYWRvdywgdmVjNChib3JkZXJPdXRlcikpOwogICAgZnJhZ0NvbG9yID0gYmdDb2xvcjsKfQoK";
 kha_Shaders.circle_fragData2 = "s1532:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIHZlYzQgc2hhZG93Q29sb3JzWzE2XTsKdW5pZm9ybSB2ZWM0IGNpcmNsZXNbMTZdOwp1bmlmb3JtIHZlYzQgYXR0cmlidXRlc1sxNl07CnVuaWZvcm0gdmVjNCBib3JkZXJDb2xvclsxNl07CgpmbGF0IHZhcnlpbmcgaW50IGluc3RhbmNlSUQ7CnZhcnlpbmcgdmVjNCBjb2xvcjsKCmZsb2F0IGRpc3RhbmNlVG9DaXJjbGUodmVjMiBjZW50ZXIsIGZsb2F0IHJhZGl1cywgdmVjMiBwb2ludCkKewogICAgcmV0dXJuIGxlbmd0aChwb2ludCAtIGNlbnRlcikgLSByYWRpdXM7Cn0KCnZvaWQgbWFpbigpCnsKICAgIGludCBpSUQgPSBpbnN0YW5jZUlEOwogICAgdmVjNCBzaGFkb3dDb2xvciA9IHNoYWRvd0NvbG9yc1tpSURdOwogICAgZmxvYXQgZHN0ID0gZGlzdGFuY2VUb0NpcmNsZShjaXJjbGVzW2lJRF0ueHksIGNpcmNsZXNbaUlEXS56LCBnbF9GcmFnQ29vcmQueHkpOwogICAgZmxvYXQgc2hhZG93V2lkdGggPSBhdHRyaWJ1dGVzW2lJRF0ueSArIDkuOTk5OTk5NzQ3Mzc4NzUxNjM1NTUxNDUyNjM2NzE4OGUtMDU7CiAgICBmbG9hdCBzaGFkb3dBbW91bnQgPSBwb3cobWF4KDAuMCwgMS4wIC0gKGRzdCAvIHNoYWRvd1dpZHRoKSksIGF0dHJpYnV0ZXNbaUlEXS56KTsKICAgIHZlYzQgc2hhZG93ID0gc2hhZG93Q29sb3I7CiAgICBzaGFkb3cudyAqPSBzaGFkb3dBbW91bnQ7CiAgICBmbG9hdCBib3JkZXJUaGlja25lc3MgPSBhdHRyaWJ1dGVzW2lJRF0ueDsKICAgIGZsb2F0IGJvcmRlck91dGVyID0gc21vb3Roc3RlcCgtMS4yMDAwMDAwNDc2ODM3MTU4MjAzMTI1LCAwLjAsIGRzdCk7CiAgICBmbG9hdCBib3JkZXJJbm5lciA9IHNtb290aHN0ZXAoLTAuNjAwMDAwMDIzODQxODU3OTEwMTU2MjUsIDAuNjAwMDAwMDIzODQxODU3OTEwMTU2MjUsIGRzdCArIGJvcmRlclRoaWNrbmVzcyk7CiAgICB2ZWM0IGJnQ29sb3IgPSBjb2xvcjsKICAgIGJnQ29sb3IgPSBtaXgoYmdDb2xvciwgYm9yZGVyQ29sb3JbaUlEXSwgdmVjNChib3JkZXJJbm5lcikpOwogICAgYmdDb2xvciA9IG1peChiZ0NvbG9yLCBzaGFkb3csIHZlYzQoYm9yZGVyT3V0ZXIpKTsKICAgIGdsX0ZyYWdEYXRhWzBdID0gYmdDb2xvcjsKfQoK";
-kha_Shaders.cylinder_fragData0 = "s894:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdmFyeWluZyBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7CnZhcnlpbmcgaGlnaHAgdmVjNCBmcmFnbWVudFBvc2l0aW9uOwoKaGlnaHAgZmxvYXQgcmFuZChoaWdocCBmbG9hdCBuKQp7CiAgICByZXR1cm4gZnJhY3Qoc2luKG4pICogNDM3NTguNTQ2ODc1KTsKfQoKaGlnaHAgZmxvYXQgbm9pc2UoaGlnaHAgZmxvYXQgcCkKewogICAgaGlnaHAgZmxvYXQgZmwgPSBmbG9vcihwKTsKICAgIGhpZ2hwIGZsb2F0IGZjID0gZnJhY3QocCk7CiAgICBoaWdocCBmbG9hdCBwYXJhbSA9IGZsOwogICAgaGlnaHAgZmxvYXQgcGFyYW1fMSA9IGZsICsgMS4wOwogICAgcmV0dXJuIG1peChyYW5kKHBhcmFtKSwgcmFuZChwYXJhbV8xKSwgZmMpOwp9Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCBmbG9hdCBwYXJhbSA9IGZyYWdtZW50UG9zaXRpb24ueTsKICAgIGhpZ2hwIGZsb2F0IHBhcmFtXzEgPSBmcmFnbWVudFBvc2l0aW9uLnggLSBzaW4oZnJhZ21lbnRQb3NpdGlvbi56KTsKICAgIGdsX0ZyYWdEYXRhWzBdID0gKChmcmFnbWVudENvbG9yICsgdmVjNChub2lzZShwYXJhbSkpKSArIHZlYzQobm9pc2UocGFyYW1fMSkpKSAqIDAuMjAwMDAwMDAyOTgwMjMyMjM4NzY5NTMxMjU7Cn0KCg";
-kha_Shaders.cylinder_fragData1 = "s910:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKb3V0IGhpZ2hwIHZlYzQgb3V0Q29sb3I7CmluIGhpZ2hwIHZlYzQgZnJhZ21lbnRDb2xvcjsKaW4gaGlnaHAgdmVjNCBmcmFnbWVudFBvc2l0aW9uOwoKaGlnaHAgZmxvYXQgcmFuZChoaWdocCBmbG9hdCBuKQp7CiAgICByZXR1cm4gZnJhY3Qoc2luKG4pICogNDM3NTguNTQ2ODc1KTsKfQoKaGlnaHAgZmxvYXQgbm9pc2UoaGlnaHAgZmxvYXQgcCkKewogICAgaGlnaHAgZmxvYXQgZmwgPSBmbG9vcihwKTsKICAgIGhpZ2hwIGZsb2F0IGZjID0gZnJhY3QocCk7CiAgICBoaWdocCBmbG9hdCBwYXJhbSA9IGZsOwogICAgaGlnaHAgZmxvYXQgcGFyYW1fMSA9IGZsICsgMS4wOwogICAgcmV0dXJuIG1peChyYW5kKHBhcmFtKSwgcmFuZChwYXJhbV8xKSwgZmMpOwp9Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCBmbG9hdCBwYXJhbSA9IGZyYWdtZW50UG9zaXRpb24ueTsKICAgIGhpZ2hwIGZsb2F0IHBhcmFtXzEgPSBmcmFnbWVudFBvc2l0aW9uLnggLSBzaW4oZnJhZ21lbnRQb3NpdGlvbi56KTsKICAgIG91dENvbG9yID0gKChmcmFnbWVudENvbG9yICsgdmVjNChub2lzZShwYXJhbSkpKSArIHZlYzQobm9pc2UocGFyYW1fMSkpKSAqIDAuMjAwMDAwMDAyOTgwMjMyMjM4NzY5NTMxMjU7Cn0KCg";
-kha_Shaders.cylinder_fragData2 = "s800:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKdmFyeWluZyB2ZWM0IGZyYWdtZW50UG9zaXRpb247CgpmbG9hdCByYW5kKGZsb2F0IG4pCnsKICAgIHJldHVybiBmcmFjdChzaW4obikgKiA0Mzc1OC41NDY4NzUpOwp9CgpmbG9hdCBub2lzZShmbG9hdCBwKQp7CiAgICBmbG9hdCBmbCA9IGZsb29yKHApOwogICAgZmxvYXQgZmMgPSBmcmFjdChwKTsKICAgIGZsb2F0IHBhcmFtID0gZmw7CiAgICBmbG9hdCBwYXJhbV8xID0gZmwgKyAxLjA7CiAgICByZXR1cm4gbWl4KHJhbmQocGFyYW0pLCByYW5kKHBhcmFtXzEpLCBmYyk7Cn0KCnZvaWQgbWFpbigpCnsKICAgIGZsb2F0IHBhcmFtID0gZnJhZ21lbnRQb3NpdGlvbi55OwogICAgZmxvYXQgcGFyYW1fMSA9IGZyYWdtZW50UG9zaXRpb24ueCAtIHNpbihmcmFnbWVudFBvc2l0aW9uLnopOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSAoKGZyYWdtZW50Q29sb3IgKyB2ZWM0KG5vaXNlKHBhcmFtKSkpICsgdmVjNChub2lzZShwYXJhbV8xKSkpICogMC4yMDAwMDAwMDI5ODAyMzIyMzg3Njk1MzEyNTsKfQoK";
-kha_Shaders.cylinder_vertData0 = "s355:I3ZlcnNpb24gMTAwCgp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIHZlYzMgY29sOwphdHRyaWJ1dGUgbWF0NCBtOwphdHRyaWJ1dGUgdmVjMyBwb3M7CnZhcnlpbmcgdmVjNCBmcmFnbWVudFBvc2l0aW9uOwoKdm9pZCBtYWluKCkKewogICAgZnJhZ21lbnRDb2xvciA9IHZlYzQoY29sLCAxLjApOwogICAgZ2xfUG9zaXRpb24gPSBtICogdmVjNChwb3MgKiAyMC4wLCAxLjApOwogICAgZnJhZ21lbnRQb3NpdGlvbiA9IGdsX1Bvc2l0aW9uOwp9Cgo";
-kha_Shaders.cylinder_vertData1 = "s320:I3ZlcnNpb24gMzAwIGVzCgpvdXQgdmVjNCBmcmFnbWVudENvbG9yOwppbiB2ZWMzIGNvbDsKaW4gbWF0NCBtOwppbiB2ZWMzIHBvczsKb3V0IHZlYzQgZnJhZ21lbnRQb3NpdGlvbjsKCnZvaWQgbWFpbigpCnsKICAgIGZyYWdtZW50Q29sb3IgPSB2ZWM0KGNvbCwgMS4wKTsKICAgIGdsX1Bvc2l0aW9uID0gbSAqIHZlYzQocG9zICogMjAuMCwgMS4wKTsKICAgIGZyYWdtZW50UG9zaXRpb24gPSBnbF9Qb3NpdGlvbjsKfQoK";
-kha_Shaders.cylinder_vertData2 = "s408:I3ZlcnNpb24gMTAwCgp2YXJ5aW5nIG1lZGl1bXAgdmVjNCBmcmFnbWVudENvbG9yOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWMzIGNvbDsKYXR0cmlidXRlIG1lZGl1bXAgbWF0NCBtOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWMzIHBvczsKdmFyeWluZyBtZWRpdW1wIHZlYzQgZnJhZ21lbnRQb3NpdGlvbjsKCnZvaWQgbWFpbigpCnsKICAgIGZyYWdtZW50Q29sb3IgPSB2ZWM0KGNvbCwgMS4wKTsKICAgIGdsX1Bvc2l0aW9uID0gbSAqIHZlYzQocG9zICogMjAuMCwgMS4wKTsKICAgIGZyYWdtZW50UG9zaXRpb24gPSBnbF9Qb3NpdGlvbjsKfQoK";
+kha_Shaders.cylinder_fragData0 = "s198:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdmFyeWluZyBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9GcmFnRGF0YVswXSA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
+kha_Shaders.cylinder_fragData1 = "s220:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKb3V0IGhpZ2hwIHZlYzQgb3V0Q29sb3I7CmluIGhpZ2hwIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIG91dENvbG9yID0gZnJhZ21lbnRDb2xvcjsKfQoK";
+kha_Shaders.cylinder_fragData2 = "s192:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX0ZyYWdEYXRhWzBdID0gZnJhZ21lbnRDb2xvcjsKfQoK";
+kha_Shaders.cylinder_vertData0 = "s256:I3ZlcnNpb24gMTAwCgp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIHZlYzMgY29sOwphdHRyaWJ1dGUgbWF0NCBtOwphdHRyaWJ1dGUgdmVjMyBwb3M7Cgp2b2lkIG1haW4oKQp7CiAgICBmcmFnbWVudENvbG9yID0gdmVjNChjb2wsIDEuMCk7CiAgICBnbF9Qb3NpdGlvbiA9IG0gKiB2ZWM0KHBvcywgMS4wKTsKfQoK";
+kha_Shaders.cylinder_vertData1 = "s227:I3ZlcnNpb24gMzAwIGVzCgpvdXQgdmVjNCBmcmFnbWVudENvbG9yOwppbiB2ZWMzIGNvbDsKaW4gbWF0NCBtOwppbiB2ZWMzIHBvczsKCnZvaWQgbWFpbigpCnsKICAgIGZyYWdtZW50Q29sb3IgPSB2ZWM0KGNvbCwgMS4wKTsKICAgIGdsX1Bvc2l0aW9uID0gbSAqIHZlYzQocG9zLCAxLjApOwp9Cgo";
+kha_Shaders.cylinder_vertData2 = "s299:I3ZlcnNpb24gMTAwCgp2YXJ5aW5nIG1lZGl1bXAgdmVjNCBmcmFnbWVudENvbG9yOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWMzIGNvbDsKYXR0cmlidXRlIG1lZGl1bXAgbWF0NCBtOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWMzIHBvczsKCnZvaWQgbWFpbigpCnsKICAgIGZyYWdtZW50Q29sb3IgPSB2ZWM0KGNvbCwgMS4wKTsKICAgIGdsX1Bvc2l0aW9uID0gbSAqIHZlYzQocG9zLCAxLjApOwp9Cgo";
 kha_Shaders.ocean_fragData0 = "s3114:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc19ub3JtYWxzOwp1bmlmb3JtIGhpZ2hwIHNhbXBsZXIyRCByZW5kZXJfdGV4dHVyZTsKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc190ZXh0dXJlOwp1bmlmb3JtIGhpZ2hwIHZlYzMgbGlnaHRfcG9zaXRpb247CnVuaWZvcm0gaGlnaHAgdmVjMyBleWVfcG9zaXRpb247CnVuaWZvcm0gaGlnaHAgc2FtcGxlcjJEIGdDb2xvcjsKCnZhcnlpbmcgaGlnaHAgZmxvYXQgdl90aW1lOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY2xpcFNwYWNlOwp2YXJ5aW5nIGhpZ2hwIHZlYzIgdl90ZXh0dXJlQ29vcmRpbmF0ZXM7CnZhcnlpbmcgaGlnaHAgdmVjMyB3b3JsZF9wb3M7CnZhcnlpbmcgaGlnaHAgdmVjMyB3b3JsZF9ub3JtYWw7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCBmbG9hdCB0aW1lID0gdl90aW1lIC8gNS4wOwogICAgaGlnaHAgdmVjMiBuZGMgPSBjbGlwU3BhY2UueHkgLyB2ZWMyKGNsaXBTcGFjZS53KTsKICAgIGhpZ2hwIHZlYzIgcmVmbGVjdFRleENvb3JkcyA9ICh2ZWMyKG5kYy54LCAtbmRjLnkpIC8gdmVjMigyLjApKSArIHZlYzIoMC41KTsKICAgIGhpZ2hwIHZlYzIgZGlzdDEgPSAodGV4dHVyZTJEKHNfbm9ybWFscywgKHZlYzIodl90ZXh0dXJlQ29vcmRpbmF0ZXMueCwgdl90ZXh0dXJlQ29vcmRpbmF0ZXMueSkgKiBzaW4odGltZSkpIC8gdmVjMigxMDAwLjApKS54eSAqIDIuMCkgLSB2ZWMyKDEuMCk7CiAgICBoaWdocCB2ZWMzIHJ0ZXggPSB2ZWMzKGRpc3QxLCAxLjApICsgdGV4dHVyZTJEKHJlbmRlcl90ZXh0dXJlLCByZWZsZWN0VGV4Q29vcmRzKS54eXo7CiAgICBoaWdocCB2ZWMzIHRleDEgPSB2ZWMzKGRpc3QxLCAxLjApICsgdGV4dHVyZTJEKHNfdGV4dHVyZSwgKHZfdGV4dHVyZUNvb3JkaW5hdGVzICogNS4wKSArIHZlYzIoc2luKHRpbWUpIC8gMTAwMC4wLCAoc2luKHRpbWUpIC8gMTAwMC4wKSArIChjb3ModGltZSkgLyA4MC4wKSkpLnh5ejsKICAgIGhpZ2hwIHZlYzMgbm9ybWFsID0gKC12ZWMzKGRpc3QxLCAxLjApKSArIHRleHR1cmUyRChzX25vcm1hbHMsICh2X3RleHR1cmVDb29yZGluYXRlcyAqIDUuMCkgKyB2ZWMyKChzaW4odGltZSkgLyAxMDAwLjApICsgKGNvcyh0aW1lKSAvIDgwLjApLCBzaW4odGltZSkgLyAxMDAuMCkpLnh5ejsKICAgIG5vcm1hbC54ID0gMC4wOwogICAgbm9ybWFsID0gbm9ybWFsaXplKChub3JtYWwgKiAyLjApIC0gdmVjMygxLjApKTsKICAgIGhpZ2hwIHZlYzMgTCA9IG5vcm1hbGl6ZShsaWdodF9wb3NpdGlvbiAtIHdvcmxkX3Bvcyk7CiAgICBoaWdocCB2ZWMzIFYgPSBub3JtYWxpemUoZXllX3Bvc2l0aW9uIC0gd29ybGRfcG9zKTsKICAgIGhpZ2hwIHZlYzMgZGlmZnVzZSA9IHZlYzMoMC4xNTAwMDAwMDU5NjA0NjQ0Nzc1MzkwNjI1LCAwLjA1MDAwMDAwMDc0NTA1ODA1OTY5MjM4MjgxMjUsIDAuMCkgKiBtYXgoMC4wLCBkb3QoTCwgd29ybGRfbm9ybWFsKSk7CiAgICBoaWdocCBmbG9hdCByaW0gPSAxLjAgLSBtYXgoZG90KFYsIHdvcmxkX25vcm1hbCksIDAuMCk7CiAgICByaW0gPSBzbW9vdGhzdGVwKDAuNjAwMDAwMDIzODQxODU3OTEwMTU2MjUsIDEuMCwgcmltKTsKICAgIGhpZ2hwIHZlYzMgZmluYWxSaW0gPSB2ZWMzKDAuMjAwMDAwMDAyOTgwMjMyMjM4NzY5NTMxMjUpICogdmVjMyhyaW0sIHJpbSwgcmltKTsKICAgIGhpZ2hwIHZlYzMgbGlnaHRDb2xvciA9IChmaW5hbFJpbSArIGRpZmZ1c2UpICsgdGV4MTsKICAgIGhpZ2hwIHZlYzMgZmluYWxDb2xvciA9IHZlYzMoMC4wKTsKICAgIGhpZ2hwIGZsb2F0IGRpc3QgPSAwLjA7CiAgICBoaWdocCBmbG9hdCBmb2dGYWN0b3IgPSAwLjA7CiAgICBkaXN0ID0gZ2xfRnJhZ0Nvb3JkLnogLyBnbF9GcmFnQ29vcmQudzsKICAgIGZvZ0ZhY3RvciA9IDEuMCAvIGV4cCgoZGlzdCAqIDAuMDAwNTAwMDAwMDIzNzQ4NzI1NjUyNjk0NzAyMTQ4NDM3NSkgKiAoZGlzdCAqIDAuMDAwNTAwMDAwMDIzNzQ4NzI1NjUyNjk0NzAyMTQ4NDM3NSkpOwogICAgZm9nRmFjdG9yID0gY2xhbXAoZm9nRmFjdG9yLCAwLjAsIDEuMCk7CiAgICBmaW5hbENvbG9yID0gbWl4KHZlYzMoMC41KSwgbGlnaHRDb2xvciAvIHZlYzMoODAuMCksIHZlYzMoZm9nRmFjdG9yKSkgLyB2ZWMzKDIuMCk7CiAgICBnbF9GcmFnRGF0YVswXSA9IHZlYzQoZmluYWxDb2xvciwgMS4wKSArIHZlYzQobWl4KG1peChtaXgocnRleCwgdGV4MSwgdmVjMygwLjUpKSwgZmluYWxDb2xvciwgdmVjMygwLjMwMDAwMDAxMTkyMDkyODk1NTA3ODEyNSkpLCBub3JtYWwsIHZlYzMoMC41KSksIDEuMCk7Cn0KCg";
 kha_Shaders.ocean_fragData1 = "s3099:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc19ub3JtYWxzOwp1bmlmb3JtIGhpZ2hwIHNhbXBsZXIyRCByZW5kZXJfdGV4dHVyZTsKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgc190ZXh0dXJlOwp1bmlmb3JtIGhpZ2hwIHZlYzMgbGlnaHRfcG9zaXRpb247CnVuaWZvcm0gaGlnaHAgdmVjMyBleWVfcG9zaXRpb247CnVuaWZvcm0gaGlnaHAgc2FtcGxlcjJEIGdDb2xvcjsKCmluIGhpZ2hwIGZsb2F0IHZfdGltZTsKaW4gaGlnaHAgdmVjNCBjbGlwU3BhY2U7CmluIGhpZ2hwIHZlYzIgdl90ZXh0dXJlQ29vcmRpbmF0ZXM7CmluIGhpZ2hwIHZlYzMgd29ybGRfcG9zOwppbiBoaWdocCB2ZWMzIHdvcmxkX25vcm1hbDsKb3V0IGhpZ2hwIHZlYzQgb3V0Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCBmbG9hdCB0aW1lID0gdl90aW1lIC8gNS4wOwogICAgaGlnaHAgdmVjMiBuZGMgPSBjbGlwU3BhY2UueHkgLyB2ZWMyKGNsaXBTcGFjZS53KTsKICAgIGhpZ2hwIHZlYzIgcmVmbGVjdFRleENvb3JkcyA9ICh2ZWMyKG5kYy54LCAtbmRjLnkpIC8gdmVjMigyLjApKSArIHZlYzIoMC41KTsKICAgIGhpZ2hwIHZlYzIgZGlzdDEgPSAodGV4dHVyZShzX25vcm1hbHMsICh2ZWMyKHZfdGV4dHVyZUNvb3JkaW5hdGVzLngsIHZfdGV4dHVyZUNvb3JkaW5hdGVzLnkpICogc2luKHRpbWUpKSAvIHZlYzIoMTAwMC4wKSkueHkgKiAyLjApIC0gdmVjMigxLjApOwogICAgaGlnaHAgdmVjMyBydGV4ID0gdmVjMyhkaXN0MSwgMS4wKSArIHRleHR1cmUocmVuZGVyX3RleHR1cmUsIHJlZmxlY3RUZXhDb29yZHMpLnh5ejsKICAgIGhpZ2hwIHZlYzMgdGV4MSA9IHZlYzMoZGlzdDEsIDEuMCkgKyB0ZXh0dXJlKHNfdGV4dHVyZSwgKHZfdGV4dHVyZUNvb3JkaW5hdGVzICogNS4wKSArIHZlYzIoc2luKHRpbWUpIC8gMTAwMC4wLCAoc2luKHRpbWUpIC8gMTAwMC4wKSArIChjb3ModGltZSkgLyA4MC4wKSkpLnh5ejsKICAgIGhpZ2hwIHZlYzMgbm9ybWFsID0gKC12ZWMzKGRpc3QxLCAxLjApKSArIHRleHR1cmUoc19ub3JtYWxzLCAodl90ZXh0dXJlQ29vcmRpbmF0ZXMgKiA1LjApICsgdmVjMigoc2luKHRpbWUpIC8gMTAwMC4wKSArIChjb3ModGltZSkgLyA4MC4wKSwgc2luKHRpbWUpIC8gMTAwLjApKS54eXo7CiAgICBub3JtYWwueCA9IDAuMDsKICAgIG5vcm1hbCA9IG5vcm1hbGl6ZSgobm9ybWFsICogMi4wKSAtIHZlYzMoMS4wKSk7CiAgICBoaWdocCB2ZWMzIEwgPSBub3JtYWxpemUobGlnaHRfcG9zaXRpb24gLSB3b3JsZF9wb3MpOwogICAgaGlnaHAgdmVjMyBWID0gbm9ybWFsaXplKGV5ZV9wb3NpdGlvbiAtIHdvcmxkX3Bvcyk7CiAgICBoaWdocCB2ZWMzIGRpZmZ1c2UgPSB2ZWMzKDAuMTUwMDAwMDA1OTYwNDY0NDc3NTM5MDYyNSwgMC4wNTAwMDAwMDA3NDUwNTgwNTk2OTIzODI4MTI1LCAwLjApICogbWF4KDAuMCwgZG90KEwsIHdvcmxkX25vcm1hbCkpOwogICAgaGlnaHAgZmxvYXQgcmltID0gMS4wIC0gbWF4KGRvdChWLCB3b3JsZF9ub3JtYWwpLCAwLjApOwogICAgcmltID0gc21vb3Roc3RlcCgwLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCAxLjAsIHJpbSk7CiAgICBoaWdocCB2ZWMzIGZpbmFsUmltID0gdmVjMygwLjIwMDAwMDAwMjk4MDIzMjIzODc2OTUzMTI1KSAqIHZlYzMocmltLCByaW0sIHJpbSk7CiAgICBoaWdocCB2ZWMzIGxpZ2h0Q29sb3IgPSAoZmluYWxSaW0gKyBkaWZmdXNlKSArIHRleDE7CiAgICBoaWdocCB2ZWMzIGZpbmFsQ29sb3IgPSB2ZWMzKDAuMCk7CiAgICBoaWdocCBmbG9hdCBkaXN0ID0gMC4wOwogICAgaGlnaHAgZmxvYXQgZm9nRmFjdG9yID0gMC4wOwogICAgZGlzdCA9IGdsX0ZyYWdDb29yZC56IC8gZ2xfRnJhZ0Nvb3JkLnc7CiAgICBmb2dGYWN0b3IgPSAxLjAgLyBleHAoKGRpc3QgKiAwLjAwMDUwMDAwMDAyMzc0ODcyNTY1MjY5NDcwMjE0ODQzNzUpICogKGRpc3QgKiAwLjAwMDUwMDAwMDAyMzc0ODcyNTY1MjY5NDcwMjE0ODQzNzUpKTsKICAgIGZvZ0ZhY3RvciA9IGNsYW1wKGZvZ0ZhY3RvciwgMC4wLCAxLjApOwogICAgZmluYWxDb2xvciA9IG1peCh2ZWMzKDAuNSksIGxpZ2h0Q29sb3IgLyB2ZWMzKDgwLjApLCB2ZWMzKGZvZ0ZhY3RvcikpIC8gdmVjMygyLjApOwogICAgb3V0Q29sb3IgPSB2ZWM0KGZpbmFsQ29sb3IsIDEuMCkgKyB2ZWM0KG1peChtaXgobWl4KHJ0ZXgsIHRleDEsIHZlYzMoMC41KSksIGZpbmFsQ29sb3IsIHZlYzMoMC4zMDAwMDAwMTE5MjA5Mjg5NTUwNzgxMjUpKSwgbm9ybWFsLCB2ZWMzKDAuNSkpLCAxLjApOwp9Cgo";
 kha_Shaders.ocean_fragData2 = "s2943:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHNfbm9ybWFsczsKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCByZW5kZXJfdGV4dHVyZTsKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCBzX3RleHR1cmU7CnVuaWZvcm0gdmVjMyBsaWdodF9wb3NpdGlvbjsKdW5pZm9ybSB2ZWMzIGV5ZV9wb3NpdGlvbjsKdW5pZm9ybSBtZWRpdW1wIHNhbXBsZXIyRCBnQ29sb3I7Cgp2YXJ5aW5nIGZsb2F0IHZfdGltZTsKdmFyeWluZyB2ZWM0IGNsaXBTcGFjZTsKdmFyeWluZyB2ZWMyIHZfdGV4dHVyZUNvb3JkaW5hdGVzOwp2YXJ5aW5nIHZlYzMgd29ybGRfcG9zOwp2YXJ5aW5nIHZlYzMgd29ybGRfbm9ybWFsOwoKdm9pZCBtYWluKCkKewogICAgZmxvYXQgdGltZSA9IHZfdGltZSAvIDUuMDsKICAgIHZlYzIgbmRjID0gY2xpcFNwYWNlLnh5IC8gdmVjMihjbGlwU3BhY2Uudyk7CiAgICB2ZWMyIHJlZmxlY3RUZXhDb29yZHMgPSAodmVjMihuZGMueCwgLW5kYy55KSAvIHZlYzIoMi4wKSkgKyB2ZWMyKDAuNSk7CiAgICB2ZWMyIGRpc3QxID0gKHRleHR1cmUyRChzX25vcm1hbHMsICh2ZWMyKHZfdGV4dHVyZUNvb3JkaW5hdGVzLngsIHZfdGV4dHVyZUNvb3JkaW5hdGVzLnkpICogc2luKHRpbWUpKSAvIHZlYzIoMTAwMC4wKSkueHkgKiAyLjApIC0gdmVjMigxLjApOwogICAgdmVjMyBydGV4ID0gdmVjMyhkaXN0MSwgMS4wKSArIHRleHR1cmUyRChyZW5kZXJfdGV4dHVyZSwgcmVmbGVjdFRleENvb3JkcykueHl6OwogICAgdmVjMyB0ZXgxID0gdmVjMyhkaXN0MSwgMS4wKSArIHRleHR1cmUyRChzX3RleHR1cmUsICh2X3RleHR1cmVDb29yZGluYXRlcyAqIDUuMCkgKyB2ZWMyKHNpbih0aW1lKSAvIDEwMDAuMCwgKHNpbih0aW1lKSAvIDEwMDAuMCkgKyAoY29zKHRpbWUpIC8gODAuMCkpKS54eXo7CiAgICB2ZWMzIG5vcm1hbCA9ICgtdmVjMyhkaXN0MSwgMS4wKSkgKyB0ZXh0dXJlMkQoc19ub3JtYWxzLCAodl90ZXh0dXJlQ29vcmRpbmF0ZXMgKiA1LjApICsgdmVjMigoc2luKHRpbWUpIC8gMTAwMC4wKSArIChjb3ModGltZSkgLyA4MC4wKSwgc2luKHRpbWUpIC8gMTAwLjApKS54eXo7CiAgICBub3JtYWwueCA9IDAuMDsKICAgIG5vcm1hbCA9IG5vcm1hbGl6ZSgobm9ybWFsICogMi4wKSAtIHZlYzMoMS4wKSk7CiAgICB2ZWMzIEwgPSBub3JtYWxpemUobGlnaHRfcG9zaXRpb24gLSB3b3JsZF9wb3MpOwogICAgdmVjMyBWID0gbm9ybWFsaXplKGV5ZV9wb3NpdGlvbiAtIHdvcmxkX3Bvcyk7CiAgICB2ZWMzIGRpZmZ1c2UgPSB2ZWMzKDAuMTUwMDAwMDA1OTYwNDY0NDc3NTM5MDYyNSwgMC4wNTAwMDAwMDA3NDUwNTgwNTk2OTIzODI4MTI1LCAwLjApICogbWF4KDAuMCwgZG90KEwsIHdvcmxkX25vcm1hbCkpOwogICAgZmxvYXQgcmltID0gMS4wIC0gbWF4KGRvdChWLCB3b3JsZF9ub3JtYWwpLCAwLjApOwogICAgcmltID0gc21vb3Roc3RlcCgwLjYwMDAwMDAyMzg0MTg1NzkxMDE1NjI1LCAxLjAsIHJpbSk7CiAgICB2ZWMzIGZpbmFsUmltID0gdmVjMygwLjIwMDAwMDAwMjk4MDIzMjIzODc2OTUzMTI1KSAqIHZlYzMocmltLCByaW0sIHJpbSk7CiAgICB2ZWMzIGxpZ2h0Q29sb3IgPSAoZmluYWxSaW0gKyBkaWZmdXNlKSArIHRleDE7CiAgICB2ZWMzIGZpbmFsQ29sb3IgPSB2ZWMzKDAuMCk7CiAgICBmbG9hdCBkaXN0ID0gMC4wOwogICAgZmxvYXQgZm9nRmFjdG9yID0gMC4wOwogICAgZGlzdCA9IGdsX0ZyYWdDb29yZC56IC8gZ2xfRnJhZ0Nvb3JkLnc7CiAgICBmb2dGYWN0b3IgPSAxLjAgLyBleHAoKGRpc3QgKiAwLjAwMDUwMDAwMDAyMzc0ODcyNTY1MjY5NDcwMjE0ODQzNzUpICogKGRpc3QgKiAwLjAwMDUwMDAwMDAyMzc0ODcyNTY1MjY5NDcwMjE0ODQzNzUpKTsKICAgIGZvZ0ZhY3RvciA9IGNsYW1wKGZvZ0ZhY3RvciwgMC4wLCAxLjApOwogICAgZmluYWxDb2xvciA9IG1peCh2ZWMzKDAuNSksIGxpZ2h0Q29sb3IgLyB2ZWMzKDgwLjApLCB2ZWMzKGZvZ0ZhY3RvcikpIC8gdmVjMygyLjApOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSB2ZWM0KGZpbmFsQ29sb3IsIDEuMCkgKyB2ZWM0KG1peChtaXgobWl4KHJ0ZXgsIHRleDEsIHZlYzMoMC41KSksIGZpbmFsQ29sb3IsIHZlYzMoMC4zMDAwMDAwMTE5MjA5Mjg5NTUwNzgxMjUpKSwgbm9ybWFsLCB2ZWMzKDAuNSkpLCAxLjApOwp9Cgo";
